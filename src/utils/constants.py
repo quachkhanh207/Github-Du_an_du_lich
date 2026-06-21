@@ -1,0 +1,1 @@
+# Hằng số dùng chung

@@ -1,0 +1,1 @@
+# Sinh vector dữ liệu
