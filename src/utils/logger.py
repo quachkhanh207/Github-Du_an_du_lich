@@ -1,1 +1,0 @@
-# Ghi log hệ thống

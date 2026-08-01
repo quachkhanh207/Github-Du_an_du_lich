@@ -1,1 +1,0 @@
-# Kết nối GPT/Gemini
