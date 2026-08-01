@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from app.config import TEMP_DIR
+from chatbot.config import TEMP_DIR
 
 
 def save_audio_bytes(audio_bytes: bytes, suffix: str = ".webm") -> str:

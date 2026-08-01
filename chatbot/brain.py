@@ -3,7 +3,7 @@ from threading import Lock
 
 from llama_cpp import Llama
 
-from app.config import (
+from chatbot.config import (
     MODEL_PATH,
     LLM_CONTEXT,
     LLM_BATCH,

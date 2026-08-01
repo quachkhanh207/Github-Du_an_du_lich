@@ -16,20 +16,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from app.audio import (
+from chatbot.audio import (
     cleanup_files,
     convert_to_wav,
     save_audio_bytes
 )
-from app.brain import Brain
-from app.config import (
+from chatbot.brain import Brain
+from chatbot.config import (
     HOST,
     PORT,
     WHISPER_LANGUAGE,
     WHISPER_MODEL,
     BASE_DIR
 )
-from app.stt import SpeechToText
+from chatbot.stt import SpeechToText
 
 
 app = FastAPI(

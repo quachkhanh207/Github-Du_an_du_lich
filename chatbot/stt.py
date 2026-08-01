@@ -4,7 +4,7 @@ import torch
 from faster_whisper import WhisperModel
 
 
-from app.config import STT_DEVICE
+from chatbot.config import STT_DEVICE
 
 
 class SpeechToText:
