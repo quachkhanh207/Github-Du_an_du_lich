@@ -1,0 +1,40 @@
+# Virtual environments
+venv/
+venv312/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Model weights & large binary files
+*.gguf
+*.bin
+*.pt
+*.pth
+*.onnx
+*.safetensors
+models/
+beenavi/models/
+
+# Environment / Secret variables
+.env
+.env.local
+.env.*.local
+
+# Temporary files & logs
+tmp/
+beenavi/tmp/
+build_log.txt
+*.log
+*.tmp
+*.temp
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

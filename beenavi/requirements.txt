@@ -1,0 +1,19 @@
+# ============================================================
+# Beenavi Chatbot — requirements.txt
+# ============================================================
+# QUAN TRONG: torch va llama-cpp-python KHONG cai bang file nay.
+# Ly do: ca hai can ban build khop voi CUDA Toolkit tren may ban,
+# neu cai qua "pip install -r requirements.txt" se ra ban CPU-only
+# hoac loi bien dich. Xem README.md phan "Cai dat" de cai dung
+# thu tu (torch + llama-cpp-python truoc, roi moi chay lenh duoi).
+# ============================================================
+
+fastapi
+uvicorn[standard]
+websockets
+python-multipart
+faster-whisper
+huggingface-hub
+numpy
+soundfile
+python-dotenv
