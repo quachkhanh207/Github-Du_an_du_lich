@@ -25,7 +25,11 @@ def trips_list_create(request):
         except Exception:
             start_date = datetime.now()
 
+        # Liên kết với người dùng đang đăng nhập nếu có
+        user = request.user if request.user.is_authenticated else None
+
         trip = Trip.objects.create(
+            user=user,
             destination=destination,
             departure_location=departure_location,
             start_date=start_date,
@@ -49,7 +53,11 @@ def trips_list_create(request):
         }, status=status.HTTP_201_CREATED)
 
     elif request.method == 'GET':
-        trips = Trip.objects.all().order_by('-created_at')
+        # Lọc chuyến đi: Nếu có user đăng nhập thì chỉ lấy của user đó, ngược lại lấy toàn bộ
+        if request.user.is_authenticated:
+            trips = Trip.objects.filter(user=request.user).order_by('-created_at')
+        else:
+            trips = Trip.objects.all().order_by('-created_at')
         trips_list = []
         for trip in trips:
             photo_count = Photo.objects.filter(trip=trip).count()
