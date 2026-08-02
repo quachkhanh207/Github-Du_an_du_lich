@@ -2,7 +2,6 @@
 .venv/
 venv/
 ENV/
-Nhat_ky_hanh_trinh/.venv/
 
 # Python cache
 __pycache__/
@@ -12,12 +11,9 @@ __pycache__/
 
 # Django local database
 db.sqlite3
-Nhat_ky_hanh_trinh/db.sqlite3
 
 # Environment variables file
 .env
-Nhat_ky_hanh_trinh/.env
 
 # Exclude journal_test directory (contains heavy files/images/videos/installers)
 journal_test/
-Nhat_ky_hanh_trinh/journal_test/
