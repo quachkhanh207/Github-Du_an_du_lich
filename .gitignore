@@ -3,12 +3,17 @@ venv/
 venv312/
 env/
 ENV/
+.venv/
+Nhat_ky_hanh_trinh/.venv/
 
 # Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.pyc
+*.pyo
+*.pyd
 
 # Model weights & large binary files
 *.gguf
@@ -24,13 +29,20 @@ models/*
 .env
 .env.local
 .env.*.local
+Nhat_ky_hanh_trinh/.env
 
-# Temporary files & logs
+# Django local database
+db.sqlite3
+Nhat_ky_hanh_trinh/db.sqlite3
+
+# Temporary files, logs & test directories
 tmp/
 build_log.txt
 *.log
 *.tmp
 *.temp
+journal_test/
+Nhat_ky_hanh_trinh/journal_test/
 
 # IDE & OS files
 .vscode/
