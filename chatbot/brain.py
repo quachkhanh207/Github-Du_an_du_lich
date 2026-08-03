@@ -1,4 +1,5 @@
 import re
+import sys
 from threading import Lock
 
 from llama_cpp import Llama
@@ -13,11 +14,18 @@ from chatbot.config import (
     SYSTEM_PROMPT
 )
 
+# Fix encoding tren Windows console
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 
 class Brain:
     def __init__(self):
-        print(f"Loading Qwen model: {MODEL_PATH}")
-        print(f"n_gpu_layers={N_GPU_LAYERS}, n_ctx={LLM_CONTEXT} (chỉnh trong .env nếu thiếu VRAM)")
+        print(f"[Brain] Loading model: {MODEL_PATH}", flush=True)
+        print(f"[Brain] n_gpu_layers={N_GPU_LAYERS}, n_ctx={LLM_CONTEXT}", flush=True)
 
         self.model = Llama(
             model_path=MODEL_PATH,

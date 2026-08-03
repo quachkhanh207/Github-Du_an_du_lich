@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 import os
+import re
 import time
 
 from fastapi import (
@@ -30,6 +31,7 @@ from chatbot.config import (
     BASE_DIR
 )
 from chatbot.stt import SpeechToText
+from chatbot.tts import TTSManager
 
 
 app = FastAPI(
@@ -47,6 +49,7 @@ app.add_middleware(
 
 _stt = None
 _brain = None
+_tts = None
 
 def get_stt():
     global _stt
@@ -71,10 +74,41 @@ def get_brain():
             _brain = None
     return _brain
 
+def get_tts():
+    global _tts
+    if _tts is None and os.getenv("SKIP_MODEL") != "1":
+        try:
+            _tts = TTSManager()
+        except Exception as e:
+            print(f"TTS Model skip/fail: {e}")
+            _tts = None
+    return _tts
 
-frontend_dir = BASE_DIR.parent / "frontend"
-if not frontend_dir.exists():
-    frontend_dir = BASE_DIR / "frontend"
+
+@app.on_event("startup")
+async def startup_preload():
+    """Preload tất cả models (LLM Qwen3-4B, VieNeu TTS, Whisper STT) ngay khi server khởi động
+    để sẵn sàng phục vụ ngay lập tức, không bị cold-start ở tin nhắn đầu tiên."""
+    print("[Startup] Bắt đầu preload tất cả mô hình (LLM, STT, TTS)...", flush=True)
+    loop = asyncio.get_event_loop()
+    await asyncio.gather(
+        loop.run_in_executor(None, get_brain),
+        loop.run_in_executor(None, get_tts),
+        loop.run_in_executor(None, get_stt),
+    )
+    # nạp trực tiếp trọng số VieNeu-TTS để không bị nạp dở chừng khi user nhắn câu đầu
+    tts_inst = get_tts()
+    if tts_inst and tts_inst.enabled:
+        try:
+            print("[Startup] Đang preload trọng số VieNeu-TTS...", flush=True)
+            await loop.run_in_executor(None, tts_inst._get_model)
+            print("[Startup] Mô hình VieNeu-TTS đã nạp hoàn tất!", flush=True)
+        except Exception as e:
+            print(f"[Startup] VieNeu-TTS preload notice: {e}", flush=True)
+    print("[Startup] ✅ Tất cả mô hình đã sẵn sàng 100%!", flush=True)
+
+
+frontend_dir = BASE_DIR / "frontend"
 
 if frontend_dir.exists():
     app.mount(
@@ -129,11 +163,24 @@ async def favicon():
 
 @app.get("/health")
 async def health():
+    tts_inst = get_tts()
     return {
         "status": "ok",
         "stt": WHISPER_MODEL,
-        "language": WHISPER_LANGUAGE
+        "language": WHISPER_LANGUAGE,
+        "tts": tts_inst.enabled if tts_inst else False,
+        "tts_engine": tts_inst.engine if tts_inst else "none"
     }
+
+
+@app.get("/voices")
+async def get_voices():
+    tts_inst = get_tts()
+    if tts_inst:
+        return tts_inst.get_available_voices()
+    return [
+        {"id": "vi_default", "name": "Phạm Tuyên (Mặc định)", "gender": "male", "language": "vi-VN"}
+    ]
 
 
 @app.post("/transcribe")
@@ -206,6 +253,14 @@ async def websocket_endpoint(websocket: WebSocket):
     history = []
     audio_buffer = bytearray()
     partial_task = None
+    # Mốc thời gian lần chạy partial-transcription gần nhất, dùng để giới hạn
+    # tần suất gọi Whisper cho bản ghi tạm (partial). Trước đây cứ mỗi khi
+    # audio_chunk tới VÀ tác vụ partial trước đã xong là lập tức chạy lại
+    # ngay — mà mỗi lần lại transcribe LẠI TOÀN BỘ buffer từ đầu (buffer
+    # càng ghi lâu càng phình to) → chi phí CPU tăng dần theo thời gian ghi
+    # âm, tranh CPU với chính bản ghi cuối cùng, khiến hội thoại giật/trễ.
+    last_partial_ts = 0.0
+    PARTIAL_INTERVAL_SEC = 1.2
 
     async def send_partial(snapshot: bytes):
         try:
@@ -226,9 +281,10 @@ async def websocket_endpoint(websocket: WebSocket):
         except Exception:
             pass
 
-    async def answer_with_brain(user_text: str):
+    async def answer_with_brain(user_text: str, voice: str = None, enable_tts: bool = True):
         answer = ""
         brain_inst = get_brain()
+        tts_inst = get_tts() if enable_tts else None
 
         if not brain_inst:
             answer = f"Xin chào Tiến! (UI Preview Mode) Tôi đã ghi nhận yêu cầu: '{user_text}'. Lịch trình và thông tin đã được hiển thị trực quan trên giao diện Beenavi AI!"
@@ -236,17 +292,72 @@ async def websocket_endpoint(websocket: WebSocket):
                 "type": "answer",
                 "text": answer
             })
+            if tts_inst and tts_inst.enabled:
+                audio_b64 = await asyncio.to_thread(
+                    tts_inst.synthesize_sentence_base64,
+                    answer,
+                    voice
+                )
+                if audio_b64:
+                    await websocket.send_json({
+                        "type": "tts_chunk",
+                        "audio": audio_b64,
+                        "text": answer,
+                        "index": 0
+                    })
         else:
+            buffer = ""
+            sentence_index = 0
+            sentence_delimiters = re.compile(r'([\.!\?\n]+|;)')
+
             for partial in brain_inst.stream(
                 user_text,
                 history
             ):
+                delta = partial[len(answer):]
                 answer = partial
+                buffer += delta
 
                 await websocket.send_json({
                     "type": "answer",
                     "text": partial
                 })
+
+                match = sentence_delimiters.search(buffer)
+                if match:
+                    split_pos = match.end()
+                    sentence = buffer[:split_pos].strip()
+                    buffer = buffer[split_pos:]
+
+                    if sentence and tts_inst and tts_inst.enabled:
+                        audio_b64 = await asyncio.to_thread(
+                            tts_inst.synthesize_sentence_base64,
+                            sentence,
+                            voice
+                        )
+                        if audio_b64:
+                            await websocket.send_json({
+                                "type": "tts_chunk",
+                                "audio": audio_b64,
+                                "text": sentence,
+                                "index": sentence_index
+                            })
+                            sentence_index += 1
+
+            if buffer.strip() and tts_inst and tts_inst.enabled:
+                sentence = buffer.strip()
+                audio_b64 = await asyncio.to_thread(
+                    tts_inst.synthesize_sentence_base64,
+                    sentence,
+                    voice
+                )
+                if audio_b64:
+                    await websocket.send_json({
+                        "type": "tts_chunk",
+                        "audio": audio_b64,
+                        "text": sentence,
+                        "index": sentence_index
+                    })
 
         history.append({
             "role": "user",
@@ -268,6 +379,55 @@ async def websocket_endpoint(websocket: WebSocket):
             "message": "WebSocket ready"
         })
 
+        greeting_cache_path = BASE_DIR / "chatbot" / "greeting_cache.json"
+        if greeting_cache_path.exists():
+            try:
+                with open(greeting_cache_path, "r", encoding="utf-8") as f:
+                    cache_data = json.load(f)
+                greeting_text = cache_data.get("text", "")
+                await websocket.send_json({
+                    "type": "greeting",
+                    "text": greeting_text
+                })
+                for chunk in cache_data.get("chunks", []):
+                    await websocket.send_json({
+                        "type": "tts_chunk",
+                        "audio": chunk["audio"],
+                        "text": chunk["text"],
+                        "index": chunk["index"]
+                    })
+            except Exception as cache_err:
+                print(f"Lỗi đọc greeting_cache.json: {cache_err}")
+        else:
+            greeting_text = (
+                "Xin chào anh/chị! Em là trợ lý ảo của BeeNavi. "
+                "Em sẽ đồng hành cùng anh/chị trong việc tìm kiếm địa điểm, "
+                "lên lịch trình và giải đáp các thông tin du lịch. "
+                "Anh/chị muốn em hỗ trợ gì hôm nay?"
+            )
+            await websocket.send_json({
+                "type": "greeting",
+                "text": greeting_text
+            })
+
+            tts_inst = get_tts()
+            if tts_inst and tts_inst.enabled:
+                sentences = tts_inst.split_into_sentences(greeting_text)
+                for idx, s in enumerate(sentences):
+                    clean_s = s.strip()
+                    if clean_s:
+                        audio_b64 = await asyncio.to_thread(
+                            tts_inst.synthesize_sentence_base64,
+                            clean_s
+                        )
+                        if audio_b64:
+                            await websocket.send_json({
+                                "type": "tts_chunk",
+                                "audio": audio_b64,
+                                "text": clean_s,
+                                "index": idx
+                            })
+
         while True:
             raw_message = await websocket.receive_text()
 
@@ -285,12 +445,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if event_type == "text":
                 user_text = (payload.get("text") or "").strip()
+                voice = payload.get("voice")
+                enable_tts = payload.get("enable_tts", True)
 
                 if not user_text:
                     continue
 
                 try:
-                    await answer_with_brain(user_text)
+                    await answer_with_brain(user_text, voice=voice, enable_tts=enable_tts)
 
                 except Exception as error:
                     await websocket.send_json({
@@ -303,6 +465,7 @@ async def websocket_endpoint(websocket: WebSocket):
             if event_type == "audio_start":
                 audio_buffer = bytearray()
                 partial_task = None
+                last_partial_ts = 0.0
 
                 await websocket.send_json({
                     "type": "listening"
@@ -320,7 +483,12 @@ async def websocket_endpoint(websocket: WebSocket):
                     base64.b64decode(encoded_chunk)
                 )
 
-                if partial_task is None or partial_task.done():
+                now = time.monotonic()
+                task_free = partial_task is None or partial_task.done()
+                interval_elapsed = (now - last_partial_ts) >= PARTIAL_INTERVAL_SEC
+
+                if task_free and interval_elapsed:
+                    last_partial_ts = now
                     snapshot = bytes(audio_buffer)
 
                     partial_task = asyncio.create_task(
@@ -330,6 +498,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 continue
 
             if event_type == "audio_end":
+                voice = payload.get("voice")
+                enable_tts = payload.get("enable_tts", True)
+
                 if not audio_buffer:
                     await websocket.send_json({
                         "type": "stt_empty"
@@ -338,7 +509,19 @@ async def websocket_endpoint(websocket: WebSocket):
                     continue
 
                 if partial_task and not partial_task.done():
-                    partial_task.cancel()
+                    # KHÔNG dùng partial_task.cancel(): với asyncio.to_thread,
+                    # cancel() chỉ hủy việc "chờ" ở event loop — luồng Whisper
+                    # trong threadpool vẫn tiếp tục chạy ngầm. Nếu ta chạy
+                    # ngay transcribe cuối cùng bên dưới trong lúc đó, sẽ có
+                    # 2 lượt Whisper cùng tranh CPU → cả hai đều chậm đi,
+                    # đúng lúc người dùng đang chờ phản hồi nhất. Chờ nó xong
+                    # hẳn (thường rất nhanh vì audio partial ngắn) rồi mới
+                    # chạy transcribe cuối cùng, đảm bảo chạy tuần tự.
+                    try:
+                        await partial_task
+                    except Exception:
+                        pass
+                    partial_task = None
 
                 final_bytes = bytes(audio_buffer)
                 audio_buffer = bytearray()
@@ -365,7 +548,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "logprob": stt_result.get("logprob")
                     })
 
-                    await answer_with_brain(transcript)
+                    await answer_with_brain(transcript, voice=voice, enable_tts=enable_tts)
 
                 except Exception as error:
                     await websocket.send_json({
@@ -375,45 +558,47 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 continue
 
-            if event_type != "audio":
-                continue
+            if event_type == "audio":
+                encoded_audio = payload.get("data")
+                voice = payload.get("voice")
+                enable_tts = payload.get("enable_tts", True)
 
-            encoded_audio = payload.get("data")
-
-            if not encoded_audio:
-                continue
-
-            audio_bytes = base64.b64decode(encoded_audio)
-
-            try:
-                stt_result = await asyncio.to_thread(
-                    transcribe_audio_bytes,
-                    audio_bytes,
-                    False
-                )
-
-                transcript = stt_result["text"]
-
-                if not transcript:
-                    await websocket.send_json({
-                        "type": "stt_empty"
-                    })
-
+                if not encoded_audio:
                     continue
 
-                await websocket.send_json({
-                    "type": "transcript",
-                    "text": transcript,
-                    "logprob": stt_result.get("logprob")
-                })
+                audio_bytes = base64.b64decode(encoded_audio)
 
-                await answer_with_brain(transcript)
+                try:
+                    stt_result = await asyncio.to_thread(
+                        transcribe_audio_bytes,
+                        audio_bytes,
+                        False
+                    )
 
-            except Exception as error:
-                await websocket.send_json({
-                    "type": "error",
-                    "message": str(error)
-                })
+                    transcript = stt_result["text"]
+
+                    if not transcript:
+                        await websocket.send_json({
+                            "type": "stt_empty"
+                        })
+
+                        continue
+
+                    await websocket.send_json({
+                        "type": "transcript",
+                        "text": transcript,
+                        "logprob": stt_result.get("logprob")
+                    })
+
+                    await answer_with_brain(transcript, voice=voice, enable_tts=enable_tts)
+
+                except Exception as error:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(error)
+                    })
+
+                continue
 
     except WebSocketDisconnect:
         pass
@@ -423,7 +608,7 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "app.server:app",
+        "chatbot.server:app",
         host=HOST,
         port=PORT,
         reload=False

@@ -10,6 +10,9 @@ load_dotenv(BASE_DIR / ".env")
 MODEL_DIR = BASE_DIR / "models"
 TEMP_DIR = BASE_DIR / "tmp"
 
+# Đặt HF_HOME trỏ vào thư mục models/ dự án để nạp offline mô hình VieNeu-TTS & Whisper
+os.environ["HF_HOME"] = str(MODEL_DIR)
+
 MODEL_PATH = os.getenv(
     "MODEL_PATH",
     str(MODEL_DIR / "Qwen3-4B-Q5_K_M.gguf")
@@ -22,6 +25,13 @@ MODEL_PATH = os.getenv(
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "small")
 WHISPER_LANGUAGE = os.getenv("WHISPER_LANGUAGE", "vi")
 STT_DEVICE = os.getenv("STT_DEVICE", "cpu")
+
+# --- Text-to-Speech (VieNeu-TTS) ---
+TTS_ENABLED = os.getenv("TTS_ENABLED", "1") == "1"
+TTS_ENGINE = os.getenv("TTS_ENGINE", "vieneu")  # vieneu | remote_api
+TTS_VOICE = os.getenv("TTS_VOICE", "vi_default")  # vi_default | Trúc Ly | Thái Sơn
+TTS_API_URL = os.getenv("TTS_API_URL", "http://localhost:8002")
+TTS_DEVICE = os.getenv("TTS_DEVICE", "auto")  # auto | cuda | cpu
 
 # --- LLM (Qwen3-4B qua llama-cpp-python) ---
 # N_GPU_LAYERS = -1  -> offload toàn bộ layer lên GPU (khuyến nghị cho
