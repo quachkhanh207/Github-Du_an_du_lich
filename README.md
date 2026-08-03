@@ -1,25 +1,27 @@
-# 🤖 Voice & Text Travel Chatbot (Backend & Frontend)
+# 🤖 Voice & Text Travel Chatbot (Beenavi AI)
 
-Hệ thống Chatbot Trợ lý Du lịch thông minh tích hợp nhận dạng giọng nói (Speech-to-Text) và Mô hình ngôn ngữ lớn (LLM Qwen3) chạy Local tối ưu hóa cho GPU/CPU.
+Hệ thống Chatbot Trợ lý Du lịch thông minh tích hợp nhận dạng giọng nói (Speech-to-Text - Whisper), Tổng hợp giọng nói (Text-to-Speech - VieNeu-TTS) và Mô hình ngôn ngữ lớn (LLM Qwen3) chạy Local tối ưu hóa cho GPU/CPU.
 
 ---
 
 ## 📂 Cấu trúc thư mục dự án
 
 ```text
-├── chatbot/                # 🧠 BACKEND CHATBOT (Python / FastAPI / LLM / STT)
+├── chatbot/                # 🧠 BACKEND CHATBOT (Python / FastAPI / LLM / STT / TTS)
 │   ├── __init__.py
 │   ├── audio.py            # Xử lý & chuyển đổi file âm thanh (FFmpeg)
 │   ├── brain.py            # Khởi tạo & truy vấn mô hình LLM (Qwen3 qua llama-cpp-python)
 │   ├── config.py           # Cấu hình tham số mô hình, VRAM, GPU & hệ thống
+│   ├── greeting_cache.json # Cache âm thanh câu chào khởi tạo cuộc gọi
 │   ├── server.py           # REST API & WebSocket Server (FastAPI)
-│   └── stt.py              # Nhận dạng giọng nói tiếng Việt (Faster-Whisper)
+│   ├── stt.py              # Nhận dạng giọng nói tiếng Việt (Faster-Whisper)
+│   └── tts.py              # Tổng hợp giọng nói tiếng Việt (VieNeu-TTS v3)
 │
 ├── frontend/               # 💻 FRONTEND WEB UI (Giao diện người dùng)
 │   ├── app.js              # Xử lý WebSocket, ghi âm micro & hiệu ứng giao diện
-│   ├── index.html          # Trang web chính Chatbot du lịch
+│   ├── index.html          # Giao diện khung chat & màn hình cuộc gọi thoại độc lập
 │   ├── sam_son_hero.png    # Hình ảnh banner giao diện
-│   └── style.css           # Cấu hình giao diện CSS
+│   └── style.css           # Cấu hình giao diện CSS (ChatView, CallView overlay 1 khung)
 │
 ├── models/                 # 📦 Thư mục chứa trọng số mô hình AI (GGUF Model)
 │   └── .gitkeep
@@ -28,8 +30,23 @@ Hệ thống Chatbot Trợ lý Du lịch thông minh tích hợp nhận dạng g
 ├── .gitignore              # Cấu hình loại bỏ file lớn, venvs & secrets khỏi Git
 ├── requirements.txt        # Danh sách các thư viện Python cần thiết
 ├── run.py                  # Script Python khởi chạy ứng dụng
-└── run_gpu.bat             # Batch script khởi chạy dự án với GPU (NVIDIA CUDA)
+└── run_gpu.bat             # Batch script khởi chạy dự án với GPU (NVIDIA CUDA 12.8)
 ```
+
+---
+
+## ✨ Tính năng nổi bật
+
+1. **Chế độ Nhắn tin (ChatView)**:
+   - Chat văn bản trực quan với AI Trợ lý du lịch thông minh.
+   - Hỗ trợ gửi ảnh, chụp ảnh qua camera, gợi ý lộ trình, địa điểm & món ăn du lịch.
+2. **Chế độ Gọi thoại Real-time (CallView Overlay)**:
+   - Giao diện cuộc gọi riêng biệt phủ 100% khung chat (1-frame layout không thanh cuộn).
+   - Tích hợp vòng sóng nhận diện âm thanh, Logo AI Bot căn giữa nổi bật, nút kết thúc hình tròn bo tròn chuẩn UI/UX.
+   - Luồng đàm thoại 2 chiều liên tục: Micro STT (Whisper) -> LLM (Qwen3) -> TTS (VieNeu-TTS v3) phát âm thanh trực tiếp.
+3. **Tối ưu hóa hiệu năng**:
+   - Offload toàn bộ tầng LLM lên GPU qua CUDA 12.8 & `llama-cpp-python`.
+   - Preload toàn bộ model (LLM, Whisper, VieNeu-TTS) ngay khi server khởi động.
 
 ---
 
@@ -50,7 +67,7 @@ Các thư mục và file sau đây **không được đẩy lên GitHub** do gi�
 - **Hệ điều hành**: Windows 10/11 (khuyên dùng) hoặc Linux / macOS.
 - **Python**: Phiên bản 3.12 trở lên.
 - **Phần cứng**:
-  - **GPU (Khuyên dùng)**: NVIDIA GPU VRAM 6GB+ (ví dụ GTX 1660 Ti, RTX 3060, v.v.) + CUDA Toolkit (v11.x hoặc v12.x).
+  - **GPU (Khuyên dùng)**: NVIDIA GPU VRAM 6GB+ (ví dụ GTX 1660 Ti, RTX 3060, v.v.) + CUDA Toolkit v12.8.
   - **CPU**: RAM 8GB+ (nếu không dùng GPU).
 - **FFmpeg**: Cần thiết để xử lý âm thanh ghi âm từ micro.
 
@@ -90,8 +107,6 @@ Các thư mục và file sau đây **không được đẩy lên GitHub** do gi�
      models/Qwen3-4B-Q5_K_M.gguf
      ```
 
-*Lưu ý: Bạn cũng có thể dùng mô hình GGUF khác và đổi tên đường dẫn trong file `.env` qua biến `MODEL_PATH`.*
-
 ---
 
 ### 4. Cài đặt FFmpeg (Dành cho xử lý Giọng nói Voice STT)
@@ -116,7 +131,7 @@ Các thư mục và file sau đây **không được đẩy lên GitHub** do gi�
 
 ### 6. Khởi chạy Ứng dụng
 
-#### Cách 1: Chạy bằng GPU (NVIDIA CUDA) - Khuyên dùng
+#### Cách 1: Chạy bằng GPU (NVIDIA CUDA 12.8) - Khuyên dùng
 Double click vào file `run_gpu.bat` hoặc chạy lệnh trong Terminal:
 ```powershell
 .\run_gpu.bat
@@ -132,6 +147,6 @@ python run.py
 ### 🌐 Truy cập Giao diện Web (Frontend)
 
 Sau khi server khởi chạy thành công, mở trình duyệt web và truy cập địa chỉ:
-👉 **[http://localhost:8000](http://localhost:8000)** (hoặc **[http://localhost:8000/static/index.html](http://localhost:8000/static/index.html)**)
+👉 **[http://localhost:8000](http://localhost:8000)** (hoặc **[http://127.0.0.1:8000](http://127.0.0.1:8000)**)
 
-Tại đây bạn có thể chat qua văn bản hoặc bấm nút Micro để trò chuyện trực tiếp bằng giọng nói với Chatbot Du lịch!
+Tại đây bạn có thể nhắn tin văn bản hoặc nhấn nút **Cuộc gọi** để trò chuyện giọng nói 2 chiều trực tiếp với Trợ lý du lịch AI (Beenavi AI)!
