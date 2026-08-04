@@ -1,0 +1,201 @@
+ID,Ten_Do_Dung,Danh_Muc,Loai_Chuyen_Di,Thoi_Tiet,Phuong_Tien,Muc_Do_Thiet_Yeu
+1,Căn cước công dân / Hộ chiếu,Giấy tờ cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+2,Vé máy bay / Vé tàu / Vé xe điện tử,Giấy tờ cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+3,Tiền mặt (mệnh giá nhỏ),Giấy tờ cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+4,Thẻ tín dụng / Thẻ ngân hàng,Giấy tờ cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+5,Bằng lái xe (nếu tự lái),Giấy tờ cá nhân,Tất cả,Tất cả,Ô tô / Xe máy,Bắt buộc
+6,Giấy chứng nhận đặt phòng khách sạn,Giấy tờ cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+7,Bảo hiểm du lịch (bản in/file),Giấy tờ cá nhân,Tất cả,Tất cả,Tất cả,Khuyến khích
+8,Thẻ sinh viên / Thẻ giảm giá,Giấy tờ cá nhân,Tất cả,Tất cả,Tất cả,Không bắt buộc
+9,Bản sao giấy tờ tùy thân (Photo),Giấy tờ cá nhân,Tất cả,Tất cả,Tất cả,Khuyến khích
+10,Sổ tay lịch trình offline,Giấy tờ cá nhân,Tất cả,Tất cả,Tất cả,Không bắt buộc
+11,Điện thoại thông minh,Thiết bị công nghệ,Tất cả,Tất cả,Tất cả,Bắt buộc
+12,Cáp sạc điện thoại,Thiết bị công nghệ,Tất cả,Tất cả,Tất cả,Bắt buộc
+13,Sạc dự phòng dung lượng lớn,Thiết bị công nghệ,Tất cả,Tất cả,Tất cả,Bắt buộc
+14,Tai nghe (Có dây/Không dây),Thiết bị công nghệ,Tất cả,Tất cả,Tất cả,Khuyến khích
+15,Củ sạc đa năng (Universal Adapter),Thiết bị công nghệ,Nước ngoài,Tất cả,Tất cả,Bắt buộc
+16,Máy ảnh du lịch,Thiết bị công nghệ,Nghỉ dưỡng / Khám phá,Tất cả,Tất cả,Không bắt buộc
+17,Thẻ nhớ dự phòng,Thiết bị công nghệ,Nghỉ dưỡng / Khám phá,Tất cả,Tất cả,Không bắt buộc
+18,Gậy chụp ảnh / Tripod nhỏ,Thiết bị công nghệ,Tất cả,Tất cả,Tất cả,Không bắt buộc
+19,Túi chống nước cho điện thoại,Thiết bị công nghệ,Biển / Phượt,Mưa / Ẩm ướt,Tất cả,Khuyến khích
+20,Đèn pin siêu sáng,Thiết bị công nghệ,Camping / Trekking,Tất cả,Ô tô / Xe máy,Khuyến khích
+21,Loa Bluetooth mini,Thiết bị công nghệ,Camping / Biển,Tất cả,Tất cả,Không bắt buộc
+22,Kindle / Máy đọc sách,Thiết bị công nghệ,Nghỉ dưỡng,Tất cả,Máy bay / Tàu hỏa,Không bắt buộc
+23,Thiết bị phát Wifi di động,Thiết bị công nghệ,Nước ngoài / Phượt,Tất cả,Tất cả,Khuyến khích
+24,Flycam (Thiết bị bay chụp ảnh),Thiết bị công nghệ,Khám phá / Camping,Khô ráo,Ô tô,Không bắt buộc
+25,Đồng hồ thông minh (Smartwatch),Thiết bị công nghệ,Trekking / Thể thao,Tất cả,Tất cả,Khuyến khích
+26,Áo thun ngắn tay,Trang phục,Tất cả,Nắng nóng / Ấm áp,Tất cả,Bắt buộc
+27,Quần short năng động,Trang phục,Tất cả,Nắng nóng,Tất cả,Bắt buộc
+28,Quần dài (Jean/Kaki),Trang phục,Tất cả,Tất cả,Tất cả,Bắt buộc
+29,Áo khoác gió mỏng,Trang phục,Tất cả,Lạnh nhẹ / Gió,Tất cả,Khuyến khích
+30,Áo khoác len / Hoodie,Trang phục,Tất cả,Lạnh,Tất cả,Khuyến khích
+31,Áo phao dày giữ nhiệt,Trang phục,Mùa đông / Vùng cao,Lạnh giá / Tuyết,Tất cả,Bắt buộc
+32,Quần áo giữ nhiệt (Heattech),Trang phục,Mùa đông / Vùng cao,Lạnh giá,Tất cả,Bắt buộc
+33,Đồ lót (đủ số ngày đi),Trang phục,Tất cả,Tất cả,Tất cả,Bắt buộc
+34,Tất / Vớ (nhiều đôi),Trang phục,Tất cả,Tất cả,Tất cả,Bắt buộc
+35,Đồ bơi / Bikini,Trang phục,Biển / Nghỉ dưỡng,Nắng nóng,Tất cả,Bắt buộc
+36,Áo choàng đi biển,Trang phục,Biển,Nắng nóng,Tất cả,Không bắt buộc
+37,Váy / Đầm maxi chụp ảnh,Trang phục,Nghỉ dưỡng / Biển,Nắng nóng / Ấm áp,Tất cả,Không bắt buộc
+38,Quần áo ngủ thoải mái,Trang phục,Tất cả,Tất cả,Tất cả,Bắt buộc
+39,Giày thể thao đi bộ,Trang phục,Tất cả,Tất cả,Tất cả,Bắt buộc
+40,Dép sandal / Dép lê,Trang phục,Tất cả,Nắng nóng / Mưa,Tất cả,Bắt buộc
+41,Mũ lưỡi trai / Mũ rộng vành,Trang phục,Tất cả,Nắng nóng,Tất cả,Khuyến khích
+42,Kính râm thời trang,Trang phục,Tất cả,Nắng nóng,Tất cả,Khuyến khích
+43,Khăn rằn / Khăn phượt,Trang phục,Phượt / Trekking,Nắng / Bụi,Xe máy,Khuyến khích
+44,Khăn len / Khăn giữ ấm cổ,Trang phục,Mùa đông,Lạnh giá,Tất cả,Bắt buộc
+45,Găng tay giữ ấm,Trang phục,Mùa đông / Phượt,Lạnh giá,Tất cả,Bắt buộc
+46,Găng tay chống nắng,Trang phục,Phượt,Nắng nóng,Xe máy,Khuyến khích
+47,Áo mưa bộ chuyên dụng,Trang phục,Phượt / Trekking,Mưa lớn,Xe máy,Bắt buộc
+48,Áo mưa cánh dơi tiện lợi,Trang phục,Tất cả,Mưa ẩm,Tất cả,Khuyến khích
+49,Ô / Dù gấp gọn,Trang phục,Đô thị / Nghỉ dưỡng,Mưa nhẹ / Nắng,Tất cả,Khuyến khích
+50,Giày leo núi chuyên dụng (Trekking),Trang phục,Trekking / Hiking,Tất cả,Tất cả,Bắt buộc
+51,Dép đi trong nhà khách sạn,Trang phục,Nghỉ dưỡng,Tất cả,Tất cả,Không bắt buộc
+52,Thắt lưng (Dây nịt),Trang phục,Tất cả,Tất cả,Tất cả,Không bắt buộc
+53,Băng đô / Chun buộc tóc,Trang phục,Tất cả,Tất cả,Tất cả,Khuyến khích
+54,Bàn chải đánh răng cá nhân,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+55,Kem đánh răng tuýp nhỏ,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+56,Dầu gội gói / Chai chiết,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+57,Sữa tắm gói / Chai chiết,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+58,Sữa rửa mặt mini,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+59,Khăn mặt sợi tre nhanh khô,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+60,Khăn tắm cỡ lớn,Vệ sinh cá nhân,Camping / Phượt / Biển,Tất cả,Tất cả,Khuyến khích
+61,Dao cạo râu / Kem cạo râu,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Khuyến khích
+62,Băng vệ sinh hàng ngày / Du lịch,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+63,Nước súc miệng chai nhỏ,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Không bắt buộc
+64,Tăm bông / Bông tẩy trang,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Khuyến khích
+65,Nước tẩy trang mini,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Khuyến khích
+66,Lược chải tóc nhỏ gọn,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Khuyến khích
+67,Bấm móng tay,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Không bắt buộc
+68,Khăn giấy khô (bỏ túi),Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+69,Khăn giấy ướt mini,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+70,Dung dịch vệ sinh tay khô,Vệ sinh cá nhân,Tất cả,Tất cả,Tất cả,Bắt buộc
+71,Kem chống nắng (SPF 50+),Y tế & Mỹ phẩm,Tất cả,Nắng nóng,Tất cả,Bắt buộc
+72,Kem nhả nắng / Dưỡng ẩm body,Y tế & Mỹ phẩm,Biển,Nắng nóng,Tất cả,Khuyến khích
+73,Son dưỡng môi chống nẻ,Y tế & Mỹ phẩm,Tất cả,Lạnh / Hanh khô,Tất cả,Khuyến khích
+74,Xịt khoáng cấp ẩm,Y tế & Mỹ phẩm,Tất cả,Nắng nóng / Hanh khô,Tất cả,Không bắt buộc
+75,Bộ mỹ phẩm skincare chiết nhỏ,Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Khuyến khích
+76,Nước hoa chiết mini,Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Không bắt buộc
+77,Thuốc hạ sốt (Paracetamol),Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Bắt buộc
+78,Thuốc giảm đau,Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Khuyến khích
+79,Thuốc trị tiêu chảy / Đau bụng,Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Bắt buộc
+80,Thuốc say xe / Say tàu cánh ngầm,Y tế & Mỹ phẩm,Tất cả,Tất cả,Xe khách / Tàu hỏa / Máy bay,Bắt buộc
+81,Thuốc chống dị ứng thời tiết / Thức ăn,Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Bắt buộc
+82,Thuốc nhỏ mắt / Nhỏ mũi,Y tế & Mỹ phẩm,Tất cả,Bụi bẩn / Hanh khô,Tất cả,Khuyến khích
+83,Miếng dán hạ sốt,Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Không bắt buộc
+84,Băng gạc cá nhân (Urgo nhiều kích cỡ),Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Bắt buộc
+85,Cồn đỏ / Cồn y tế sát trùng,Y tế & Mỹ phẩm,Phượt / Trekking,Tất cả,Tất cả,Bắt buộc
+86,Nước muối sinh lý lọ nhỏ,Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Khuyến khích
+87,Thuốc trị côn trùng cắn,Y tế & Mỹ phẩm,Camping / Trekking,Tất cả,Tất cả,Bắt buộc
+88,Xịt chống muỗi và vắt rừng,Y tế & Mỹ phẩm,Camping / Trekking,Ẩm ướt / Mưa,Tất cả,Bắt buộc
+89,Vitamin C / Viên sủi tăng đề kháng,Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Khuyến khích
+90,Thuốc đặc trị theo đơn cá nhân,Y tế & Mỹ phẩm,Tất cả,Tất cả,Tất cả,Bắt buộc
+91,Miếng dán giữ nhiệt (Salonpas nhiệt),Y tế & Mỹ phẩm,Mùa đông / Vùng cao,Lạnh giá,Tất cả,Khuyến khích
+92,Dầu gió / Dầu khuynh diệp,Y tế & Mỹ phẩm,Tất cả,Lạnh / Mưa,Tất cả,Bắt buộc
+93,Gel trị bỏng,Y tế & Mỹ phẩm,Camping,Tất cả,Tất cả,Không bắt buộc
+94,Vali kéo size cabin (7-10kg),Hành lý & Đóng gói,Tất cả,Tất cả,Máy bay / Ô tô,Khuyến khích
+95,Vali kéo size ký gửi (>20kg),Hành lý & Đóng gói,Dài ngày / Nước ngoài,Tất cả,Máy bay / Ô tô,Khuyến khích
+96,Balo du lịch trợ lực,Hành lý & Đóng gói,Trekking / Phượt,Tất cả,Xe máy / Đi bộ,Bắt buộc
+97,Balo nhỏ đi dạo trong ngày,Hành lý & Đóng gói,Tất cả,Tất cả,Tất cả,Bắt buộc
+98,Túi đeo chéo trước ngực (Bao tử),Hành lý & Đóng gói,Đô thị,Tất cả,Tất cả,Khuyến khích
+99,Túi đựng mỹ phẩm chuyên dụng,Hành lý & Đóng gói,Tất cả,Tất cả,Tất cả,Khuyến khích
+100,Túi zip đựng đồ bẩn / đồ ướt,Hành lý & Đóng gói,Tất cả,Tất cả,Tất cả,Bắt buộc
+101,Thẻ tên gắn vali (Luggage Tag),Hành lý & Đóng gói,Tất cả,Tất cả,Máy bay / Tàu hỏa,Khuyến khích
+102,Khóa vali số bảo mật TSA,Hành lý & Đóng gói,Tất cả,Tất cả,Máy bay,Khuyến khích
+103,Gối chữ U kê cổ cao su non,Hành lý & Đóng gói,Tất cả,Tất cả,Máy bay / Xe khách / Tàu hỏa,Khuyến khích
+104,Che mắt khi ngủ (Eye Mask),Hành lý & Đóng gói,Tất cả,Tất cả,Máy bay / Tàu hỏa,Không bắt buộc
+105,Nút bịt tai chống ồn,Hành lý & Đóng gói,Tất cả,Tất cả,Máy bay / Tàu hỏa,Không bắt buộc
+106,Cân tiểu ly đo trọng lượng vali,Hành lý & Đóng gói,Nước ngoài,Tất cả,Máy bay,Không bắt buộc
+107,Túi bọc bảo vệ vali chống xước,Hành lý & Đóng gói,Tất cả,Tất cả,Máy bay,Không bắt buộc
+108,Dây ràng đồ co giãn (Dây chun),Hành lý & Đóng gói,Phượt,Tất cả,Xe máy,Bắt buộc
+109,Bọc balo chống nước (Rain cover),Hành lý & Đóng gói,Trekking / Phượt,Mưa / Ẩm ướt,Xe máy / Đi bộ,Bắt buộc
+110,Túi hút chân không thu gọn quần áo,Hành lý & Đóng gói,Mùa đông / Dài ngày,Tất cả,Tất cả,Không bắt buộc
+111,Bình nước giữ nhiệt cá nhân,Ăn uống & Thực phẩm,Tất cả,Tất cả,Tất cả,Khuyến khích
+112,Mì ly ăn liền dự phòng,Ăn uống & Thực phẩm,Phượt / Camping,Tất cả,Tất cả,Khuyến khích
+113,Lương khô quân đội cao cấp,Ăn uống & Thực phẩm,Trekking / Phượt,Tất cả,Tất cả,Khuyến khích
+114,Bánh kẹo ngọt / Socola tăng năng lượng,Ăn uống & Thực phẩm,Trekking,Tất cả,Tất cả,Khuyến khích
+115,Hạt dinh dưỡng (Hạnh nhân, Yến mạch),Ăn uống & Thực phẩm,Trekking / Nghỉ dưỡng,Tất cả,Tất cả,Không bắt buộc
+116,Cà phê hòa tan / Trà túi lọc,Ăn uống & Thực phẩm,Camping / Nghỉ dưỡng,Tất cả,Tất cả,Không bắt buộc
+117,Bảo quản thực phẩm (Thùng đá giữ lạnh),Ăn uống & Thực phẩm,Camping / Dã ngoại,Nắng nóng,Ô tô,Khuyến khích
+118,Dao đa năng (Swiss Army Knife),Ăn uống & Thực phẩm,Camping / Phượt,Tất cả,Ô tô / Xe máy,Khuyến khích
+119,Bộ thìa đũa cá nhân gấp gọn,Ăn uống & Thực phẩm,Camping / Tất cả,Tất cả,Tất cả,Khuyến khích
+120,Bếp ga mini dã ngoại,Ăn uống & Thực phẩm,Camping,Khô ráo,Ô tô / Xe máy,Bắt buộc
+121,Bình ga mini dự phòng,Ăn uống & Thực phẩm,Camping,Khô ráo,Ô tô / Xe máy,Bắt buộc
+122,Bật lửa / Diêm chống nước,Ăn uống & Thực phẩm,Camping,Tất cả,Tất cả,Bắt buộc
+123,Nồi nấu lẩu dã ngoại xếp gọn,Ăn uống & Thực phẩm,Camping,Tất cả,Ô tô / Xe máy,Bắt buộc
+124,Cốc nhựa / Cốc inox xếp gọn,Ăn uống & Thực phẩm,Camping / Phượt,Tất cả,Tất cả,Khuyến khích
+125,Nước đóng chai (lốc lớn),Ăn uống & Thực phẩm,Camping / Phượt,Nắng nóng,Ô tô / Xe máy,Bắt buộc
+126,Gia vị cơ bản (Muối, tiêu, ớt dạng hũ nhỏ),Ăn uống & Thực phẩm,Camping,Tất cả,Tất cả,Khuyến khích
+127,Túi đựng rác tự hủy sinh học,Ăn uống & Thực phẩm,Camping / Khám phá,Tất cả,Tất cả,Bắt buộc
+128,Thịt hộp / Cá hộp đóng sẵn,Ăn uống & Thực phẩm,Camping,Tất cả,Tất cả,Khuyến khích
+129,Gel năng lượng cho dân trekking,Ăn uống & Thực phẩm,Trekking,Tất cả,Đi bộ,Khuyến khích
+130,Viên lọc nước khẩn cấp,Ăn uống & Thực phẩm,Trekking thám hiểm,Tất cả,Đi bộ,Không bắt buộc
+131,Lều cắm trại tự bung (chống nước),Camping & Trekking,Camping,Tất cả,Ô tô / Xe máy,Bắt buộc
+132,Túi ngủ giữ nhiệt (-5 độ đến 10 độ),Camping & Trekking,Camping / Trekking,Lạnh,Ô tô / Xe máy,Bắt buộc
+133,Đệm hơi cắm trại,Camping & Trekking,Camping,Tất cả,Ô tô,Khuyến khích
+134,Bạt trải đất chống thấm (Groundsheet),Camping & Trekking,Camping,Ẩm ướt / Mưa,Ô tô / Xe máy,Bắt buộc
+135,Tăng che nắng mưa (Tarp),Camping & Trekking,Camping,Mưa / Nắng,Ô tô / Xe máy,Khuyến khích
+136,Ghế xếp dã ngoại nhỏ gọn,Camping & Trekking,Camping / Biển,Tất cả,Ô tô / Xe máy,Khuyến khích
+137,Bàn xếp nhôm dã ngoại,Camping & Trekking,Camping,Tất cả,Ô tô,Khuyến khích
+138,Đèn bão treo lều cắm trại,Camping & Trekking,Camping,Tất cả,Ô tô / Xe máy,Bắt buộc
+139,Gậy leo núi lò xo giảm chấn,Camping & Trekking,Trekking / Hiking,Tất cả,Tất cả,Bắt buộc
+140,Còi sinh tồn cứu hộ,Camping & Trekking,Trekking thám hiểm,Tất cả,Tất cả,Bắt buộc
+141,Dây thừng paracord chịu lực,Camping & Trekking,Camping / Trekking,Tất cả,Tất cả,Khuyến khích
+142,Rìu nhỏ chặt củi / Cưa xích tay,Camping & Trekking,Camping tự do,Tất cả,Ô tô,Không bắt buộc
+143,Xẻng đa năng gấp gọn,Camping & Trekking,Camping,Tất cả,Ô tô,Không bắt buộc
+144,Băng keo bạc siêu dính (Duct tape),Camping & Trekking,Camping / Phượt,Tất cả,Tất cả,Khuyến khích
+145,Kính bảo hộ đi rừng,Camping & Trekking,Trekking,Gió / Bụi,Tất cả,Không bắt buộc
+146,Võng mùng chống muỗi xếp gọn,Camping & Trekking,Camping / Khám phá,Tất cả,Tất cả,Không bắt buộc
+147,Tấm phản quang cứu hộ,Camping & Trekking,Trekking thám hiểm,Tất cả,Tất cả,Không bắt buộc
+148,Bản đồ địa hình bằng giấy của khu vực,Camping & Trekking,Trekking vùng sâu,Tất cả,Tất cả,Bắt buộc
+149,La bàn cơ học chuyên dụng,Camping & Trekking,Trekking vùng sâu,Tất cả,Tất cả,Bắt buộc
+150,Bọc giày đi mưa silicon,Trang phục,Tất cả,Mưa ẩm,Tất cả,Khuyến khích
+151,Bơm xe máy điện tử mini,Đồ dùng theo phương tiện,Phượt,Tất cả,Xe máy / Ô tô,Bắt buộc
+152,Bộ dụng cụ vá xe khẩn cấp,Đồ dùng theo phương tiện,Phượt,Tất cả,Xe máy / Ô tô,Bắt buộc
+153,Dầu nhớt xe máy dự phòng,Đồ dùng theo phương tiện,Phượt đường dài,Tất cả,Xe máy,Khuyến khích
+154,Kính chắn gió mũ bảo hiểm dự phòng,Đồ dùng theo phương tiện,Phượt,Mưa / Bụi,Xe máy,Khuyến khích
+155,Mũ bảo hiểm fullface / 3/4 chuẩn,Đồ dùng theo phương tiện,Phượt,Tất cả,Xe máy,Bắt buộc
+156,Giáp bảo hộ tay chân,Đồ dùng theo phương tiện,Phượt,Tất cả,Xe máy,Bắt buộc
+157,Dây cáp câu bình ắc quy ô tô,Đồ dùng theo phương tiện,Tự lái,Tất cả,Ô tô,Bắt buộc
+158,Kích nâng gầm ô tô,Đồ dùng theo phương tiện,Tự lái,Tất cả,Ô tô,Bắt buộc
+159,Bóng đèn LED dự phòng cho xe,Đồ dùng theo phương tiện,Phượt đêm,Tất cả,Xe máy / Ô tô,Không bắt buộc
+160,Khăn lau kính chuyên dụng chống mờ,Đồ dùng theo phương tiện,Tất cả,Mưa ẩm / Sương mù,Xe máy / Ô tô,Khuyến khích
+161,Tinh dầu thơm chống say xe ô tô,Đồ dùng theo phương tiện,Tất cả,Tất cả,Ô tô,Không bắt buộc
+162,Giá đỡ điện thoại gắn xe máy,Đồ dùng theo phương tiện,Phượt,Tất cả,Xe máy,Bắt buộc
+163,Tẩu sạc ô tô đa năng,Đồ dùng theo phương tiện,Tự lái,Tất cả,Ô tô,Bắt buộc
+164,Thẻ thu phí tự động VETC / ePass,Đồ dùng theo phương tiện,Tự lái,Tất cả,Ô tô,Bắt buộc
+165,Bình chữa cháy mini cho xe ô tô,Đồ dùng theo phương tiện,Tự lái,Tất cả,Ô tô,Bắt buộc
+166,Bạt phủ che nắng xe ô tô,Đồ dùng theo phương tiện,Tự lái,Nắng nóng,Ô tô,Khuyến khích
+167,Bùa bình an / Vật phẩm phong thủy,Khác,Tất cả,Tất cả,Tất cả,Không bắt buộc
+168,Bài Tây (Tulokho) giải trí,Khác,Tất cả,Tất cả,Tất cả,Không bắt buộc
+169,Bộ bài Ma Sói / Boardgame nhóm,Khác,Camping / Nghỉ dưỡng,Tất cả,Tất cả,Không bắt buộc
+170,Sách đọc / Kế hoạch cá nhân,Khác,Nghỉ dưỡng,Tất cả,Tất cả,Không bắt buộc
+171,Sổ tay ghi chép và bút mực,Khác,Tất cả,Tất cả,Tất cả,Không bắt buộc
+172,Bao cao su / Biện pháp an toàn,Khác,Tất cả,Tất cả,Tất cả,Khuyến khích
+173,Gương nhỏ trang điểm,Khác,Tất cả,Tất cả,Tất cả,Không bắt buộc
+174,Bộ kim chỉ khâu vá mini,Khác,Tất cả,Tất cả,Tất cả,Không bắt buộc
+175,Bật lửa Zippo thời trang,Khác,Phượt / Camping,Tất cả,Tất cả,Không bắt buộc
+176,Dù che nắng loại to cầm tay,Khác,Nghỉ dưỡng,Nắng nóng,Tất cả,Không bắt buộc
+177,Túi sưởi tay tái sử dụng,Khác,Mùa đông,Lạnh giá,Tất cả,Khuyến khích
+178,Phao bơi tay cho trẻ em (nếu đi cùng),Khác,Gia đình / Biển,Tất cả,Tất cả,Bắt buộc
+179,Kính bơi chống mờ,Khác,Biển / Nghỉ dưỡng,Tất cả,Tất cả,Khuyến khích
+180,Nút tai khi bơi,Khác,Biển / Nghỉ dưỡng,Tất cả,Tất cả,Không bắt buộc
+181,Ống thở và mặt nạ lặn ngắm san hô,Khác,Biển / Khám phá,Tất cả,Tất cả,Không bắt buộc
+182,Túi đeo đùi đựng đồ tiện lợi,Khác,Phượt,Tất cả,Xe máy,Không bắt buộc
+183,Bình xịt bọt vệ sinh giày cấp tốc,Khác,Tất cả,Mưa ẩm / Bụi,Tất cả,Không bắt buộc
+184,Móc khóa đa năng Carabiner,Khác,Trekking / Camping,Tất cả,Tất cả,Khuyến khích
+185,Gói sấy khô khử mùi giày,Khác,Tất cả,Mưa ẩm,Tất cả,Không bắt buộc
+186,Nhíp nhổ gai / dằm,Khác,Trekking / Camping,Tất cả,Tất cả,Khuyến khích
+187,Cây gãi lưng bỏ túi xếp gọn,Khác,Tất cả,Tất cả,Tất cả,Không bắt buộc
+188,Quạt cầm tay mini sạc USB,Khác,Tất cả,Nắng nóng,Tất cả,Khuyến khích
+189,Đèn đọc sách ban đêm kẹp cổ,Khác,Tất cả,Tất cả,Tàu hỏa / Xe khách,Không bắt buộc
+190,Giá đỡ máy tính bảng trên máy bay,Khác,Nước ngoài / Dài ngày,Tất cả,Máy bay,Không bắt buộc
+191,Móc treo đồ đa năng gắn ghế xe ô tô,Khác,Tự lái,Tất cả,Ô tô,Không bắt buộc
+192,Miếng dán chống chai chân khi đi bộ,Khác,Trekking / Đô thị,Tất cả,Đi bộ,Khuyến khích
+193,Phấn rôm em bé (giảm ma sát đùi),Khác,Trekking / Đi bộ nhiều,Nắng nóng,Tất cả,Không bắt buộc
+194,Túi đựng hộ chiếu chống quét trộm thẻ RFID,Giấy tờ cá nhân,Nước ngoài,Tất cả,Tất cả,Khuyến khích
+195,Tiền xu nước sở tại (nếu đi nước ngoài),Giấy tờ cá nhân,Nước ngoài,Tất cả,Tất cả,Khuyến khích
+196,Sim 4G du lịch quốc tế / E-sim,Thiết bị công nghệ,Nước ngoài,Tất cả,Tất cả,Bắt buộc
+197,Ống nhòm tầm xa du lịch,Khác,Khám phá / Camping,Tất cả,Tất cả,Không bắt buộc
+198,Vỏ bọc hộ chiếu chống nước,Giấy tờ cá nhân,Tất cả,Mưa ẩm,Tất cả,Khuyến khích
+199,Bàn là (Bàn ủi) mini du lịch gấp gọn,Khác,Nghỉ dưỡng / Đô thị,Tất cả,Tất cả,Không bắt buộc
+200,Xịt phẳng quần áo cấp tốc,Khác,Nghỉ dưỡng / Đô thị,Tất cả,Tất cả,Không bắt buộc
