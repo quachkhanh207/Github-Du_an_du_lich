@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BeeNavi Checklist – Thành phố Nha Trang</title>
+  <meta name="description" content="Checklist du lịch cá nhân hóa do BeeNavi tạo tự động dựa trên thời tiết, phương tiện và loại hình chuyến đi."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:          #0f1117;
+      --surface:     #1a1d27;
+      --surface2:    #22263a;
+      --border:      #2e3250;
+      --accent:      #6c63ff;
+      --accent2:     #a78bfa;
+      --text:        #e2e8f0;
+      --text-muted:  #7a829a;
+      --required:    #f87171;
+      --recommended: #fbbf24;
+      --optional:    #34d399;
+      --radius:      14px;
+      --shadow:      0 4px 32px rgba(0,0,0,.45);
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ── Hero header ── */
+    .hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #1e40af 100%);
+      padding: 40px 24px 32px;
+      text-align: center;
+      border-bottom: 1px solid #3730a3;
+    }
+    .hero-logo { font-size: 48px; margin-bottom: 8px; }
+    .hero h1 {
+      font-size: clamp(1.5rem, 4vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #c4b5fd, #818cf8, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+    .hero-sub { color: #a5b4fc; font-size: .95rem; }
+
+    /* ── Context card ── */
+    .context-bar {
+      max-width: 860px;
+      margin: 28px auto 0;
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      padding: 18px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+      font-size: .875rem;
+      color: #c7d2fe;
+    }
+    .context-bar span { display: flex; align-items: center; gap: 6px; }
+
+    /* ── Summary chips ── */
+    .summary-chips {
+      max-width: 860px;
+      margin: 20px auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0 4px;
+    }
+    .chip {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: .8rem;
+      font-weight: 600;
+    }
+    .chip.req  { border-color: var(--required);    color: var(--required);    }
+    .chip.rec  { border-color: var(--recommended); color: var(--recommended); }
+    .chip.opt  { border-color: var(--optional);    color: var(--optional);    }
+    .chip.total{ border-color: var(--accent2);     color: var(--accent2);     }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      max-width: 860px;
+      margin: 20px auto 0;
+      padding: 0 4px;
+    }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: .8rem; color: var(--text-muted); margin-bottom: 6px;
+    }
+    .progress-bar-bg {
+      height: 8px; background: var(--surface2);
+      border-radius: 99px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width .4s ease;
+      width: 0%;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      max-width: 860px; margin: 20px auto 0;
+      display: flex; flex-wrap: wrap; gap: 10px;
+      padding: 0 4px;
+    }
+    .toolbar input[type=text] {
+      flex: 1; min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .875rem;
+      padding: 8px 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .toolbar input[type=text]:focus { border-color: var(--accent); }
+    .toolbar select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .875rem;
+      padding: 8px 14px;
+      outline: none;
+      cursor: pointer;
+    }
+    .btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: none;
+      font-family: inherit;
+      font-size: .875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #5b52e6; transform: translateY(-1px); }
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--accent2); }
+
+    /* ── Main content ── */
+    .main {
+      max-width: 860px;
+      margin: 28px auto 0;
+      padding: 0 4px;
+    }
+
+    /* ── Category block ── */
+    .category-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: box-shadow .2s;
+    }
+    .category-block:hover { box-shadow: 0 0 0 1px var(--accent); }
+    .cat-header {
+      width: 100%;
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface2);
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .95rem;
+      font-weight: 700;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: background .2s;
+      text-align: left;
+    }
+    .cat-header:hover { background: #282c44; }
+    .cat-title { flex: 1; }
+    .cat-meta { display: flex; gap: 8px; }
+    .cat-badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: .75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      color: var(--text-muted);
+    }
+    .cat-badge.required-count {
+      border-color: rgba(248,113,113,.4);
+      color: var(--required);
+    }
+    .cat-arrow { font-size: .75rem; color: var(--text-muted); transition: transform .25s; }
+    .cat-header.collapsed .cat-arrow { transform: rotate(-90deg); }
+    .cat-body { padding: 0 12px 12px; }
+    .cat-body.hidden { display: none; }
+
+    /* ── Checklist table ── */
+    .checklist-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+    .checklist-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    .checklist-table tbody tr:last-child { border-bottom: none; }
+    .checklist-table tbody tr:hover { background: var(--surface2); }
+    .checklist-table td { padding: 10px 8px; vertical-align: middle; }
+
+    .col-check { width: 44px; text-align: center; }
+    .col-name  { font-size: .9rem; cursor: pointer; }
+    .col-qty   { width: 50px; text-align: center; color: var(--text-muted); font-size: .8rem; font-weight: 600; }
+    .col-badge { width: 150px; text-align: right; }
+
+    /* ── Custom checkbox ── */
+    .checkbox-wrap {
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; width: 24px; height: 24px;
+    }
+    .checkbox-wrap input { display: none; }
+    .checkmark {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .checkbox-wrap input:checked + .checkmark {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .checkbox-wrap input:checked + .checkmark::after {
+      content: '✓';
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* Checked item style */
+    .item-row.checked .col-name label {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      border-radius: 99px;
+      padding: 3px 10px;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    .badge-required    { background: rgba(248,113,113,.15); color: var(--required);    border: 1px solid rgba(248,113,113,.3); }
+    .badge-recommended { background: rgba(251,191,36,.12); color: var(--recommended); border: 1px solid rgba(251,191,36,.3); }
+    .badge-optional    { background: rgba(52,211,153,.12);  color: var(--optional);    border: 1px solid rgba(52,211,153,.3); }
+
+    /* ── Hidden item (filter) ── */
+    .item-row.hidden-filter { display: none; }
+
+    /* ── Footer ── */
+    .footer {
+      max-width: 860px; margin: 32px auto 0;
+      text-align: center; color: var(--text-muted); font-size: .8rem;
+      padding: 0 4px;
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { background: #fff; color: #111; }
+      .hero { background: #3730a3; -webkit-print-color-adjust: exact; }
+      .toolbar, .btn, .progress-wrap { display: none; }
+      .category-block { border: 1px solid #ddd; break-inside: avoid; }
+      .cat-body.hidden { display: block !important; }
+      .badge-required    { background: #fee2e2; color: #b91c1c; }
+      .badge-recommended { background: #fef3c7; color: #b45309; }
+      .badge-optional    { background: #d1fae5; color: #065f46; }
+    }
+
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 1.4rem; }
+      .col-badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <div class="hero-logo">🧳</div>
+  <h1>BeeNavi Checklist</h1>
+  <p class="hero-sub">Danh sách đồ cần mang – được tạo tự động theo bối cảnh chuyến đi của bạn</p>
+
+  <div class="context-bar">
+    <span>📍 <strong>Thành phố Nha Trang</strong></span>
+    <span>🛣️ ~1297.2 km từ Thành phố Hà Nội</span>
+    <span>🌤️ 29.0°C · Mây Đen U Ám · ẩm 72%</span>
+    <span>🏷️ <strong>Nắng</strong></span>
+    <span>🚗 Xe khách</span>
+    <span>🗺️ Camping</span>
+    <span>📅 2 ngày 1 đêm</span>
+  </div>
+</div>
+
+<!-- ── Summary ── -->
+<div class="summary-chips" id="summaryChips">
+  <!-- filled by JS -->
+</div>
+
+<!-- ── Progress ── -->
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span>Tiến độ chuẩn bị</span>
+    <span id="progressText">0 / 91 món</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+</div>
+
+<!-- ── Toolbar ── -->
+<div class="toolbar">
+  <input type="text" id="searchInput" placeholder="🔍  Tìm kiếm đồ dùng..." oninput="filterItems()"/>
+  <select id="priorityFilter" onchange="filterItems()">
+    <option value="all">Tất cả mức độ</option>
+    <option value="Bắt buộc">🔴 Bắt buộc</option>
+    <option value="Khuyến khích">🟡 Khuyến khích</option>
+    <option value="Không bắt buộc">🟢 Không bắt buộc</option>
+  </select>
+  <button class="btn btn-ghost" onclick="expandAll()">Mở rộng tất cả</button>
+  <button class="btn btn-ghost" onclick="collapseAll()">Thu gọn tất cả</button>
+  <button class="btn btn-ghost" onclick="uncheckAll()">Bỏ tick tất cả</button>
+  <button class="btn btn-primary" onclick="window.print()">🖨️ In / Xuất PDF</button>
+</div>
+
+<!-- ── Main content ── -->
+<div class="main" id="mainContent">
+
+      <div class="category-block">
+        <button class="cat-header" onclick="toggleCat(this)" aria-expanded="true">
+          <span class="cat-title">🪪 Giấy tờ cá nhân</span>
+          <span class="cat-meta"><span class="cat-badge">9 món</span><span class="cat-badge required-count">5 bắt buộc</span></span>
+          <span class="cat-arrow">▼</span>
+        </button>
+        <div class="cat-body">
+          <table class="checklist-table">
+            <tbody>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-1" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-1">Căn cước công dân / Hộ chiếu</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-2" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-2">Vé máy bay / Vé tàu / Vé xe điện tử</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-3" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-3">Tiền mặt (mệnh giá nhỏ)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-4" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-4">Thẻ tín dụng / Thẻ ngân hàng</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-6" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-6">Giấy chứng nhận đặt phòng khách sạn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-7" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-7">Bảo hiểm du lịch (bản in/file)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-9" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-9">Bản sao giấy tờ tùy thân (Photo)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-8" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-8">Thẻ sinh viên / Thẻ giảm giá</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-10" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-10">Sổ tay lịch trình offline</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="category-block">
+        <button class="cat-header" onclick="toggleCat(this)" aria-expanded="true">
+          <span class="cat-title">📱 Thiết bị công nghệ</span>
+          <span class="cat-meta"><span class="cat-badge">6 món</span><span class="cat-badge required-count">3 bắt buộc</span></span>
+          <span class="cat-arrow">▼</span>
+        </button>
+        <div class="cat-body">
+          <table class="checklist-table">
+            <tbody>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-11" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-11">Điện thoại thông minh</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-12" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-12">Cáp sạc điện thoại</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-13" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-13">Sạc dự phòng dung lượng lớn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-14" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-14">Tai nghe (Có dây/Không dây)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-18" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-18">Gậy chụp ảnh / Tripod nhỏ</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-21" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-21">Loa Bluetooth mini</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="category-block">
+        <button class="cat-header" onclick="toggleCat(this)" aria-expanded="true">
+          <span class="cat-title">👕 Trang phục</span>
+          <span class="cat-meta"><span class="cat-badge">12 món</span><span class="cat-badge required-count">8 bắt buộc</span></span>
+          <span class="cat-arrow">▼</span>
+        </button>
+        <div class="cat-body">
+          <table class="checklist-table">
+            <tbody>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-26" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-26">Áo thun ngắn tay</label></td>
+              <td class="col-qty">×3</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-27" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-27">Quần short năng động</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-28" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-28">Quần dài (Jean/Kaki)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-33" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-33">Đồ lót (đủ số ngày đi)</label></td>
+              <td class="col-qty">×3</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-34" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-34">Tất / Vớ (nhiều đôi)</label></td>
+              <td class="col-qty">×3</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-38" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-38">Quần áo ngủ thoải mái</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-39" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-39">Giày thể thao đi bộ</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-40" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-40">Dép sandal / Dép lê</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-41" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-41">Mũ lưỡi trai / Mũ rộng vành</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-42" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-42">Kính râm thời trang</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-53" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-53">Băng đô / Chun buộc tóc</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-52" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-52">Thắt lưng (Dây nịt)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="category-block">
+        <button class="cat-header" onclick="toggleCat(this)" aria-expanded="true">
+          <span class="cat-title">🧴 Vệ sinh cá nhân</span>
+          <span class="cat-meta"><span class="cat-badge">17 món</span><span class="cat-badge required-count">10 bắt buộc</span></span>
+          <span class="cat-arrow">▼</span>
+        </button>
+        <div class="cat-body">
+          <table class="checklist-table">
+            <tbody>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-54" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-54">Bàn chải đánh răng cá nhân</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-55" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-55">Kem đánh răng tuýp nhỏ</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-56" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-56">Dầu gội gói / Chai chiết</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-57" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-57">Sữa tắm gói / Chai chiết</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-58" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-58">Sữa rửa mặt mini</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-59" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-59">Khăn mặt sợi tre nhanh khô</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-62" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-62">Băng vệ sinh hàng ngày / Du lịch</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-68" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-68">Khăn giấy khô (bỏ túi)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-69" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-69">Khăn giấy ướt mini</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-70" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-70">Dung dịch vệ sinh tay khô</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-60" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-60">Khăn tắm cỡ lớn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-61" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-61">Dao cạo râu / Kem cạo râu</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-64" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-64">Tăm bông / Bông tẩy trang</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-65" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-65">Nước tẩy trang mini</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-66" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-66">Lược chải tóc nhỏ gọn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-63" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-63">Nước súc miệng chai nhỏ</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-67" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-67">Bấm móng tay</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="category-block">
+        <button class="cat-header" onclick="toggleCat(this)" aria-expanded="true">
+          <span class="cat-title">💊 Y tế & Mỹ phẩm</span>
+          <span class="cat-meta"><span class="cat-badge">18 món</span><span class="cat-badge required-count">8 bắt buộc</span></span>
+          <span class="cat-arrow">▼</span>
+        </button>
+        <div class="cat-body">
+          <table class="checklist-table">
+            <tbody>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-71" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-71">Kem chống nắng (SPF 50+)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-77" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-77">Thuốc hạ sốt (Paracetamol)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-79" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-79">Thuốc trị tiêu chảy / Đau bụng</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-80" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-80">Thuốc say xe / Say tàu cánh ngầm</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-81" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-81">Thuốc chống dị ứng thời tiết / Thức ăn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-84" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-84">Băng gạc cá nhân (Urgo nhiều kích cỡ)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-87" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-87">Thuốc trị côn trùng cắn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-90" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-90">Thuốc đặc trị theo đơn cá nhân</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-73" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-73">Son dưỡng môi chống nẻ</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-75" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-75">Bộ mỹ phẩm skincare chiết nhỏ</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-78" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-78">Thuốc giảm đau</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-82" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-82">Thuốc nhỏ mắt / Nhỏ mũi</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-86" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-86">Nước muối sinh lý lọ nhỏ</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-89" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-89">Vitamin C / Viên sủi tăng đề kháng</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-74" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-74">Xịt khoáng cấp ẩm</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-76" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-76">Nước hoa chiết mini</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-83" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-83">Miếng dán hạ sốt</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-93" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-93">Gel trị bỏng</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="category-block">
+        <button class="cat-header" onclick="toggleCat(this)" aria-expanded="true">
+          <span class="cat-title">🧳 Hành lý & Đóng gói</span>
+          <span class="cat-meta"><span class="cat-badge">4 món</span><span class="cat-badge required-count">2 bắt buộc</span></span>
+          <span class="cat-arrow">▼</span>
+        </button>
+        <div class="cat-body">
+          <table class="checklist-table">
+            <tbody>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-97" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-97">Balo nhỏ đi dạo trong ngày</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-100" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-100">Túi zip đựng đồ bẩn / đồ ướt</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-99" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-99">Túi đựng mỹ phẩm chuyên dụng</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-103" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-103">Gối chữ U kê cổ cao su non</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="category-block">
+        <button class="cat-header" onclick="toggleCat(this)" aria-expanded="true">
+          <span class="cat-title">🍱 Ăn uống & Thực phẩm</span>
+          <span class="cat-meta"><span class="cat-badge">8 món</span><span class="cat-badge required-count">2 bắt buộc</span></span>
+          <span class="cat-arrow">▼</span>
+        </button>
+        <div class="cat-body">
+          <table class="checklist-table">
+            <tbody>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-122" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-122">Bật lửa / Diêm chống nước</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-127" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-127">Túi đựng rác tự hủy sinh học</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-required">🔴 Bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-111" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-111">Bình nước giữ nhiệt cá nhân</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-112" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-112">Mì ly ăn liền dự phòng</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-119" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-119">Bộ thìa đũa cá nhân gấp gọn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-124" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-124">Cốc nhựa / Cốc inox xếp gọn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-128" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-128">Thịt hộp / Cá hộp đóng sẵn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-116" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-116">Cà phê hòa tan / Trà túi lọc</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="category-block">
+        <button class="cat-header" onclick="toggleCat(this)" aria-expanded="true">
+          <span class="cat-title">⛺ Camping & Trekking</span>
+          <span class="cat-meta"><span class="cat-badge">3 món</span></span>
+          <span class="cat-arrow">▼</span>
+        </button>
+        <div class="cat-body">
+          <table class="checklist-table">
+            <tbody>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-141" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-141">Dây thừng paracord chịu lực</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-144" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-144">Băng keo bạc siêu dính (Duct tape)</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-146" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-146">Võng mùng chống muỗi xếp gọn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="category-block">
+        <button class="cat-header" onclick="toggleCat(this)" aria-expanded="true">
+          <span class="cat-title">🎲 Khác</span>
+          <span class="cat-meta"><span class="cat-badge">14 món</span></span>
+          <span class="cat-arrow">▼</span>
+        </button>
+        <div class="cat-body">
+          <table class="checklist-table">
+            <tbody>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-172" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-172">Bao cao su / Biện pháp an toàn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-184" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-184">Móc khóa đa năng Carabiner</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-186" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-186">Nhíp nhổ gai / dằm</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Khuyến khích">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-188" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-188">Quạt cầm tay mini sạc USB</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-recommended">🟡 Khuyến khích</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-167" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-167">Bùa bình an / Vật phẩm phong thủy</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-168" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-168">Bài Tây (Tulokho) giải trí</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-169" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-169">Bộ bài Ma Sói / Boardgame nhóm</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-171" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-171">Sổ tay ghi chép và bút mực</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-173" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-173">Gương nhỏ trang điểm</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-174" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-174">Bộ kim chỉ khâu vá mini</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-175" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-175">Bật lửa Zippo thời trang</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-187" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-187">Cây gãi lưng bỏ túi xếp gọn</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-189" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-189">Đèn đọc sách ban đêm kẹp cổ</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            <tr class="item-row" data-priority="Không bắt buộc">
+              <td class="col-check">
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="item-197" class="item-checkbox">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td class="col-name"><label for="item-197">Ống nhòm tầm xa du lịch</label></td>
+              <td class="col-qty">×1</td>
+              <td class="col-badge"><span class="badge badge-optional">🟢 Không bắt buộc</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+</div>
+
+<div class="footer">
+  Tạo bởi BeeNavi lúc 15:19  06/08/2026 &nbsp;·&nbsp;
+  🔴 Bắt buộc &nbsp;🟡 Khuyến khích &nbsp;🟢 Không bắt buộc
+</div>
+
+<script>
+  const TOTAL = 91;
+  const checkboxes = () => document.querySelectorAll('.item-checkbox');
+
+  // ── Progress ──
+  function updateProgress() {
+    const checked = document.querySelectorAll('.item-checkbox:checked').length;
+    const visible = document.querySelectorAll('.item-row:not(.hidden-filter)').length;
+    document.getElementById('progressText').textContent = checked + ' / ' + TOTAL + ' món';
+    const pct = TOTAL > 0 ? (checked / TOTAL * 100).toFixed(1) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+
+    // Summary chips
+    const req  = document.querySelectorAll('[data-priority="Bắt buộc"]').length;
+    const rec  = document.querySelectorAll('[data-priority="Khuyến khích"]').length;
+    const opt  = document.querySelectorAll('[data-priority="Không bắt buộc"]').length;
+    document.getElementById('summaryChips').innerHTML =
+      `<div class="chip total">📦 ${TOTAL} món tổng cộng</div>` +
+      `<div class="chip req">🔴 ${req} Bắt buộc</div>` +
+      `<div class="chip rec">🟡 ${rec} Khuyến khích</div>` +
+      `<div class="chip opt">🟢 ${opt} Không bắt buộc</div>` +
+      `<div class="chip total">✅ ${checked} đã chuẩn bị</div>`;
+  }
+
+  // ── Checkbox events ──
+  checkboxes().forEach(cb => {
+    cb.addEventListener('change', () => {
+      cb.closest('.item-row').classList.toggle('checked', cb.checked);
+      updateProgress();
+    });
+  });
+
+  // ── Accordion ──
+  function toggleCat(btn) {
+    const body  = btn.nextElementSibling;
+    const isCol = btn.classList.contains('collapsed');
+    btn.classList.toggle('collapsed', !isCol);
+    body.classList.toggle('hidden', !isCol);
+  }
+  function expandAll()  {
+    document.querySelectorAll('.cat-header').forEach(b => {
+      b.classList.remove('collapsed');
+      b.nextElementSibling.classList.remove('hidden');
+    });
+  }
+  function collapseAll() {
+    document.querySelectorAll('.cat-header').forEach(b => {
+      b.classList.add('collapsed');
+      b.nextElementSibling.classList.add('hidden');
+    });
+  }
+  function uncheckAll() {
+    checkboxes().forEach(cb => {
+      cb.checked = false;
+      cb.closest('.item-row').classList.remove('checked');
+    });
+    updateProgress();
+  }
+
+  // ── Search & Filter ──
+  function filterItems() {
+    const q   = document.getElementById('searchInput').value.toLowerCase();
+    const pri = document.getElementById('priorityFilter').value;
+    document.querySelectorAll('.item-row').forEach(row => {
+      const name    = row.querySelector('.col-name').textContent.toLowerCase();
+      const rowPri  = row.dataset.priority;
+      const matchQ  = !q || name.includes(q);
+      const matchP  = pri === 'all' || rowPri === pri;
+      row.classList.toggle('hidden-filter', !(matchQ && matchP));
+    });
+  }
+
+  // Init
+  updateProgress();
+</script>
+</body>
+</html>
