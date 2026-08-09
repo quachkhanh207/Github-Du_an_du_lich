@@ -12,6 +12,8 @@ class Trip(models.Model):
     number_of_days = models.IntegerField()
     budget_limit = models.FloatField(default=0.0)
     status = models.CharField(max_length=50, default="active") # active, completed, archived
+    reminder_enabled = models.BooleanField(default=False)
+    reminder_settings = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return f"{self.destination} ({self.start_date.date() if self.start_date else ''})"
@@ -35,3 +37,14 @@ class Photo(models.Model):
 
     def __str__(self):
         return f"Photo {self.id} - Trip: {self.trip.destination}"
+
+class ChecklistItem(models.Model):
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='checklist_items')
+    item_name = models.CharField(max_length=250)
+    category = models.CharField(max_length=100)
+    is_completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.item_name} - {'Done' if self.is_completed else 'Pending'}"
+
