@@ -6,6 +6,16 @@ from django.shortcuts import get_object_or_404
 from trips.models import Trip, Itinerary, Photo, ChecklistItem
 from datetime import datetime
 
+# Import mã nguồn của Khánh
+import sys
+from pathlib import Path
+repo_root = Path(__file__).resolve().parent.parent
+if str(repo_root) not in sys.path:
+    sys.path.append(str(repo_root))
+
+from khanh.api_services import get_location_coordinates, get_realtime_weather
+from khanh.rule_engine import BeeNaviRuleEngine
+
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 def trips_list_create(request):
@@ -19,6 +29,8 @@ def trips_list_create(request):
         days = data.get('days', [])
         reminder_enabled = data.get('reminder_enabled', False)
         reminder_settings = data.get('reminder_settings', {})
+        vehicle = data.get('vehicle', 'Xe máy')
+        trip_type = data.get('trip_type', 'Phượt')
 
         if not destination or not start_date_str:
             return Response({"detail": "Điểm đến và ngày khởi hành là bắt buộc"}, status=status.HTTP_400_BAD_REQUEST)
@@ -38,6 +50,8 @@ def trips_list_create(request):
             start_date=start_date,
             number_of_days=number_of_days,
             budget_limit=budget_limit,
+            vehicle=vehicle,
+            trip_type=trip_type,
             reminder_enabled=reminder_enabled,
             reminder_settings=reminder_settings
         )
@@ -47,38 +61,49 @@ def trips_list_create(request):
             days=days
         )
 
-        # Khởi tạo Checklist mẫu mặc định cốt lõi
-        default_items = [
-            {"item_name": "CCCD / Hộ chiếu", "category": "Giấy tờ"},
-            {"item_name": "Vé tàu xe / Vé máy bay", "category": "Giấy tờ"},
-            {"item_name": "Tiền mặt & Thẻ ngân hàng", "category": "Giấy tờ"},
-            {"item_name": "Điện thoại & Cáp sạc", "category": "Thiết bị"},
-            {"item_name": "Sạc dự phòng", "category": "Thiết bị"},
-            {"item_name": "Bàn chải & Kem đánh răng", "category": "Cá nhân"},
-            {"item_name": f"Quần áo du lịch ({number_of_days} bộ)", "category": "Cá nhân"}
-        ]
-        
-        # 1. Rule Engine theo Điểm đến & Thời tiết giả định (Destination/Weather Rules)
-        dest_lower = destination.lower()
-        mountain_keywords = [
-            "hà giang", "ha giang", "đà lạt", "da lat", "sa pa", "sapa", 
-            "mộc châu", "moc chau", "bắc kạn", "bac kan", "cao bằng", "cao bang", "sơn la", "son la"
-        ]
-        beach_keywords = [
-            "đà nẵng", "da nang", "phú quốc", "phu quoc", "nha trang", 
-            "vũng tàu", "vung tau", "mũi né", "mui ne", "hạ long", "ha long", "côn đảo", "con dao"
-        ]
-        
-        if any(x in dest_lower for x in mountain_keywords):
-            default_items.append({"item_name": "Áo khoác ấm & Khăn choàng", "category": "Trang phục"})
-            default_items.append({"item_name": "Giày leo núi / Giày thể thao bám tốt", "category": "Trang phục"})
-            default_items.append({"item_name": "Thuốc bôi chống côn trùng cắn", "category": "Y tế"})
-        elif any(x in dest_lower for x in beach_keywords):
-            default_items.append({"item_name": "Đồ bơi & Kính râm", "category": "Trang phục"})
-            default_items.append({"item_name": "Kem chống nắng bảo vệ da", "category": "Y tế"})
-            default_items.append({"item_name": "Dép lê đi biển / Sandal", "category": "Trang phục"})
+        # 1. Gọi API định vị & thời tiết thực tế từ code của Khánh
+        try:
+            dest_coords = get_location_coordinates(destination)
+            if dest_coords:
+                weather = get_realtime_weather(dest_coords["lat"], dest_coords["lon"])
+                weather_tag = weather.get("weather_tag", "Nắng")
+            else:
+                weather_tag = "Nắng"
+        except Exception:
+            weather_tag = "Nắng"
+
+        # 2. Chạy Rule Engine của Khánh để sinh đồ dùng động từ dataset_checklist.txt
+        try:
+            dataset_abs = str(repo_root / "khanh" / "dataset_checklist.txt")
+            engine = BeeNaviRuleEngine(dataset_path=dataset_abs)
+            seeded_items = engine.filter_checklist(
+                weather_tag=weather_tag,
+                vehicle=vehicle,
+                trip_type=trip_type,
+                days=number_of_days
+            )
             
-        # 2. Rule Engine theo Hồ sơ Cá nhân hóa của User (User Profile Rules - Khởi tạo từ trước)
+            default_items = []
+            for item in seeded_items:
+                default_items.append({
+                    "item_name": item["name"],
+                    "category": item["category"],
+                    "quantity": item["quantity"],
+                    "priority": item["priority"]
+                })
+        except Exception as e:
+            # Fallback nếu Rule Engine lỗi
+            default_items = [
+                {"item_name": "CCCD / Hộ chiếu", "category": "Giấy tờ cá nhân", "quantity": 1, "priority": "Bắt buộc"},
+                {"item_name": "Vé tàu xe / Vé máy bay", "category": "Giấy tờ cá nhân", "quantity": 1, "priority": "Bắt buộc"},
+                {"item_name": "Tiền mặt & Thẻ ngân hàng", "category": "Giấy tờ cá nhân", "quantity": 1, "priority": "Bắt buộc"},
+                {"item_name": "Điện thoại & Cáp sạc", "category": "Thiết bị công nghệ", "quantity": 1, "priority": "Bắt buộc"},
+                {"item_name": "Sạc dự phòng", "category": "Thiết bị công nghệ", "quantity": 1, "priority": "Bắt buộc"},
+                {"item_name": "Bàn chải & Kem đánh răng", "category": "Đồ dùng cá nhân", "quantity": 1, "priority": "Bắt buộc"},
+                {"item_name": f"Quần áo du lịch ({number_of_days} bộ)", "category": "Trang phục", "quantity": number_of_days, "priority": "Bắt buộc"}
+            ]
+        
+        # 3. Rule Engine theo Hồ sơ Cá nhân hóa của User (User Profile Rules - Đã khởi tạo từ trước)
         if user:
             try:
                 # Lấy profile đã tạo từ app users
@@ -89,7 +114,9 @@ def trips_list_create(request):
                     allergies_str = ", ".join(profile.food_allergies)
                     default_items.append({
                         "item_name": f"Thuốc dị ứng đặc trị (Lưu ý dị ứng: {allergies_str})", 
-                        "category": "Y tế"
+                        "category": "Y tế & Mỹ phẩm",
+                        "quantity": 1,
+                        "priority": "Bắt buộc"
                     })
                     
                 # Check Yêu cầu đặc biệt
@@ -97,12 +124,16 @@ def trips_list_create(request):
                     if "Lối đi xe lăn" in profile.special_requirements:
                         default_items.append({
                             "item_name": "Thiết bị hỗ trợ di chuyển & Hồ sơ khám y khoa", 
-                            "category": "Y tế"
+                            "category": "Y tế & Mỹ phẩm",
+                            "quantity": 1,
+                            "priority": "Bắt buộc"
                         })
                     if "Ăn chay" in profile.special_requirements:
                         default_items.append({
                             "item_name": "Đồ ăn nhẹ chay đóng hộp (đề phòng)", 
-                            "category": "Cá nhân"
+                            "category": "Ăn uống & Thực phẩm",
+                            "quantity": 2,
+                            "priority": "Khuyến khích"
                         })
                     
                 # Check Sở thích ngách
@@ -110,25 +141,37 @@ def trips_list_create(request):
                     if any(x in profile.niche_interests for x in ["Chụp ảnh film", "Chụp ảnh"]):
                         default_items.append({
                             "item_name": "Máy ảnh & Cuộn film / Sạc pin máy ảnh", 
-                            "category": "Thiết bị"
+                            "category": "Thiết bị công nghệ",
+                            "quantity": 1,
+                            "priority": "Khuyến khích"
                         })
                     if "Cắm trại" in profile.niche_interests:
                         default_items.append({
                             "item_name": "Đèn pin & Dụng cụ đa năng dã ngoại", 
-                            "category": "Thiết bị"
+                            "category": "Camping & Trekking",
+                            "quantity": 1,
+                            "priority": "Khuyến khích"
                         })
                         
                 # Check Phong cách du lịch
                 if profile.travel_style and "Mạo hiểm" in profile.travel_style:
                     default_items.append({
                         "item_name": "Bộ sơ cứu y tế cá nhân (First-aid kit)", 
-                        "category": "Y tế"
+                        "category": "Y tế & Mỹ phẩm",
+                        "quantity": 1,
+                        "priority": "Bắt buộc"
                     })
             except Exception:
                 pass
 
         checklist_objs = [
-            ChecklistItem(trip=trip, item_name=item["item_name"], category=item["category"])
+            ChecklistItem(
+                trip=trip, 
+                item_name=item["item_name"], 
+                category=item["category"],
+                quantity=item.get("quantity", 1),
+                priority=item.get("priority", "Bắt buộc")
+            )
             for item in default_items
         ]
         ChecklistItem.objects.bulk_create(checklist_objs)
@@ -140,10 +183,13 @@ def trips_list_create(request):
             "start_date": trip.start_date.isoformat(),
             "number_of_days": trip.number_of_days,
             "budget_limit": trip.budget_limit,
+            "vehicle": trip.vehicle,
+            "trip_type": trip.trip_type,
             "reminder_enabled": trip.reminder_enabled,
             "reminder_settings": trip.reminder_settings,
             "days": itinerary.days
         }, status=status.HTTP_201_CREATED)
+
 
     elif request.method == 'GET':
         # Lọc chuyến đi: Nếu có user đăng nhập thì chỉ lấy của user đó, ngược lại lấy toàn bộ
@@ -207,6 +253,8 @@ def trip_detail(request, trip_id):
         "id": item.id,
         "item_name": item.item_name,
         "category": item.category,
+        "quantity": item.quantity,
+        "priority": item.priority,
         "is_completed": item.is_completed,
         "created_at": item.created_at.isoformat()
     } for item in checklist_items]
@@ -219,6 +267,8 @@ def trip_detail(request, trip_id):
         "number_of_days": trip.number_of_days,
         "budget_limit": trip.budget_limit,
         "status": trip.status,
+        "vehicle": trip.vehicle,
+        "trip_type": trip.trip_type,
         "reminder_enabled": trip.reminder_enabled,
         "reminder_settings": trip.reminder_settings,
         "days": days,
@@ -293,6 +343,8 @@ def checklist_list_create(request, trip_id):
     if request.method == 'POST':
         item_name = request.data.get('item_name')
         category = request.data.get('category', 'Cá nhân')
+        quantity = request.data.get('quantity', 1)
+        priority = request.data.get('priority', 'Bắt buộc')
         
         if not item_name:
             return Response({"detail": "Tên vật dụng là bắt buộc"}, status=status.HTTP_400_BAD_REQUEST)
@@ -300,13 +352,17 @@ def checklist_list_create(request, trip_id):
         item = ChecklistItem.objects.create(
             trip=trip,
             item_name=item_name,
-            category=category
+            category=category,
+            quantity=quantity,
+            priority=priority
         )
         return Response({
             "id": item.id,
             "trip_id": str(trip.id),
             "item_name": item.item_name,
             "category": item.category,
+            "quantity": item.quantity,
+            "priority": item.priority,
             "is_completed": item.is_completed,
             "created_at": item.created_at.isoformat()
         }, status=status.HTTP_201_CREATED)
@@ -317,6 +373,8 @@ def checklist_list_create(request, trip_id):
             "id": item.id,
             "item_name": item.item_name,
             "category": item.category,
+            "quantity": item.quantity,
+            "priority": item.priority,
             "is_completed": item.is_completed,
             "created_at": item.created_at.isoformat()
         } for item in checklist_items]
@@ -336,12 +394,18 @@ def checklist_item_detail(request, trip_id, item_id):
             item.item_name = data['item_name']
         if 'category' in data:
             item.category = data['category']
+        if 'quantity' in data:
+            item.quantity = data['quantity']
+        if 'priority' in data:
+            item.priority = data['priority']
         item.save()
         return Response({
             "id": item.id,
             "trip_id": str(trip.id),
             "item_name": item.item_name,
             "category": item.category,
+            "quantity": item.quantity,
+            "priority": item.priority,
             "is_completed": item.is_completed,
             "created_at": item.created_at.isoformat()
         })
@@ -349,3 +413,66 @@ def checklist_item_detail(request, trip_id, item_id):
     elif request.method == 'DELETE':
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def share_trip(request, trip_id):
+    trip = get_object_or_404(Trip, id=trip_id)
+    
+    try:
+        itinerary = Itinerary.objects.get(trip=trip)
+        days = itinerary.days
+    except Itinerary.DoesNotExist:
+        days = []
+        
+    photos = Photo.objects.filter(trip=trip)
+    photos_list = [{
+        "image_url": p.image_url,
+        "caption": p.caption,
+        "location_tag": p.location_tag
+    } for p in photos]
+    
+    checklist_items = ChecklistItem.objects.filter(trip=trip).order_by('id')
+    checklist_list = [{
+        "id": item.id,
+        "item_name": item.item_name,
+        "category": item.category,
+        "quantity": item.quantity,
+        "priority": item.priority,
+        "is_completed": item.is_completed
+    } for item in checklist_items]
+    
+    return Response({
+        "id": str(trip.id),
+        "destination": trip.destination,
+        "departure_location": trip.departure_location,
+        "start_date": trip.start_date.isoformat() if trip.start_date else "",
+        "number_of_days": trip.number_of_days,
+        "status": trip.status,
+        "vehicle": trip.vehicle,
+        "trip_type": trip.trip_type,
+        "days": days,
+        "photos": photos_list,
+        "checklist": checklist_list
+    })
+
+@api_view(['PATCH'])
+@permission_classes([AllowAny])
+def share_checklist_item(request, trip_id, item_id):
+    trip = get_object_or_404(Trip, id=trip_id)
+    item = get_object_or_404(ChecklistItem, id=item_id, trip=trip)
+    
+    data = request.data
+    if 'is_completed' in data:
+        item.is_completed = data['is_completed']
+        item.save()
+        
+    return Response({
+        "id": item.id,
+        "trip_id": str(trip.id),
+        "item_name": item.item_name,
+        "category": item.category,
+        "quantity": item.quantity,
+        "priority": item.priority,
+        "is_completed": item.is_completed
+    })

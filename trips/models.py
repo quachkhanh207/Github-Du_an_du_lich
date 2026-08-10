@@ -12,6 +12,8 @@ class Trip(models.Model):
     number_of_days = models.IntegerField()
     budget_limit = models.FloatField(default=0.0)
     status = models.CharField(max_length=50, default="active") # active, completed, archived
+    vehicle = models.CharField(max_length=100, default="Xe máy")
+    trip_type = models.CharField(max_length=100, default="Phượt")
     reminder_enabled = models.BooleanField(default=False)
     reminder_settings = models.JSONField(default=dict, blank=True)
 
@@ -42,6 +44,8 @@ class ChecklistItem(models.Model):
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='checklist_items')
     item_name = models.CharField(max_length=250)
     category = models.CharField(max_length=100)
+    quantity = models.IntegerField(default=1)
+    priority = models.CharField(max_length=50, default="Bắt buộc")
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
