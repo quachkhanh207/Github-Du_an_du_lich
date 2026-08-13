@@ -5,6 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from trips.models import Trip, Itinerary, Photo, ChecklistItem
 from datetime import datetime
+from django.core.cache import cache
 
 # Import mã nguồn của Khánh
 import sys
@@ -312,27 +313,307 @@ def add_photo(request, trip_id):
         "created_at": photo.created_at.isoformat()
     }, status=status.HTTP_201_CREATED)
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def get_statistics(request):
-    total_trips = Trip.objects.count()
-    total_photos = Photo.objects.count()
+def _analyze_user_travel_dna(trips_qs):
+    # Điểm mặc định cơ bản bắt đầu từ 10 để tránh hiển thị 0%
+    scores = {
+        "nature": 10,
+        "culture": 10,
+        "adventure": 10,
+        "relaxation": 10,
+        "city": 10,
+        "food": 10,
+        "shopping": 10
+    }
     
-    unique_locations = set()
-    itineraries = Itinerary.objects.all()
-    for itin in itineraries:
-        days = itin.days or []
+    # Lưu trữ bằng chứng để phục vụ giải thích "Why This Score"
+    evidence = {
+        "nature": [],
+        "culture": [],
+        "adventure": [],
+        "relaxation": [],
+        "city": [],
+        "food": [],
+        "shopping": []
+    }
+    
+    # Phân nhóm chi tiêu
+    spending = {
+        "lodging": 0.0,
+        "transport": 0.0,
+        "food": 0.0,
+        "activities": 0.0,
+        "shopping": 0.0
+    }
+    
+    total_trips = trips_qs.count()
+    if total_trips == 0:
+        return scores, evidence, spending, 0
+        
+    # Sắp xếp các chuyến đi từ cũ đến mới để áp dụng trọng số thời gian (chuyến đi mới có trọng số cao hơn)
+    trips_sorted = list(trips_qs.order_by('created_at'))
+    
+    for idx, trip in enumerate(trips_sorted):
+        # Trọng số thời gian: chuyến đi gần nhất có hệ số lớn hơn
+        time_weight = (idx + 1) / len(trips_sorted)
+        
+        # 1. Phân tích loại hình chuyến đi (trip_type)
+        t_type = trip.trip_type.lower() if trip.trip_type else ""
+        if 'camping' in t_type or 'trekking' in t_type:
+            scores["nature"] += int(30 * time_weight)
+            scores["adventure"] += int(20 * time_weight)
+            evidence["nature"].append(f"Chuyến đi dã ngoại '{trip.destination}' ({trip.trip_type})")
+            evidence["adventure"].append(f"Khám phá trekking tại '{trip.destination}'")
+        elif 'nghỉ dưỡng' in t_type or 'resort' in t_type or 'relax' in t_type:
+            scores["relaxation"] += int(35 * time_weight)
+            evidence["relaxation"].append(f"Nghỉ dưỡng thư thái tại '{trip.destination}'")
+        elif 'phượt' in t_type or 'adventure' in t_type:
+            scores["adventure"] += int(35 * time_weight)
+            evidence["adventure"].append(f"Phượt khám phá cung đường '{trip.destination}'")
+        elif 'đô thị' in t_type or 'city' in t_type:
+            scores["city"] += int(30 * time_weight)
+            evidence["city"].append(f"Khám phá đô thị nhộn nhịp '{trip.destination}'")
+
+        # 2. Phân tích lộ trình chi tiết từng ngày
+        try:
+            itinerary = Itinerary.objects.get(trip=trip)
+            days = itinerary.days or []
+        except Itinerary.DoesNotExist:
+            days = []
+            
         for day in days:
             schedule = day.get('schedule', [])
             for item in schedule:
-                poi_name = item.get('poi_name')
-                if poi_name:
-                    unique_locations.add(poi_name.strip())
+                poi_name = item.get('poi_name', '').lower()
+                cat = item.get('category', '').lower()
+                budget_tier = item.get('budget_tier', 'Tiêu chuẩn')
+                
+                # Ước tính chi phí theo mức chi tiêu của địa điểm
+                cost = 0.0
+                if budget_tier == 'Tiêu chuẩn':
+                    cost = 300000.0
+                elif budget_tier == 'Tiết kiệm':
+                    cost = 100000.0
+                elif budget_tier == 'Cao cấp' or budget_tier == 'Sang trọng':
+                    cost = 1500000.0
+                    
+                # Phân loại theo category hoặc từ khóa
+                if cat == 'food' or any(k in poi_name for k in ['ăn', 'uống', 'lẩu', 'phở', 'mì', 'cơm', 'hải sản', 'cafe', 'quán']):
+                    spending["food"] += cost
+                    scores["food"] += int(5 * time_weight)
+                    if len(evidence["food"]) < 4:
+                        evidence["food"].append(f"Thưởng thức '{item.get('poi_name')}' tại {trip.destination}")
+                elif cat == 'sightseeing' or cat == 'activity':
+                    # Kiểm tra đặc trưng Thiên nhiên
+                    if any(k in poi_name for k in ['thác', 'hồ', 'đồi chè', 'núi', 'rừng', 'vườn hoa', 'suối', 'bãi biển', 'hang', 'sông', 'vịnh']):
+                        scores["nature"] += int(8 * time_weight)
+                        if len(evidence["nature"]) < 4:
+                            evidence["nature"].append(f"Ghé thăm cảnh đẹp tự nhiên '{item.get('poi_name')}'")
+                    # Kiểm tra đặc trưng Văn hóa
+                    if any(k in poi_name for k in ['chùa', 'dinh', 'lăng', 'bảo tàng', 'di tích', 'phố cổ', 'nhà thờ', 'văn miếu', 'đền', 'hội an']):
+                        scores["culture"] += int(10 * time_weight)
+                        if len(evidence["culture"]) < 4:
+                            evidence["culture"].append(f"Tìm hiểu lịch sử/văn hóa tại '{item.get('poi_name')}'")
+                    # Kiểm tra đặc trưng Phiêu lưu
+                    if any(k in poi_name for k in ['trượt', 'leo núi', 'phượt', 'safari', 'khám phá', 'trekking', 'vượt thác']):
+                        scores["adventure"] += int(10 * time_weight)
+                        if len(evidence["adventure"]) < 4:
+                            evidence["adventure"].append(f"Trải nghiệm cảm giác mạnh tại '{item.get('poi_name')}'")
+                    # Kiểm tra đặc trưng Nghỉ dưỡng
+                    if any(k in poi_name for k in ['tắm biển', 'massage', 'spa', 'hoàng hôn', 'resort', 'nghỉ ngơi', 'bể bơi']):
+                        scores["relaxation"] += int(8 * time_weight)
+                        if len(evidence["relaxation"]) < 4:
+                            evidence["relaxation"].append(f"Thư giãn giải trí ở '{item.get('poi_name')}'")
+                    # Kiểm tra đặc trưng Thành phố
+                    if any(k in poi_name for k in ['quảng trường', 'bưu điện', 'landmark', 'phố đi bộ', 'nhà hát', 'trung tâm', 'chung cư']):
+                        scores["city"] += int(8 * time_weight)
+                        if len(evidence["city"]) < 4:
+                            evidence["city"].append(f"Dạo quanh địa danh đô thị '{item.get('poi_name')}'")
+                            
+                    spending["activities"] += cost
+                else:
+                    spending["activities"] += cost
+                    
+                # Điểm mua sắm
+                if any(k in poi_name for k in ['chợ', 'mua sắm', 'siêu thị', 'lưu niệm', 'shop', 'trung tâm thương mại']):
+                    scores["shopping"] += int(12 * time_weight)
+                    spending["shopping"] += cost
+                    if len(evidence["shopping"]) < 4:
+                        evidence["shopping"].append(f"Ghé thăm khu mua sắm '{item.get('poi_name')}'")
+
+        # Ước lượng chi phí đi lại & lưu trú của từng chuyến đi
+        vehicle_lower = trip.vehicle.lower() if trip.vehicle else ""
+        transport_cost = 200000.0 * trip.number_of_days
+        if 'máy bay' in vehicle_lower:
+            transport_cost = 2500000.0
+        elif 'ô tô' in vehicle_lower or 'tự lái' in vehicle_lower:
+            transport_cost = 1000000.0 + (300000.0 * trip.number_of_days)
+        spending["transport"] += transport_cost
+        
+        lodging_cost = max(200000.0, (trip.budget_limit * 0.3) / max(1, trip.number_of_days)) * trip.number_of_days
+        spending["lodging"] += lodging_cost
+
+    # Đảm bảo điểm số nằm trong khoảng [0, 100]
+    for key in scores:
+        scores[key] = min(100, max(0, scores[key]))
+        
+    # Tính độ tin cậy
+    confidence_score = min(100, total_trips * 20)
+    
+    return scores, evidence, spending, confidence_score
+
+def _generate_ai_insights(scores, spending):
+    sorted_dims = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    top_dim, top_score = sorted_dims[0]
+    
+    insights = []
+    
+    style_desc = {
+        "nature": "hòa mình vào thiên nhiên ('Nature Lover'). Bạn thường ưu tiên các chuyến đi cắm trại dã ngoại, đi bộ leo núi băng rừng hoặc ngắm cảnh sông suối.",
+        "culture": "tìm hiểu văn hóa cổ kính ('Culture Explorer'). Bạn thích viếng thăm các di tích lịch sử, đình chùa rêu phong và tìm hiểu đời sống địa phương hoài niệm.",
+        "adventure": "khát khao phiêu lưu mạo hiểm ('Adventure Seeker'). Bạn yêu thích cảm giác tự do trên các cung đường phượt xe máy, trải nghiệm vượt thác leo núi và thể thao ngoài trời.",
+        "relaxation": "nghỉ dưỡng thư giãn trọn vẹn ('Relaxation Enthusiast'). Bạn thích dành thời gian sưởi nắng, nghe sóng biển rì rào và xua tan mệt mỏi ở các resort yên bình.",
+        "city": "khám phá nhịp sống thành thị sôi động ('Urban Wanderer'). Bạn thích dạo bước trên phố đi bộ, tham quan các tòa nhà chọc trời và check-in Landmark hoành tráng.",
+        "food": "khám phá bản đồ ẩm thực độc đáo ('Foodie' chính hiệu). Hành trình của bạn luôn xoay quanh việc tìm kiếm và thưởng thức các món ăn ngon như mì Quảng, hải sản, phở và cà phê trứng.",
+        "shopping": "mua sắm và sưu tầm quà lưu niệm ('Shopping Collector'). Bạn thích dạo quanh các khu chợ đêm náo nhiệt để lựa chọn những vật phẩm đặc sản làm quà."
+    }
+    
+    primary_text = style_desc.get(top_dim, "khám phá du lịch đa dạng.")
+    insights.append(f"🌟 **Đặc trưng du lịch:** Bạn sở hữu phong cách {primary_text}")
+    
+    highest_spent_cat = max(spending.items(), key=lambda x: x[1])[0] if sum(spending.values()) > 0 else None
+    
+    spending_desc = {
+        "lodging": "Bạn coi trọng sự nghỉ ngơi thoải mái và có xu hướng đầu tư ngân sách lớn vào chất lượng lưu trú khách sạn/resort.",
+        "transport": "Chi phí di chuyển bằng máy bay hoặc ô tô tự lái chiếm tỷ lệ vượt trội trong tổng cơ cấu chi tiêu du lịch của bạn.",
+        "food": "Bạn sẵn sàng chi tiêu mạnh tay để trải nghiệm các nhà hàng đặc sản và các quán ăn nổi tiếng.",
+        "activities": "Bạn ưu tiên chi trả cho các hoạt động vui chơi giải trí, vé tham quan và các tour khám phá trải nghiệm.",
+        "shopping": "Mua sắm quà lưu niệm và đặc sản địa phương là mục tiêu chi tiêu chủ đạo của bạn."
+    }
+    
+    if highest_spent_cat:
+        insights.append(f"💰 **Hành vi chi tiêu:** {spending_desc[highest_spent_cat]}")
+    else:
+        insights.append("💰 **Hành vi chi tiêu:** Bạn quản lý tài chính cân bằng giữa các hạng mục dịch vụ du lịch.")
+        
+    suggestion_desc = {
+        "nature": "Gợi ý chuyến đi tiếp theo: Hãy thử làm một chuyến trekking đỉnh Tà Xùa săn mây hoặc cắm trại ở Vườn quốc gia Cúc Phương.",
+        "culture": "Gợi ý chuyến đi tiếp theo: Cố đô Huế cổ kính hoặc Phố cổ Hội An sẽ là những điểm đến tuyệt vời để bạn thỏa sức khám phá văn hóa.",
+        "adventure": "Gợi ý chuyến đi tiếp theo: Thử sức với chuyến phượt Hà Giang hùng vĩ bằng xe máy hoặc khám phá các hang động hoang sơ tại Quảng Bình.",
+        "relaxation": "Gợi ý chuyến đi tiếp theo: Phú Quốc hoặc Nha Trang nắng vàng biển xanh là lựa chọn lý tưởng để bạn sạc lại năng lượng.",
+        "city": "Gợi ý chuyến đi tiếp theo: Khám phá sự năng động của Singapore hoặc dạo quanh các công trình kiến trúc lịch sử ở Sài Gòn.",
+        "food": "Gợi ý chuyến đi tiếp theo: Làm một chuyến Food Tour Hải Phòng ăn bánh đa cua hoặc càn quét chợ đêm ẩm thực Đà Nẵng.",
+        "shopping": "Gợi ý chuyến đi tiếp theo: Các khu chợ nổi miền Tây sầm uất hoặc các trung tâm mua sắm ở Bangkok sẽ làm bạn thích thú."
+    }
+    
+    insights.append(f"💡 **AI Suggestion:** {suggestion_desc.get(top_dim, 'Khám phá thế giới rộng lớn!')}")
+    
+    return insights
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_statistics(request):
+    if request.user.is_authenticated:
+        trips_qs = Trip.objects.filter(user=request.user)
+        photos_qs = Photo.objects.filter(trip__user=request.user)
+    else:
+        trips_qs = Trip.objects.filter(user__isnull=True)
+        photos_qs = Photo.objects.filter(trip__user__isnull=True)
+        
+    total_trips = trips_qs.count()
+    total_photos = photos_qs.count()
+    total_days = sum(t.number_of_days for t in trips_qs)
+    total_budget = sum(t.budget_limit for t in trips_qs)
+    
+    unique_locations = set()
+    for trip in trips_qs:
+        try:
+            itinerary = Itinerary.objects.get(trip=trip)
+            days = itinerary.days or []
+            for day in days:
+                schedule = day.get('schedule', [])
+                for item in schedule:
+                    poi_name = item.get('poi_name')
+                    if poi_name:
+                        unique_locations.add(poi_name.strip())
+        except Itinerary.DoesNotExist:
+            pass
                     
     return Response({
         "total_trips": total_trips,
         "total_photos": total_photos,
-        "total_locations": len(unique_locations)
+        "total_locations": len(unique_locations),
+        "total_days": total_days,
+        "total_budget": total_budget
+    })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_travel_dna(request):
+    if request.user.is_authenticated:
+        trips_qs = Trip.objects.filter(user=request.user)
+    else:
+        trips_qs = Trip.objects.filter(user__isnull=True)
+        
+    scores, evidence, spending, confidence = _analyze_user_travel_dna(trips_qs)
+    
+    # Caching insights
+    user_id_str = str(request.user.id) if request.user.is_authenticated else "guest"
+    cache_key = f"travel_dna_insights_{user_id_str}"
+    ai_insights = cache.get(cache_key)
+    
+    if not ai_insights:
+        ai_insights = _generate_ai_insights(scores, spending)
+        cache.set(cache_key, ai_insights, timeout=1800)  # cache 30 phút
+        
+    return Response({
+        "scores": scores,
+        "spending": spending,
+        "confidence_score": confidence,
+        "ai_insights": ai_insights
+    })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def explain_travel_dna(request):
+    if request.user.is_authenticated:
+        trips_qs = Trip.objects.filter(user=request.user)
+    else:
+        trips_qs = Trip.objects.filter(user__isnull=True)
+        
+    dimension = request.query_params.get("dimension")
+    if not dimension:
+        return Response({"detail": "Tham số 'dimension' là bắt buộc"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    scores, evidence, spending, confidence = _analyze_user_travel_dna(trips_qs)
+    
+    labels = {
+        "nature": "Thiên nhiên",
+        "culture": "Văn hóa",
+        "adventure": "Phiêu lưu",
+        "relaxation": "Nghỉ dưỡng",
+        "city": "Thành phố",
+        "food": "Ẩm thực",
+        "shopping": "Mua sắm"
+    }
+    
+    dimension_lower = dimension.lower()
+    if dimension_lower not in evidence:
+        return Response({"detail": f"Không hỗ trợ phân tích đặc trưng '{dimension}'"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    dim_evidence = evidence.get(dimension_lower, [])
+    score = scores.get(dimension_lower, 0)
+    
+    if len(dim_evidence) == 0:
+        explanation = f"Chỉ số {labels[dimension_lower]} của bạn đạt {score}% vì hệ thống chưa ghi nhận hoạt động cụ thể nào thuộc nhóm này trong lịch sử của bạn."
+    else:
+        explanation = f"Chỉ số {labels[dimension_lower]} của bạn đạt {score}% dựa trên phân tích {len(dim_evidence)} hoạt động/check-in của bạn."
+        
+    return Response({
+        "dimension": dimension_lower,
+        "dimension_label": labels.get(dimension_lower, dimension),
+        "score": score,
+        "explanation": explanation,
+        "evidence_list": dim_evidence
     })
 
 @api_view(['GET', 'POST'])
