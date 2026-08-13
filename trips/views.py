@@ -6,6 +6,11 @@ from django.shortcuts import get_object_or_404
 from trips.models import Trip, Itinerary, Photo, ChecklistItem
 from datetime import datetime
 from django.core.cache import cache
+from django.db.models import Count
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 # Import mã nguồn của Khánh
 import sys
@@ -70,7 +75,8 @@ def trips_list_create(request):
                 weather_tag = weather.get("weather_tag", "Nắng")
             else:
                 weather_tag = "Nắng"
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error getting coordinates or weather for {destination}: {e}", exc_info=True)
             weather_tag = "Nắng"
 
         # 2. Chạy Rule Engine của Khánh để sinh đồ dùng động từ dataset_checklist.txt
@@ -93,6 +99,7 @@ def trips_list_create(request):
                     "priority": item["priority"]
                 })
         except Exception as e:
+            logger.error(f"Error running BeeNaviRuleEngine: {e}", exc_info=True)
             # Fallback nếu Rule Engine lỗi
             default_items = [
                 {"item_name": "CCCD / Hộ chiếu", "category": "Giấy tờ cá nhân", "quantity": 1, "priority": "Bắt buộc"},
@@ -162,8 +169,8 @@ def trips_list_create(request):
                         "quantity": 1,
                         "priority": "Bắt buộc"
                     })
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"Error applying personalized user profile rules: {e}", exc_info=True)
 
         checklist_objs = [
             ChecklistItem(
@@ -193,14 +200,13 @@ def trips_list_create(request):
 
 
     elif request.method == 'GET':
-        # Lọc chuyến đi: Nếu có user đăng nhập thì chỉ lấy của user đó, ngược lại lấy toàn bộ
+        # Lọc chuyến đi: Nếu có user đăng nhập thì chỉ lấy của user đó, ngược lại chỉ lấy các chuyến đi ẩn danh
         if request.user.is_authenticated:
-            trips = Trip.objects.filter(user=request.user).order_by('-created_at')
+            trips = Trip.objects.filter(user=request.user).annotate(photo_count=Count('photos')).order_by('-created_at')
         else:
-            trips = Trip.objects.all().order_by('-created_at')
+            trips = Trip.objects.filter(user__isnull=True).annotate(photo_count=Count('photos')).order_by('-created_at')
         trips_list = []
         for trip in trips:
-            photo_count = Photo.objects.filter(trip=trip).count()
             trips_list.append({
                 "id": str(trip.id),
                 "destination": trip.destination,
@@ -211,7 +217,7 @@ def trips_list_create(request):
                 "status": trip.status,
                 "reminder_enabled": trip.reminder_enabled,
                 "reminder_settings": trip.reminder_settings,
-                "photo_count": photo_count,
+                "photo_count": trip.photo_count,
                 "created_at": trip.created_at.isoformat()
             })
         return Response(trips_list)
@@ -221,6 +227,9 @@ def trips_list_create(request):
 @permission_classes([AllowAny])
 def trip_detail(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
+    
+    if trip.user and trip.user != request.user:
+        return Response({"detail": "Bạn không có quyền thực hiện thao tác trên chuyến đi này."}, status=status.HTTP_403_FORBIDDEN)
     
     if request.method in ['PUT', 'PATCH']:
         data = request.data
@@ -281,6 +290,9 @@ def trip_detail(request, trip_id):
 @permission_classes([AllowAny])
 def add_photo(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
+    
+    if trip.user and trip.user != request.user:
+        return Response({"detail": "Bạn không có quyền thực hiện thao tác trên chuyến đi này."}, status=status.HTTP_403_FORBIDDEN)
     
     image_url = request.data.get('image_url')
     caption = request.data.get('caption')
@@ -621,6 +633,9 @@ def explain_travel_dna(request):
 def checklist_list_create(request, trip_id):
     trip = get_object_or_404(Trip, id=trip_id)
     
+    if trip.user and trip.user != request.user:
+        return Response({"detail": "Bạn không có quyền thực hiện thao tác trên chuyến đi này."}, status=status.HTTP_403_FORBIDDEN)
+    
     if request.method == 'POST':
         item_name = request.data.get('item_name')
         category = request.data.get('category', 'Cá nhân')
@@ -665,6 +680,10 @@ def checklist_list_create(request, trip_id):
 @permission_classes([AllowAny])
 def checklist_item_detail(request, trip_id, item_id):
     trip = get_object_or_404(Trip, id=trip_id)
+    
+    if trip.user and trip.user != request.user:
+        return Response({"detail": "Bạn không có quyền thực hiện thao tác trên chuyến đi này."}, status=status.HTTP_403_FORBIDDEN)
+    
     item = get_object_or_404(ChecklistItem, id=item_id, trip=trip)
     
     if request.method == 'PATCH':
