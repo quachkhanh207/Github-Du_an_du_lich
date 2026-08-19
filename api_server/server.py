@@ -384,6 +384,83 @@ async def api_generate_itinerary(request: Request):
     return structured
 
 
+@app.get("/api/alternative_poi")
+async def api_alternative_poi(destination: str = "Hà Nội", category: str = "", current_name: str = "", exclude_names: str = ""):
+    """Tìm địa điểm thay thế cùng loại hình và cùng khu vực khi người dùng bấm 'Đổi điểm'"""
+    rag_inst = get_rag()
+    if not rag_inst:
+        return {"error": "RAG unavailable"}
+    
+    exclude_list = [w.strip().lower() for w in exclude_names.split(",") if w.strip()]
+    if current_name:
+        exclude_list.append(current_name.strip().lower())
+        
+    all_pois = rag_inst.get_pois_for_destination(destination, limit=120)
+    
+    from planner.rag_engine import is_food_poi, is_cafe_poi, is_night_poi, get_theme_img
+    
+    cat_lower = category.lower()
+    candidates = []
+    
+    if any(k in cat_lower for k in ["cà phê", "cafe", "coffee", "trà"]):
+        # CHỈ lấy quán cafe/trà, KHÔNG lấy quán phở/bún
+        candidates = [p for p in all_pois if is_cafe_poi(p)]
+    elif any(k in cat_lower for k in ["ăn", "trưa", "tối", "ẩm thực", "nhà hàng", "bún", "phở", "lẩu", "đặc sản"]):
+        # CHỈ lấy quán ăn, nhà hàng
+        candidates = [p for p in all_pois if is_food_poi(p)]
+    elif any(k in cat_lower for k in ["night", "đêm", "bar", "pub", "chợ đêm"]):
+        # Quán đêm / Bar / Chợ đêm
+        candidates = [p for p in all_pois if is_night_poi(p)]
+    else:
+        # Tham quan, check-in, di sản
+        candidates = [p for p in all_pois if not is_food_poi(p) and not is_cafe_poi(p) and not is_night_poi(p)]
+        
+    # Lọc bỏ POIs đã xuất hiện trong danh sách exclude_list
+    valid_candidates = []
+    for p in candidates:
+        p_name = p.get("name", "").strip().lower()
+        if p_name in exclude_list or any(ex in p_name for ex in exclude_list if len(ex) > 3):
+            continue
+        valid_candidates.append(p)
+        
+    if not valid_candidates:
+        valid_candidates = [p for p in all_pois if p.get("name", "").strip().lower() not in exclude_list]
+        
+    if valid_candidates:
+        chosen = valid_candidates[0]
+        return {
+            "name": chosen.get("name"),
+            "category": chosen.get("category", "Tham quan"),
+            "description": chosen.get("description", ""),
+            "lat": chosen.get("lat"),
+            "lon": chosen.get("lon"),
+            "img": get_theme_img(chosen)
+        }
+    return {"error": "No alternative found"}
+
+
+@app.get("/api/hotels")
+async def api_get_hotels(city: str = "Đà Nẵng"):
+    """Lấy danh sách khách sạn thật từ CSDL SQLite travel_knowledge.db"""
+    import sqlite3
+    from pathlib import Path
+    db_file = Path(BASE_DIR) / "data" / "travel_knowledge.db"
+    if not db_file.exists():
+        return {"hotels": []}
+    try:
+        conn = sqlite3.connect(str(db_file))
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        rows = c.execute("SELECT * FROM hotels WHERE city LIKE ? OR ? LIKE '%' || city || '%'", (f"%{city}%", city)).fetchall()
+        if not rows:
+            rows = c.execute("SELECT * FROM hotels LIMIT 10").fetchall()
+        hotels = [dict(r) for r in rows]
+        conn.close()
+        return {"total": len(hotels), "city": city, "hotels": hotels}
+    except Exception as e:
+        return {"error": str(e), "hotels": []}
+
+
 
 @app.post("/transcribe")
 async def transcribe(

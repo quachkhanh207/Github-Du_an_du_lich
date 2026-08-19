@@ -32,6 +32,456 @@
 
 
     <link rel="stylesheet" href="/static/style.css?v=chat_fix_2026">
+    <style>
+        @keyframes pulseRing {
+            0% { transform: scale(0.8); opacity: 0.95; }
+            100% { transform: scale(1.85); opacity: 0; }
+        }
+        .hotel-permanent-tooltip {
+            background: #3730A3 !important;
+            color: #FFFFFF !important;
+            border: 1.5px solid #6366F1 !important;
+            border-radius: 8px !important;
+            padding: 4px 10px !important;
+            font-size: 11.5px !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 12px rgba(55, 48, 163, 0.45) !important;
+            white-space: nowrap !important;
+        }
+        .hotel-permanent-tooltip::before {
+            border-top-color: #3730A3 !important;
+        }
+
+        /* Typography & Gold Stars Overhaul */
+        .star-gold {
+            color: #F59E0B !important;
+            font-weight: 800 !important;
+            display: inline-block;
+            margin: 0 1px;
+        }
+        .builder-card-header h4 {
+            font-size: 17.5px !important;
+            font-weight: 800 !important;
+            color: #0F172A !important;
+        }
+        .form-group-item label {
+            font-size: 14.5px !important;
+            font-weight: 700 !important;
+            color: #1E293B !important;
+            margin-bottom: 7px !important;
+        }
+        .builder-input {
+            font-size: 14.5px !important;
+            padding: 11px 15px !important;
+            border-radius: 10px !important;
+        }
+        .form-chip {
+            font-size: 13.5px !important;
+            font-weight: 600 !important;
+            padding: 8px 16px !important;
+            border-radius: 10px !important;
+        }
+        .preview-dest-title {
+            font-size: 23px !important;
+            font-weight: 800 !important;
+        }
+        .preview-badge-item strong {
+            font-size: 14px !important;
+        }
+        .preview-badge-item small {
+            font-size: 12px !important;
+        }
+        .cost-box-amount {
+            font-size: 21px !important;
+            font-weight: 800 !important;
+        }
+        .btn-mega-generate span {
+            font-size: 16.5px !important;
+            font-weight: 800 !important;
+        }
+        /* Map Fullscreen Modal CSS */
+        .map-card.map-fullscreen-mode {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999999 !important;
+            border-radius: 0 !important;
+            background: #FFFFFF !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .map-card.map-fullscreen-mode .map-header {
+            padding: 12px 20px !important;
+            background: #FFFFFF !important;
+            border-bottom: 2px solid #CBD5E1 !important;
+            flex-shrink: 0 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
+        }
+        .map-card.map-fullscreen-mode .map-container,
+        .map-card.map-fullscreen-mode #leafletMap {
+            flex: 1 1 auto !important;
+            width: 100% !important;
+            height: calc(100vh - 60px) !important;
+            min-height: calc(100vh - 60px) !important;
+            border-radius: 0 !important;
+        }
+
+        /* ==========================================================================
+           FACEBOOK PROFILE UI OVERHAUL (GIAO DIỆN HỒ SƠ FACEBOOK CHUẨN TOÀN MÀN HÌNH)
+           ========================================================================== */
+        .fb-profile-modal-card {
+            background: #F0F2F5 !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            max-width: 100vw !important;
+            width: 100vw !important;
+            min-height: 100vh !important;
+            max-height: 100vh !important;
+            overflow-y: auto !important;
+            box-shadow: none !important;
+            position: relative !important;
+            font-family: 'Be Vietnam Pro', 'Inter', sans-serif !important;
+        }
+        .fb-cover-container-wrap {
+            background: #FFFFFF !important;
+            border-bottom: 1px solid #E4E6EB !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+        }
+        .fb-cover-inner {
+            max-width: 1120px !important;
+            margin: 0 auto !important;
+            position: relative !important;
+        }
+        .fb-cover-banner {
+            height: 330px !important;
+            width: 100% !important;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.65) 100%),
+                        url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat !important;
+            position: relative !important;
+            border-bottom-left-radius: 12px !important;
+            border-bottom-right-radius: 12px !important;
+        }
+        .fb-cover-edit-btn {
+            position: absolute !important;
+            bottom: 18px !important;
+            right: 20px !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: none !important;
+            padding: 9px 18px !important;
+            border-radius: 8px !important;
+            font-size: 13.5px !important;
+            font-weight: 700 !important;
+            color: #050505 !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25) !important;
+            transition: all 0.2s !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+        .fb-cover-edit-btn:hover {
+            background: #FFFFFF !important;
+            transform: translateY(-1px) !important;
+        }
+        .fb-profile-header-wrap {
+            max-width: 1120px !important;
+            margin: 0 auto !important;
+            padding: 0 24px !important;
+        }
+        .fb-profile-top-row {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: flex-end !important;
+            flex-wrap: wrap !important;
+            gap: 20px !important;
+            padding-bottom: 20px !important;
+        }
+        .fb-profile-user-group {
+            display: flex !important;
+            align-items: flex-end !important;
+            gap: 24px !important;
+            margin-top: -55px !important;
+        }
+        .fb-avatar-box {
+            position: relative !important;
+            flex-shrink: 0 !important;
+            cursor: pointer !important;
+        }
+        .fb-avatar-img {
+            width: 155px !important;
+            height: 155px !important;
+            border-radius: 50% !important;
+            border: 5px solid #FFFFFF !important;
+            background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+            color: #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 48px !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.18) !important;
+            transition: all 0.2s !important;
+        }
+        .fb-avatar-box:hover .fb-avatar-img {
+            filter: brightness(0.92) !important;
+        }
+        .fb-avatar-camera-btn {
+            position: absolute !important;
+            bottom: 8px !important;
+            right: 8px !important;
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 50% !important;
+            background: #E4E6EB !important;
+            border: 3px solid #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 16px !important;
+            color: #050505 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+            transition: all 0.2s !important;
+        }
+        .fb-avatar-camera-btn:hover {
+            background: #D8DADF !important;
+            transform: scale(1.08) !important;
+        }
+        .fb-online-badge {
+            position: absolute !important;
+            bottom: 10px !important;
+            right: 8px !important;
+            width: 20px !important;
+            height: 20px !important;
+            border-radius: 50% !important;
+            background: #10B981 !important;
+            border: 3px solid #FFFFFF !important;
+        }
+        .fb-user-details {
+            margin-bottom: 6px !important;
+        }
+        .fb-user-name {
+            font-size: 26px !important;
+            font-weight: 800 !important;
+            color: #050505 !important;
+            margin: 0 0 2px 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        .fb-verify-badge {
+            color: #1877F2 !important;
+            font-size: 18px !important;
+        }
+        .fb-user-handle {
+            font-size: 13.5px !important;
+            color: #65676B !important;
+            font-weight: 600 !important;
+            margin-bottom: 6px !important;
+        }
+        .fb-user-bio {
+            font-size: 13px !important;
+            color: #4B5563 !important;
+            background: #F3F4F6 !important;
+            padding: 5px 12px !important;
+            border-radius: 20px !important;
+            display: inline-block !important;
+        }
+        .fb-header-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            margin-bottom: 8px !important;
+        }
+        .fb-btn-primary {
+            background: #1877F2 !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            padding: 9px 18px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            box-shadow: 0 2px 6px rgba(24, 119, 242, 0.3) !important;
+            transition: all 0.2s !important;
+        }
+        .fb-btn-primary:hover {
+            background: #166FE5 !important;
+        }
+        .fb-btn-secondary {
+            background: #E4E6EB !important;
+            color: #050505 !important;
+            border: none !important;
+            padding: 9px 16px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            transition: all 0.2s !important;
+        }
+        .fb-btn-secondary:hover {
+            background: #D8DADF !important;
+        }
+        .fb-btn-icon {
+            background: #E4E6EB !important;
+            color: #050505 !important;
+            border: none !important;
+            padding: 9px 14px !important;
+            border-radius: 8px !important;
+            font-weight: 800 !important;
+            font-size: 15px !important;
+            cursor: pointer !important;
+        }
+        .fb-nav-tabs-bar {
+            border-top: 1px solid #E4E6EB !important;
+            padding-top: 4px !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        .fb-nav-tabs-left {
+            display: flex !important;
+            gap: 4px !important;
+            overflow-x: auto !important;
+        }
+        .fb-tab-item {
+            padding: 14px 16px !important;
+            font-size: 14px !important;
+            font-weight: 700 !important;
+            color: #65676B !important;
+            background: none !important;
+            border: none !important;
+            border-bottom: 3px solid transparent !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            white-space: nowrap !important;
+        }
+        .fb-tab-item:hover {
+            background: #F2F2F2 !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+        .fb-tab-item.active {
+            color: #1877F2 !important;
+            border-bottom: 3px solid #1877F2 !important;
+        }
+        .fb-profile-body-grid {
+            display: grid !important;
+            grid-template-columns: 320px 1fr !important;
+            gap: 16px !important;
+            padding: 16px 24px 28px !important;
+        }
+        @media (max-width: 820px) {
+            .fb-profile-body-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        .fb-side-card {
+            background: #FFFFFF !important;
+            border-radius: 12px !important;
+            padding: 16px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+            border: 1px solid #E4E6EB !important;
+            margin-bottom: 16px !important;
+        }
+        .fb-side-title {
+            font-size: 16px !important;
+            font-weight: 800 !important;
+            color: #050505 !important;
+            margin: 0 0 14px 0 !important;
+        }
+        .fb-intro-stats-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+        }
+        .fb-stat-box {
+            background: #F0F2F5 !important;
+            border-radius: 8px !important;
+            padding: 10px 12px !important;
+            text-align: center !important;
+        }
+        .fb-stat-num {
+            display: block !important;
+            font-size: 18px !important;
+            font-weight: 800 !important;
+            color: #1877F2 !important;
+        }
+        .fb-stat-lbl {
+            font-size: 11.5px !important;
+            color: #65676B !important;
+            font-weight: 600 !important;
+        }
+        .fb-post-creator-card {
+            background: #FFFFFF !important;
+            border-radius: 12px !important;
+            padding: 14px 16px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+            border: 1px solid #E4E6EB !important;
+            margin-bottom: 16px !important;
+        }
+        .fb-creator-top {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding-bottom: 12px !important;
+            border-bottom: 1px solid #E4E6EB !important;
+        }
+        .fb-creator-avatar {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+            color: #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: 800 !important;
+            font-size: 16px !important;
+        }
+        .fb-creator-input {
+            flex: 1 !important;
+            background: #F0F2F5 !important;
+            border: none !important;
+            padding: 10px 16px !important;
+            border-radius: 20px !important;
+            font-size: 14px !important;
+            color: #65676B !important;
+            cursor: pointer !important;
+            outline: none !important;
+        }
+        .fb-creator-input:hover {
+            background: #E4E6EB !important;
+        }
+        .fb-creator-bottom {
+            display: flex !important;
+            justify-content: space-around !important;
+            padding-top: 10px !important;
+        }
+        .fb-creator-btn {
+            background: none !important;
+            border: none !important;
+            padding: 8px 12px !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            color: #65676B !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+        }
+        .fb-creator-btn:hover {
+            background: #F2F2F2 !important;
+        }
+    </style>
 
 
 
@@ -176,18 +626,8 @@
 
 
 
-                        <a href="#itinerarySection" onclick="switchMainTab('service', event)" class="dropdown-item">
-
-
-
-
-
+                        <a href="javascript:void(0)" onclick="switchMainTab('hotels', event)" class="dropdown-item">
                             <span class="item-icon">🏨</span> Khách sạn
-
-
-
-
-
                         </a>
 
 
@@ -1516,9 +1956,6 @@
         <section id="itinerarySection">
 
         <!-- Bắt đầu: Lịch sử Modal -->
-        <div style="text-align: right; margin-bottom: 15px; padding-right: 20px; max-width: 1200px; margin-left: auto; margin-right: auto; padding-top: 15px;">
-            <button class="history-btn-trigger" onclick="showHistoryModal()">🕒 Xem Lịch Sử Tự Tạo</button>
-        </div>
 
         <div class="history-modal-overlay" id="historyModal" onclick="if(event.target===this) hideHistoryModal()">
             <div class="history-modal-content">
@@ -1533,175 +1970,374 @@
         </div>
         <!-- Kết thúc: Lịch sử Modal -->
 
-<div id="emptyItineraryState" class="wizard-wrapper">
-    <div class="wizard-header">
-        <img src="/static/beenavi_logo_nobg.png" alt="BeeNavi">
-        <h3>Khởi Tạo Lộ Trình</h3>
-        
-        <div class="mode-switch-container" style="margin: 15px auto; display: flex; justify-content: center; gap: 10px; background: rgba(0,0,0,0.05); padding: 5px; border-radius: 8px; width: fit-content;">
-            <button type="button" id="btnModeA" class="wiz-mode-btn active" onclick="switchWizardMode('A')" style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--trv-primary); color: white;">🛫 Chuyến Đi Nhiều Ngày</button>
-            <button type="button" id="btnModeB" class="wiz-mode-btn" onclick="switchWizardMode('B')" style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: transparent; color: var(--text-dark);">📍 Khám Phá 1 Điểm</button>
+<!-- ============================================================
+     BẢNG KHỞI TẠO LỘ TRÌNH TOÀN CẢNH (SPLIT-SCREEN 2 CỘT KÈM LIVE PREVIEW)
+     ============================================================ -->
+<div id="emptyItineraryState" class="split-builder-wrapper">
+    <div class="builder-top-header">
+        <div class="builder-title-row">
+            <img src="/static/beenavi_logo_nobg.png" alt="BeeNavi" class="builder-logo-img">
+            <div>
+                <h2 class="builder-main-title">Thiết Kế Chuyến Đi Cùng BeeNavi AI</h2>
+                <p class="builder-sub-title">Tùy chỉnh thông số & xem bản tóm tắt chi phí thay đổi theo thời gian thực</p>
+            </div>
         </div>
-        
-        <p id="wizDescModeA">BeeNavi AI sẽ thiết kế lịch trình hoàn hảo dựa trên nhu cầu của riêng bạn.</p>
-        <p id="wizDescModeB" style="display:none;">Khám phá các điểm tham quan, ăn uống xung quanh địa điểm bạn chọn trong bán kính 2km.</p>
-        
-        <div class="wizard-progress" id="wizProgressWrapper">
-            <div class="wizard-progress-bar" id="wizardProgressBar" style="width: 0%;"></div>
-            <div class="wizard-step-indicator active" data-step="1">1</div>
-            <div class="wizard-step-indicator" data-step="2">2</div>
-            <div class="wizard-step-indicator" data-step="3">3</div>
-            <div class="wizard-step-indicator" data-step="4">4</div>
+        <div class="mode-switch-container" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button type="button" id="btnModeA" class="wiz-mode-btn active" onclick="switchWizardMode('A')">🛫 Chuyến Đi Nhiều Ngày</button>
+            <button type="button" id="btnModeB" class="wiz-mode-btn" onclick="switchWizardMode('B')">📍 Khám Phá 1 Điểm Cụ Thể</button>
+            <button type="button" class="wiz-mode-btn" onclick="showHistoryModal()" style="background: linear-gradient(135deg, #2563EB, #1D4ED8); color: #FFFFFF; border: none; font-weight: 800; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);">
+                📜 Lịch Sử Đã Tạo
+            </button>
         </div>
     </div>
 
-    <div class="wizard-body">
+    <!-- CHẾ ĐỘ B: KHÁM PHÁ 1 ĐIỂM CỤ THỂ (Bán kính 2.5km) -->
+    <div id="wizardPaneModeB" class="mode-b-card" style="display:none; background: #FFFFFF; padding: 24px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 24px;">
+        <div class="builder-card-header" style="display: flex; align-items: center; gap: 10px;">
+            <span class="card-icon" style="font-size: 22px;">📍</span>
+            <h4 style="font-size: 16px; font-weight: 800; color: #1E293B; margin: 0;">Khám Phá Địa Điểm Cụ Thể (Tự Động Đề Xuất Điểm Đẹp Bán Kính 2.5km)</h4>
+        </div>
+        <p style="font-size: 13px; color: #64748B; margin: 8px 0 18px 0;">Nhập 1 địa điểm cụ thể bạn muốn ghé thăm (VD: Lăng Bác, Bà Nà Hills, Hồ Gươm, Chợ Bến Thành), AI sẽ lập tức gợi ý lịch trình chi tiết bán kính 2.5km quanh điểm đó!</p>
+        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group-item">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Tên địa điểm cụ thể *</label>
+                <input type="text" id="wizPoiName" class="builder-input" placeholder="VD: Lăng Bác, Bà Nà Hills..." value="Lăng Bác" oninput="updateLiveTripPreview()">
+            </div>
+            <div class="form-group-item">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Buổi tham quan mong muốn</label>
+                <select id="wizPoiSession" class="builder-input" onchange="updateLiveTripPreview()">
+                    <option value="Sáng">Buổi Sáng (Bắt đầu từ 08:00)</option>
+                    <option value="Chiều">Buổi Chiều (Bắt đầu từ 14:00)</option>
+                    <option value="Tối">Buổi Tối & Đêm (Bắt đầu từ 18:00)</option>
+                </select>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 24px;">
+            <button type="button" class="btn-mega-generate" style="max-width: 340px; margin: 0 auto; background: linear-gradient(135deg, #F59E0B, #D97706); color: #FFFFFF; border: none; padding: 12px 28px; border-radius: 10px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);" onclick="generateItineraryFromWizard(event, 'B')">
+                🚀 Khám Phá Địa Điểm Cụ Thể Ngay!
+            </button>
+        </div>
+    </div>
+
+    <!-- CHẾ ĐỘ A: GIAO DIỆN 2 CỘT TOÀN CẢNH -->
+    <div id="wizardPanesModeA" class="split-builder-layout">
         
-        <!-- Chế độ B: Khám phá 1 Điểm (Mới) -->
-        <div class="wizard-pane" id="wizardPaneModeB" style="display:none;">
-            <div class="wizard-pane-title">📍 Khám Phá Địa Điểm Cụ Thể</div>
-            <div class="wizard-form-grid" style="grid-template-columns: 1fr;">
-                <div class="wizard-form-group">
-                    <label>Tên địa điểm (Ví dụ: Lăng Bác, Hồ Gươm, Bà Nà Hills) *</label>
-                    <input type="text" id="wizPoiName" class="wizard-input" placeholder="VD: Lăng Bác">
+        <!-- CỘT TRÁI: FORM ĐIỀU KHIỂN CHI TIẾT (62%) -->
+        <div class="builder-left-col">
+            
+            <!-- KHỐI 1: HÀNH TRÌNH & THỜI GIAN -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>1. Điểm Đi, Điểm Đến & Thời Gian</h4>
                 </div>
-                <div class="wizard-form-group">
-                    <label>Buổi tham quan</label>
-                    <select id="wizPoiSession" class="wizard-input">
-                        <option value="Sáng">Buổi Sáng (Bắt đầu 08:00)</option>
-                        <option value="Chiều">Buổi Chiều (Bắt đầu 14:00)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="wizard-footer" style="justify-content: center; margin-top: 20px;">
-                <button type="button" class="wizard-btn-submit" onclick="generateItineraryFromWizard(event, 'B')">Khám Phá Ngay!</button>
-            </div>
-        </div>
+                <div class="builder-card-body">
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-item">
+                            <label>Điểm xuất phát *</label>
+                            <input type="text" id="wizOrigin" class="builder-input" placeholder="VD: Hồ Chí Minh" value="Hồ Chí Minh" oninput="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Điểm đến mong muốn *</label>
+                            <input type="text" id="wizDest" class="builder-input" placeholder="VD: Hà Nội" value="Hà Nội" oninput="updateLiveTripPreview()">
+                        </div>
+                    </div>
 
-        <!-- Chế độ A: Trình tự cũ -->
-        <div id="wizardPanesModeA">
-        <!-- Bước 1: Thông tin cơ bản -->
-        <div class="wizard-pane active" id="wizardStep1">
-            <div class="wizard-pane-title">🛫 Thông tin cơ bản</div>
-            <div class="wizard-form-grid">
-                <div class="wizard-form-group">
-                    <label>Điểm xuất phát *</label>
-                    <input type="text" id="wizOrigin" class="wizard-input" placeholder="VD: Hồ Chí Minh" value="Hồ Chí Minh">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Điểm đến *</label>
-                    <input type="text" id="wizDest" class="wizard-input" placeholder="VD: Hà Nội" value="Hà Nội">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Số ngày đi *</label>
-                    <input type="number" id="wizDays" class="wizard-input" value="3" min="1" max="5" oninput="if(this.value>5){this.value=5; alert('Do giới hạn bộ nhớ của AI Local, bạn chỉ nên tạo tối đa 5 ngày trong 1 lần để lịch trình không bị ngắt quãng. Sau khi tạo xong, bạn có thể yêu cầu Chatbot bổ sung thêm ngày!');}">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Ngân sách tổng (VNĐ)</label>
-                    <input type="number" id="wizBudget" class="wizard-input" value="5000000">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Giờ đến nơi (Dự kiến)</label>
-                    <input type="time" id="wizArrivalTime" class="wizard-input" value="08:00">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Giờ kết thúc / bay về</label>
-                    <input type="time" id="wizDepartureTime" class="wizard-input" value="18:00">
-                </div>
-            </div>
-        </div>
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                        <div class="form-group-item">
+                            <label>Ngày bắt đầu khởi hành (tùy chọn):</label>
+                            <input type="date" id="wizStartDate" class="builder-input" onchange="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Số ngày chuyến đi (Tối thiểu 2 ngày):</label>
+                            <input type="number" id="wizDaysCustom" class="builder-input" min="2" max="30" value="3" placeholder="Nhập số ngày (VD: 2, 3, 5...)" oninput="handleCustomDaysInput(this)">
+                        </div>
+                    </div>
 
-        <!-- Bước 2: Sở thích -->
-        <div class="wizard-pane" id="wizardStep2">
-            <div class="wizard-pane-title">🎨 Sở thích cá nhân</div>
-            <div class="wizard-form-grid">
-                <div class="wizard-form-group full-width">
-                    <label>Mục tiêu chuyến đi *</label>
-                    <select id="wizObjective" class="wizard-input">
-                        <option value="Khám phá">🎒 Khám phá & Trải nghiệm</option>
-                        <option value="Nghỉ dưỡng">🌴 Nghỉ dưỡng & Thư giãn</option>
-                        <option value="Chụp ảnh sống ảo">📸 Chụp ảnh sống ảo</option>
-                        <option value="Ẩm thực">🍜 Food tour Ẩm thực</option>
-                    </select>
-                </div>
-                <div class="wizard-form-group">
-                    <label>Sở thích mua sắm</label>
-                    <select id="wizShopping" class="wizard-input">
-                        <option value="Bình thường">Bình thường</option>
-                        <option value="Mua sắm TTTM">Trung tâm thương mại</option>
-                        <option value="Mua quà đặc sản">Chợ đặc sản/Lưu niệm</option>
-                    </select>
-                </div>
-                <div class="wizard-form-group">
-                    <label>Sở thích Về Đêm (Nightlife)</label>
-                    <select id="wizNightlife" class="wizard-input">
-                        <option value="Cà phê, Chợ đêm">Cà phê, Chợ đêm</option>
-                        <option value="Bar, Pub, Vũ trường">Bar, Pub, Club</option>
-                        <option value="Nghỉ ngơi sớm">Nghỉ ngơi sớm</option>
-                    </select>
-                </div>
-                <div class="wizard-form-group">
-                    <label>Thích chụp ảnh</label>
-                    <select id="wizPhotography" class="wizard-input">
-                        <option value="Bình thường">Bình thường</option>
-                        <option value="Đam mê sống ảo">Đam mê sống ảo (Tìm view đẹp)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bước 3: Sức khỏe & Nhịp độ -->
-        <div class="wizard-pane" id="wizardStep3">
-            <div class="wizard-pane-title">❤️ Sức khỏe & Nhịp độ</div>
-            <div class="wizard-form-grid">
-                <div class="wizard-form-group full-width">
-                    <label>Đoàn có thành viên đặc biệt? (Sẽ né các điểm leo núi, đi bộ xa)</label>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
-                        <label><input type="checkbox" class="wiz-member-chk" value="Người già"> Người cao tuổi</label>
-                        <label><input type="checkbox" class="wiz-member-chk" value="Trẻ nhỏ"> Trẻ nhỏ</label>
-                        <label><input type="checkbox" class="wiz-member-chk" value="Phụ nữ mang thai"> Phụ nữ mang thai</label>
+                    <div class="form-group-item" style="margin-top: 12px;">
+                        <label>Chọn nhanh số ngày:</label>
+                        <div class="chip-group" id="daysChipGroup">
+                            <button type="button" class="form-chip" onclick="selectFormChip('days', '2', this)">2N1Đ</button>
+                            <button type="button" class="form-chip active" onclick="selectFormChip('days', '3', this)">3N2Đ (Phổ biến)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('days', '4', this)">4N3Đ</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('days', '5', this)">5N4Đ</button>
+                        </div>
+                        <input type="hidden" id="wizDays" value="3">
                     </div>
                 </div>
-                <div class="wizard-form-group">
-                    <label>Món ăn dị ứng / Cần tránh</label>
-                    <input type="text" id="wizDiningConstraints" class="wizard-input" placeholder="VD: Hải sản, Đậu phộng...">
+            </div>
+
+            <!-- KHỐI 2: ĐỒNG HÀNH, DI CHUYỂN & LƯU TRÚ -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>2. Đồng Hành, Di Chuyển & Nơi Lưu Trú</h4>
                 </div>
-                <div class="wizard-form-group">
-                    <label>Nhịp độ chuyến đi</label>
-                    <select id="wizPacing" class="wizard-input">
-                        <option value="Cân bằng">Cân bằng (3-4 điểm/ngày)</option>
-                        <option value="Thư giãn">Thư giãn (Chỉ 2 điểm/ngày)</option>
-                        <option value="Khám phá tối đa">Dày đặc (5+ điểm/ngày)</option>
-                    </select>
+                <div class="builder-card-body">
+                    <div class="form-group-item">
+                        <label>Đối tượng chuyến đi:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('companion', 'Cặp đôi', this)">Cặp đôi</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Một mình', this)">Đi một mình (Solo)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Nhóm bạn', this)">Nhóm bạn</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Gia đình', this)">Gia đình</button>
+                        </div>
+                        <input type="hidden" id="wizCompanion" value="Cặp đôi">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Số lượng người trong đoàn:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', '1 người', this)">1 Người</button>
+                            <button type="button" class="form-chip active" onclick="selectFormChip('groupSize', '2 người', this)">2 Người</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', '3-5 người', this)">3 - 5 Người</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', 'Đoàn đông (>6)', this)">Đoàn đông (>6 người)</button>
+                        </div>
+                        <input type="hidden" id="wizGroupSize" value="2 người">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Phương tiện di chuyển chính:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('vehicle', 'Xe máy', this)">Thuê xe máy</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Taxi', this)">Taxi / Grab</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Ô tô', this)">Ô tô tự lái</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Đi bộ', this)">Đi bộ & Xe bus</button>
+                        </div>
+                        <input type="hidden" id="wizVehicle" value="Xe máy">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Loại hình nơi lưu trú:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Chưa chọn', this)">Chưa chọn / Đi trong ngày</button>
+                            <button type="button" class="form-chip active" onclick="selectFormChip('accommodation', 'Khách sạn 3-4 sao', this)">Khách sạn 3-4 sao</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Homestay', this)">Homestay / Hostel</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Resort 4-5 sao', this)">Resort 4-5 sao</button>
+                        </div>
+                        <input type="hidden" id="wizAccommodation" value="Khách sạn 3-4 sao">
+                    </div>
+
+                    <div id="wizHotelChipsWrapper" style="transition: all 0.3s ease;">
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Gợi ý chọn nhanh khách sạn nổi tiếng (AI tối ưu vị trí xuất phát & trở về):</label>
+                            <div id="wizHotelChipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 6px;">
+                                <!-- Rendered dynamically by app.js -->
+                            </div>
+                        </div>
+
+                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px;">
+                            <div class="form-group-item">
+                                <label>Tên khách sạn bạn đã đặt (hoặc chọn ở trên):</label>
+                                <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Chọn ở trên hoặc gõ tên khách sạn..." oninput="updateLiveTripPreview()">
+                                <datalist id="wizHotelsDatalist">
+                                    <!-- Dynamic datalist -->
+                                </datalist>
+                                <small id="wizHotelNote" style="color: #059669; font-size: 11.5px; font-weight: 600; margin-top: 4px; display: block;">AI sẽ xếp đường đi xuất phát và về lại khách sạn này mỗi ngày</small>
+                            </div>
+                            <div class="form-group-item">
+                                <label>Ngân sách dự kiến (VNĐ):</label>
+                                <input type="number" id="wizBudget" class="builder-input" value="5000000" step="500000" oninput="updateLiveTripPreview()">
+                                <small style="color: #64748b; font-size: 11px;">Để trống hoặc chỉnh theo khả năng chi trả của bạn</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- KHỐI 3: PHONG CÁCH & NHỊP ĐỘ -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>3. Phong Cách, Ẩm Thực & Nhịp Độ</h4>
+                </div>
+                <div class="builder-card-body">
+                    <div class="form-group-item">
+                        <label>Mục tiêu trải nghiệm chính:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('objective', 'Khám phá', this)">Khám phá & Di sản</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Chụp ảnh sống ảo', this)">Check-in & Sống ảo</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Ẩm thực', this)">Foodtour Ẩm thực</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Nghỉ dưỡng', this)">Nghỉ dưỡng & Thư giãn</button>
+                        </div>
+                        <input type="hidden" id="wizObjective" value="Khám phá">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 10px;">
+                        <input type="text" id="wizCustomObjective" class="builder-input" placeholder="Hoặc nhập mục tiêu riêng (VD: Đi tour tâm linh, chụp ảnh kỷ yếu...)" oninput="updateLiveTripPreview()">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Gu ẩm thực yêu thích:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('diningStyle', 'Bình thường', this)">Hài hòa / Đặc sản địa phương</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Vỉa hè', this)">Ẩm thực đường phố / Vỉa hè</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Sang trọng', this)">Nhà hàng sang trọng / View đẹp</button>
+                        </div>
+                        <input type="hidden" id="wizDiningStyle" value="Bình thường">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Mức độ vận động / Thể lực:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('activityLevel', 'Bình thường', this)">Vừa phải / Linh hoạt</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Nhẹ nhàng', this)">Nhẹ nhàng / Dạo mát</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Vận động nhiều', this)">Nhiều / Leo dốc & Đi bộ</button>
+                        </div>
+                        <input type="hidden" id="wizActivityLevel" value="Bình thường">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Nhịp độ di chuyển:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('pacing', 'Cân bằng', this)">Cân bằng (4-5 điểm/ngày)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Thư giãn', this)">Thư giãn (2-3 điểm/ngày)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Khám phá tối đa', this)">Khám phá tối đa (6+ điểm)</button>
+                        </div>
+                        <input type="hidden" id="wizPacing" value="Cân bằng">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Hoạt động buổi tối (Nightlife):</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('nightlife', 'Bình thường', this)">Tự do / Thư giãn</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Cà phê, Chợ đêm', this)">Cà phê & Chợ đêm</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Bar, Pub, Vũ trường', this)">Bar & Pub sôi động</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Nghỉ ngơi sớm', this)">Nghỉ ngơi sớm</button>
+                        </div>
+                        <input type="hidden" id="wizNightlife" value="Bình thường">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Nhu cầu mua sắm:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('shopping', 'Bình thường', this)">Không bắt buộc</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua quà đặc sản', this)">Đặc sản & Quà lưu niệm</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua sắm TTTM', this)">Trung tâm thương mại</button>
+                        </div>
+                        <input type="hidden" id="wizShopping" value="Bình thường">
+                    </div>
+                </div>
+            </div>
+
+            <!-- KHỐI 4: RÀNG BUỘC & ĐIỂM GHIM -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>4. Ràng Buộc & Yêu Cầu Riêng</h4>
+                </div>
+                <div class="builder-card-body">
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-item">
+                            <label>Điểm BẮT BUỘC ĐI (Ghim ưu tiên):</label>
+                            <input type="text" id="wizMustVisit" class="builder-input" placeholder="VD: Lăng Bác, Hồ Gươm, Bà Nà Hills..." oninput="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Điểm CẤM ĐI (Bỏ qua khỏi lịch trình):</label>
+                            <input type="text" id="wizMustAvoid" class="builder-input" placeholder="VD: Bát Tràng, điểm đã đi rồi..." oninput="updateLiveTripPreview()">
+                        </div>
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Đoàn có thành viên đặc biệt (Tự động né dốc cao, leo núi):</label>
+                        <div class="checkbox-member-row">
+                            <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Người già" onchange="updateLiveTripPreview()"> Người cao tuổi</label>
+                            <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Trẻ nhỏ" onchange="updateLiveTripPreview()"> Trẻ nhỏ</label>
+                            <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Phụ nữ mang thai" onchange="updateLiveTripPreview()"> Phụ nữ mang thai</label>
+                        </div>
+                    </div>
+
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                        <div class="form-group-item">
+                            <label>Món ăn dị ứng / Cần tránh:</label>
+                            <input type="text" id="wizDiningConstraints" class="builder-input" placeholder="VD: Hải sản, Đậu phộng..." oninput="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Ghi chú riêng thêm cho AI:</label>
+                            <input type="text" id="wizExtra" class="builder-input" placeholder="VD: Sắp xếp cho tôi đi cafe ngắm hoàng hôn...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Bước 4: Yêu cầu đặc biệt -->
-        <div class="wizard-pane" id="wizardStep4">
-            <div class="wizard-pane-title">⭐ Điểm Bắt Buộc & Tránh Xa</div>
-            <div class="wizard-form-grid">
-                <div class="wizard-form-group full-width">
-                    <label>Điểm BẮT BUỘC PHẢI ĐI (Mỗi điểm cách nhau dấu phẩy)</label>
-                    <input type="text" id="wizMustVisit" class="wizard-input" placeholder="VD: Lăng Bác, Chợ Đồng Xuân">
+        <!-- CỘT PHẢI: LIVE TRIP PREVIEW STICKY (38%) -->
+        <div class="builder-right-col">
+            <div class="live-preview-card" id="livePreviewCard">
+                <div class="preview-hero-img-wrap">
+                    <img id="previewDestImg" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80" alt="Destination" class="preview-hero-img">
+                    <div class="preview-img-overlay">
+                        <span class="preview-tag-live">TỔNG QUAN CHUYẾN ĐI</span>
+                        <h3 class="preview-dest-title" id="previewDestTitle">Hà Nội (3N2Đ)</h3>
+                        <p class="preview-dest-origin" id="previewOriginSubtitle">Xuất phát từ Hồ Chí Minh</p>
+                    </div>
                 </div>
-                <div class="wizard-form-group full-width">
-                    <label>Điểm TUYỆT ĐỐI KHÔNG ĐI (Đã đi rồi hoặc không thích)</label>
-                    <input type="text" id="wizMustAvoid" class="wizard-input" placeholder="VD: Hồ Hoàn Kiếm">
-                </div>
-                <div class="wizard-form-group full-width">
-                    <label>Ghi chú thêm cho AI</label>
-                    <textarea id="wizExtra" class="wizard-input" style="height: 60px;" placeholder="VD: Sắp xếp cho tôi đi quán cafe view hoàng hôn vào chiều ngày 2..."></textarea>
+
+                <div class="preview-content-body">
+                    <!-- Badges Row -->
+                    <div class="preview-badges-grid">
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Đồng hành</small>
+                                <strong id="previewBadgeCompanion">Cặp đôi</strong>
+                            </div>
+                        </div>
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Phương tiện</small>
+                                <strong id="previewBadgeVehicle">Xe máy</strong>
+                            </div>
+                        </div>
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Lưu trú</small>
+                                <strong id="previewBadgeAcc">Khách sạn 3-4★</strong>
+                            </div>
+                        </div>
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Phong cách</small>
+                                <strong id="previewBadgeObjective">Khám phá</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cost Estimate Box -->
+                    <div class="preview-cost-box">
+                        <div class="cost-box-header">
+                            <span>Dự toán chi phí tham khảo:</span>
+                            <span class="cost-badge-tag">Tự động tính</span>
+                        </div>
+                        <div class="cost-box-amount" id="previewCostAmount">~4.350.000 VNĐ / người</div>
+                        <div class="cost-box-breakdown" id="previewCostBreakdown">
+                            Khách sạn (2 đêm): 1.500k • Ẩm thực (3N): 1.350k • Vé & Xe: 750k
+                        </div>
+                    </div>
+
+                    <!-- Highlights & Requirements preview -->
+                    <div class="preview-notes-list" id="previewNotesList">
+                        <div class="preview-note-item" id="previewNoteMustVisit" style="display:none;">
+                            Ghim: <span id="previewMustVisitText"></span>
+                        </div>
+                        <div class="preview-note-item" id="previewNoteAvoid" style="display:none; color: #e74c3c;">
+                            Tránh: <span id="previewMustAvoidText"></span>
+                        </div>
+                        <div class="preview-note-item" id="previewNoteSpecial" style="display:none; color: #e67e22;">
+                            Bảo vệ: <span id="previewSpecialText"></span>
+                        </div>
+                    </div>
+
+                    <div class="preview-action-wrap">
+                        <button type="button" class="btn-mega-generate" onclick="generateItineraryFromWizard(event, 'A')">
+                            <span>Tạo Lộ Trình AI</span>
+                        </button>
+                        <button type="button" onclick="showHistoryModal()" style="width: 100%; margin-top: 10px; padding: 10px 14px; background: #FFFFFF; color: #2563EB; border: 2px solid #2563EB; border-radius: 10px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);">
+                            📜 Xem Lại Lịch Sử Lộ Trình Đã Tạo
+                        </button>
+                        <div class="preview-guarantee-text">
+                            Thuật toán AI tự động tối ưu tuyến đường theo tiêu chí đã chọn
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        </div> <!-- Đóng wizardPanesModeA -->
-    </div>
-<div class="wizard-footer" id="wizFooterModeA">
-        <button class="wizard-btn wizard-btn-back" id="wizBtnBack" onclick="navigateWizard(-1)" style="visibility: hidden;">Quay Lại</button>
-        <button class="wizard-btn wizard-btn-next" id="wizBtnNext" onclick="navigateWizard(1)">Tiếp Tục ➔</button>
-        <button class="wizard-btn wizard-btn-next" id="wizBtnSubmit" onclick="generateItineraryFromWizard(event, 'A')" style="display: none;">Tạo Lộ Trình Ngay ➔</button>
     </div>
 </div>
 
@@ -1730,42 +2366,11 @@ function switchWizardMode(mode) {
 }
 </script>
 <div id="itineraryContent" style="display: none;">
-
-
-
-
-
-
             <div class="section-header">
-
-
-
-
-
                 <div>
-
-
-
-
-
                     <h2 class="section-title">
-
-
-
-
-
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-
-
-
-
                             <path d="M14.5 2H6a2 2 0 0 1-2 2v16a2 2 0 0 1 2 2h12a2 2 0 0 1 2-2V7.5L14.5 2z"></path>
-
-
-
-
-
                             <polyline points="14 2 14 8 20 8"></polyline>
 
 
@@ -1820,23 +2425,16 @@ function switchWizardMode(mode) {
 
 
 
-                <div style="display: flex; gap: 10px;">
-
-
-
-
-
-                    <button class="pref-select" style="padding: 8px 16px;" onclick="prepareItineraryAdjustment()">
-                        💬 Yêu cầu AI điều chỉnh
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button class="pref-select" style="padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border-radius: 8px; background: #fff; border: 1px solid #CBD5E1; color: #334155; cursor: pointer;" onclick="showHistoryModal()">
+                        📜 Lịch sử tạo
                     </button>
-                    <button class="pref-select" style="padding: 8px 16px;" onclick="resetToWizard()">
-                        ➕ Tạo lịch trình mới
+                    <button class="pref-select" style="padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border-radius: 8px; background: #fff; border: 1px solid #CBD5E1; color: #334155; cursor: pointer;" onclick="exportItineraryPDF()">
+                        📄 In / Xuất PDF
                     </button>
-
-
-
-
-
+                    <button class="pref-select" style="padding: 8px 16px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border-radius: 8px; background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);" onclick="resetToWizard()">
+                        ➕ Tạo lộ trình mới
+                    </button>
                 </div>
 
 
@@ -1856,36 +2454,10 @@ function switchWizardMode(mode) {
 
 
             <div class="itinerary-grid">
-
-
-
-
-
                 <!-- Timeline Accordions Left Column -->
-
-
-
-
-
                 <div class="timeline-container" id="timelineAccordionContainer">
-    
-    <!-- Dynamic Accordions Rendered via app.js -->
-
-
-
-
-
+                    <!-- Dynamic Accordions Rendered via app.js -->
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <!-- Sticky Mini-Map Sidebar Right Column -->
 
@@ -1959,7 +2531,7 @@ function switchWizardMode(mode) {
 
 
 
-                            <span style="font-size: 12px; color: var(--primary); font-weight: 700;" id="activeMapDayLabel">Ngày 1</span>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 12px; background: rgba(232, 185, 35, 0.2); color: #B45309; padding: 3px 10px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(232, 185, 35, 0.4);" id="activeMapDayLabel">Ngày 1</span><a id="btnGoogleMapsRoute" target="_blank" href="#" style="display: none; font-size: 11px; background: #2563EB; color: #fff; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-weight: 600; align-items: center; gap: 4px; box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);">🚗 Google Maps</a></div>
 
 
 
@@ -1977,7 +2549,9 @@ function switchWizardMode(mode) {
 
 
 
-                        <div class="map-container" id="leafletMap"></div>
+                        <div id="originalMapParent">
+                            <div class="map-container" id="leafletMap"></div>
+                        </div>
 
 
 
@@ -2026,17 +2600,8 @@ function switchWizardMode(mode) {
 
 
                                 </div>
-
-
-
-
-
                             </div>
-
-
-
-
-
+                            <button type="button" id="btnMapFullscreenOverlay" onclick="window.toggleMapFullscreen()" style="font-size: 12.5px; background: linear-gradient(135deg, #4338CA, #3730A3); color: #FFFFFF; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(67, 56, 202, 0.35); pointer-events: auto; position: relative; z-index: 10; margin-left: auto;">⛶ Phóng To Bản Đồ</button>
                         </div>
 
 
@@ -2164,7 +2729,7 @@ function switchWizardMode(mode) {
                             </select>
                             <label style="font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; display: block;">Ý kiến đóng góp (tùy chọn):</label>
                             <textarea id="feedbackCommentText" placeholder="VD: Lịch trình rất hay và hợp lý, thời gian di chuyển chuẩn xác..." style="width: 100%; height: 65px; padding: 10px; border-radius: 8px; border: 1px solid #dcdde1; font-size: 13px; resize: none; margin-bottom: 12px; box-sizing: border-box; outline: none;"></textarea>
-                            <button type="button" id="btnSubmitFeedback" onclick="submitUserFeedback()" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #0194f3, #0076c7); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s;">Gửi Đánh Giá</button>
+                            <button type="button" id="btnSubmitFeedback" onclick="submitUserFeedback()" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);">Gửi Đánh Giá</button>
                         </div>
                         <div id="feedbackSuccessMsg" style="display:none; color: #27ae60; font-weight: bold; font-size: 14px; margin-top: 12px;">
                             🎉 Cảm ơn bạn đã đóng góp ý kiến cho BeeNavi!
@@ -2209,264 +2774,19 @@ function switchWizardMode(mode) {
 
 
         <section class="checklist-section" id="checklistSection" style="display: none;">
-
-
-
-
-
-            <div class="section-header">
-
-
-
-
-
-                <div>
-
-
-
-
-
-                    <h2 class="section-title">
-
-
-
-
-
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-
-
-
-
-                            <path d="M9 11l3 3L22 4"></path>
-
-
-
-
-
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-
-
-
-
-
-                        </svg>
-
-
-
-
-
-                        Checklist Hành Trang Du Lịch AI
-
-
-
-
-
-                    </h2>
-
-
-
-
-
-                    <p class="section-subtitle" id="checklistSubtitle">Tự động gợi ý danh sách chuẩn bị dựa trên thời tiết và phương tiện di chuyển.</p>
-
-
-
-
-
-                </div>
-
-
-
-
-
+            <div class="section-header" style="display: block; margin-bottom: 16px;">
+                <h2 class="section-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    Checklist Hành Trang Du Lịch AI
+                </h2>
+                <p class="section-subtitle" id="checklistSubtitle">Tự động gợi ý danh sách chuẩn bị dựa trên thời tiết và phương tiện di chuyển.</p>
             </div>
-
-
-
-
-
-
-
-
-
-
-
-            <!-- Rule Engine Mapping Filters -->
-
-
-
-
-
-            <div class="checklist-filter-bar">
-
-
-
-
-
-                <div class="filter-group">
-
-
-
-
-
-                    <label>☀️ Thời tiết mapping:</label>
-
-
-
-
-
-                    <select class="pref-select" id="checklistWeatherSelect" onchange="updateChecklistMapping()">
-
-
-
-
-
-                        <option value="sunny">Nắng ấm & Biển</option>
-
-
-
-
-
-                        <option value="cold">Lạnh & Sương mù (Núi)</option>
-
-
-
-
-
-                        <option value="rain">Mưa nhẹ & Thất thường</option>
-
-
-
-
-
-                    </select>
-
-
-
-
-
-                </div>
-
-
-
-
-
-
-
-
-
-
-
-                <div class="filter-group">
-
-
-
-
-
-                    <label>✈️ Phương tiện mapping:</label>
-
-
-
-
-
-                    <select class="pref-select" id="checklistTransportSelect" onchange="updateChecklistMapping()">
-
-
-
-
-
-                        <option value="plane">Máy bay (Vé & Hộ chiếu/CCCD)</option>
-
-
-
-
-
-                        <option value="motorbike">Xe máy phượt (Bằng lái & Áo mưa)</option>
-
-
-
-
-
-                        <option value="car">Ô ô / Xe khách (Gối cổ & Thuốc say xe)</option>
-
-
-
-
-
-                    </select>
-
-
-
-
-
-                </div>
-
-
-
-
-
-
-
-
-
-
-
-                <div class="filter-group" style="margin-left: auto;">
-
-
-
-
-
-                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-
-
-
-
-
-                        <input type="checkbox" id="reminderToggle" checked onchange="toggleReminder(this)">
-
-
-
-
-
-                        <span>🔔 Nhắc nhở trước 24h</span>
-
-
-
-
-
-                    </label>
-
-
-
-
-
-                </div>
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-
-
-
 
             <div class="progress-container">
-
-
-
-
-
-                <div class="progress-info">
+<div class="progress-info">
 
 
 
@@ -3306,91 +3626,155 @@ function switchWizardMode(mode) {
         </div>
     </div>
 
+    <!-- Hidden File Inputs for Cover & Avatar Upload -->
+    <input type="file" id="inputCoverPhotoUpload" accept="image/*" style="display: none;" onchange="window.handleCoverPhotoUpload(event)">
+    <input type="file" id="inputAvatarUpload" accept="image/*" style="display: none;" onchange="window.handleAvatarUpload(event)">
+
     <!-- ========================================================
-         MODAL 2: HỒ SƠ CÁ NHÂN, NHẬT KÝ & SỞ THÍCH AI
+         MODAL 2: HỒ SƠ CÁ NHÂN KIEU FACEBOOK TOÀN MÀN HÌNH (FB PROFILE UI FULLSCREEN)
          ======================================================== -->
-    <div class="modal-overlay" id="zaloProfileModal" style="display: none; z-index: 999998;">
-        <div class="zalo-profile-modal-card">
-            <!-- Cover Photo & Avatar Header -->
-            <div class="zalo-cover-banner">
-                <button class="zalo-close-btn" onclick="closeZaloProfileModal()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
+    <div class="modal-overlay" id="zaloProfileModal" style="display: none; z-index: 999998; padding: 0;">
+        <div class="fb-profile-modal-card">
+            <!-- Cover & Profile Header Widescreen Container -->
+            <div class="fb-cover-container-wrap">
+                <div class="fb-cover-inner">
+                    <!-- Cover Photo Banner -->
+                    <div class="fb-cover-banner">
+                        <button class="fb-cover-edit-btn" onclick="window.triggerCoverFileUpload()">
+                            <span>📷 Chỉnh sửa ảnh bìa</span>
+                        </button>
+                        <button class="zalo-close-btn" onclick="closeZaloProfileModal()" title="Trở về ứng dụng">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+
+                    <!-- Profile Header Top Area -->
+                    <div class="fb-profile-header-wrap">
+                        <div class="fb-profile-top-row">
+                            <!-- Left: Avatar & User Info -->
+                            <div class="fb-profile-user-group">
+                                <div class="fb-avatar-box" onclick="window.triggerAvatarFileUpload()" title="Nhấp để tải ảnh đại diện mới từ máy tính">
+                                    <div class="fb-avatar-img" id="profileAvatarBox">A</div>
+                                    <div class="fb-avatar-camera-btn" title="Đổi ảnh đại diện">📷</div>
+                                    <div class="fb-online-badge" title="Đang hoạt động"></div>
+                                </div>
+                                <div class="fb-user-details">
+                                    <h2 class="fb-user-name" id="profileUserName">admin1 <span class="fb-verify-badge">✓</span></h2>
+                                    <div class="fb-user-handle" id="profileUserHandle">@admin1 • Thành Viên Beenavi Smart 🇻🇳</div>
+                                    <div class="fb-user-bio" id="profileUserBio">
+                                        💬 "🚀 Đam mê du lịch & khám phá Việt Nam cùng trợ lý AI Beenavi ✨"
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Facebook Action Buttons -->
+                            <div class="fb-header-actions">
+                                <button type="button" class="fb-btn-primary" onclick="resetToWizard(); closeZaloProfileModal();">
+                                    <span>➕ Tạo Chuyến Đi</span>
+                                </button>
+                                <button type="button" class="fb-btn-secondary" onclick="promptAddPhotoToCheckin()">
+                                    <span>📷 + Thêm Ảnh Check-in</span>
+                                </button>
+                                <button type="button" class="fb-btn-icon" title="Tùy chọn khác">
+                                    <span>•••</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Facebook Profile Navigation Tabs Bar -->
+                        <div class="fb-nav-tabs-bar">
+                            <div class="fb-nav-tabs-left">
+                                <button class="fb-tab-item active" id="profileTabJournal" onclick="switchProfileTab('journal')">📖 Tất Cả & Nhật Ký</button>
+                                <button class="fb-tab-item" id="profileTabTrips" onclick="switchProfileTab('trips')">🗺️ Chuyến Đi Đã Lưu</button>
+                                <button class="fb-tab-item" id="profileTabPref" onclick="switchProfileTab('pref')">⚙️ Sở Thích Cá Nhân (AI)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="zalo-profile-header-content">
-                <div class="zalo-avatar-row">
-                    <div class="zalo-avatar-box">
-                        <div class="zalo-avatar-img" id="profileAvatarBox" style="background: linear-gradient(135deg, #F5C842, #E8B923); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #111827; font-size: 24px;">U</div>
-                        <div class="zalo-online-dot"></div>
+            <!-- Profile Body Main Grid (2-Column Facebook Split Layout) -->
+            <div class="fb-profile-body-grid">
+                <!-- Left Sidebar Column (Intro & Stats - 35%) -->
+                <div class="fb-body-left-col">
+                    <!-- Card 1: Giới thiệu & Thống kê du lịch -->
+                    <div class="fb-side-card">
+                        <h4 class="fb-side-title">Giới thiệu du lịch</h4>
+                        <div class="fb-intro-stats-grid">
+                            <div class="fb-stat-box">
+                                <span class="fb-stat-num" id="profileStatTrips">0</span>
+                                <span class="fb-stat-lbl">Chuyến đi</span>
+                            </div>
+                            <div class="fb-stat-box">
+                                <span class="fb-stat-num" id="profileStatPhotos">0</span>
+                                <span class="fb-stat-lbl">Ảnh kỷ niệm</span>
+                            </div>
+                            <div class="fb-stat-box">
+                                <span class="fb-stat-num" id="profileStatDests">0</span>
+                                <span class="fb-stat-lbl">Điểm đến</span>
+                            </div>
+                            <div class="fb-stat-box">
+                                <span class="fb-stat-num" id="profileStatSpent">0 đ</span>
+                                <span class="fb-stat-lbl">Chi tiêu</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="zalo-user-name" id="profileUserName">Người Dùng <span style="color: var(--primary); font-size: 16px;">✓</span></div>
-                <div class="zalo-user-handle" id="profileUserHandle">@user • Thành Viên Beenavi Smart 🇻🇳</div>
-                <div class="zalo-bio-text" id="profileUserBio">
-                    💬 "🚀 Đam mê du lịch & khám phá Việt Nam cùng trợ lý AI Beenavi ✨"
-                </div>
+                <!-- Right Main Column (Feed Content - 65%) -->
+                <div class="fb-body-right-col">
+                    <!-- Tab 1: Nhật Ký & Ảnh Feed -->
+                    <div id="profileContentJournal" style="display: block;">
+                        <!-- Feed Post Creator Box -->
+                        <div class="fb-post-creator-card">
+                            <div class="fb-creator-top">
+                                <div class="fb-creator-avatar">A</div>
+                                <input type="text" class="fb-creator-input" placeholder="Bạn đang nghĩ gì về chuyến đi sắp tới?" onclick="promptAddPhotoToCheckin()">
+                            </div>
+                            <div class="fb-creator-bottom">
+                                <button type="button" class="fb-creator-btn" onclick="promptAddPhotoToCheckin()">
+                                    <span>🖼️ Ảnh/video kỷ niệm</span>
+                                </button>
+                                <button type="button" class="fb-creator-btn" onclick="resetToWizard(); closeZaloProfileModal();">
+                                    <span>📍 Check-in điểm đến mới</span>
+                                </button>
+                            </div>
+                        </div>
 
-                <!-- Profile Stats Bar -->
-                <div class="zalo-stats-row">
-                    <div class="zalo-stat-item">
-                        <span class="zalo-stat-num" id="profileStatTrips">0</span>
-                        <span class="zalo-stat-label">Chuyến đi</span>
+                        <div id="journalFeedContainer">
+                            <!-- Feed posts rendered dynamically by JS -->
+                        </div>
                     </div>
-                    <div class="zalo-stat-item">
-                        <span class="zalo-stat-num" id="profileStatPhotos">0</span>
-                        <span class="zalo-stat-label">Ảnh kỷ niệm</span>
-                    </div>
-                    <div class="zalo-stat-item">
-                        <span class="zalo-stat-num" id="profileStatDests">0</span>
-                        <span class="zalo-stat-label">Điểm đến</span>
-                    </div>
-                    <div class="zalo-stat-item">
-                        <span class="zalo-stat-num" id="profileStatSpent">0 đ</span>
-                        <span class="zalo-stat-label">Chi tiêu</span>
-                    </div>
-                </div>
 
-                <!-- Profile Navigation Tabs -->
-                <div class="zalo-profile-tabs">
-                    <button class="zalo-tab-btn active" id="profileTabJournal" onclick="switchProfileTab('journal')">📖 Nhật Ký & Ảnh</button>
-                    <button class="zalo-tab-btn" id="profileTabTrips" onclick="switchProfileTab('trips')">🗺️ Chuyến Đi Đã Lưu</button>
-                    <button class="zalo-tab-btn" id="profileTabPref" onclick="switchProfileTab('pref')">⚙️ Sở Thích Cá Nhân (AI)</button>
-                </div>
-
-                <!-- Tab 1: Nhật Ký & Ảnh Check-in Thật -->
-                <div id="profileContentJournal" style="display: block;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                        <h4 style="font-size: 14.5px; font-weight: 700; color: #1E293B; margin: 0;">Bộ Sưu Tập Ảnh & Check-in</h4>
-                        <button class="add-item-btn" style="padding: 6px 12px; font-size: 12px;" onclick="promptAddPhotoToCheckin()">📷 + Thêm Ảnh Check-in</button>
+                    <!-- Tab 2: Chuyến Đi Đã Lưu -->
+                    <div id="profileContentTrips" style="display: none;">
+                        <div id="savedTripsListContainer">
+                            <!-- Loaded from DB -->
+                        </div>
                     </div>
-                    <div id="journalFeedContainer">
-                        <!-- Nạp động từ CSDL -->
-                    </div>
-                </div>
 
-                <!-- Tab 2: Lịch Sử Chuyến Đi Đã Lưu Thật -->
-                <div id="profileContentTrips" style="display: none;">
-                    <div id="savedTripsListContainer">
-                        <!-- Nạp động từ CSDL -->
-                    </div>
-                </div>
-
-                <!-- Tab 3: AI Preferences Settings -->
-                <div id="profileContentPref" style="display: none;">
-                    <div style="background: var(--bg-page); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                        <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">⚙️ Tùy Chỉnh Sở Thích Du Lịch Cá Nhân</h4>
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 10px; cursor: pointer;">
-                            <input type="checkbox" class="user-pref-style" value="Ẩm thực đặc sản" checked> <span>Ưu tiên đề xuất món ăn đặc sản địa phương (Local Cuisine)</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 10px; cursor: pointer;">
-                            <input type="checkbox" class="user-pref-style" value="Nghỉ dưỡng nhẹ nhàng" checked> <span>Giới hạn thời gian di chuyển giữa các điểm < 40 phút</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 14px; cursor: pointer;">
-                            <input type="checkbox" class="user-pref-style" value="Check-in sống ảo" checked> <span>Tự động cập nhật thời tiết điểm đến khi mở ứng dụng</span>
-                        </label>
-                        <button class="add-item-btn" onclick="saveUserProfilePreferences()">Lưu Thiết Lập Hồ Sơ</button>
+                    <!-- Tab 3: AI Preferences -->
+                    <div id="profileContentPref" style="display: none;">
+                        <div class="fb-side-card">
+                            <h4 class="fb-side-title">⚙️ Tùy Chỉnh Sở Thích Du Lịch Cá Nhân (AI)</h4>
+                            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; color: #334155; font-weight: 600;">
+                                    <input type="checkbox" class="user-pref-style" value="Ẩm thực đặc sản" checked style="width: 18px; height: 18px; accent-color: #1877F2;">
+                                    <span>Ưu tiên đề xuất món ăn đặc sản địa phương (Local Cuisine)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; color: #334155; font-weight: 600;">
+                                    <input type="checkbox" class="user-pref-style" value="Nghỉ dưỡng nhẹ nhàng" checked style="width: 18px; height: 18px; accent-color: #1877F2;">
+                                    <span>Giới hạn thời gian di chuyển giữa các điểm < 40 phút</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; color: #334155; font-weight: 600;">
+                                    <input type="checkbox" class="user-pref-style" value="Check-in sống ảo" checked style="width: 18px; height: 18px; accent-color: #1877F2;">
+                                    <span>Tự động cập nhật thời tiết điểm đến khi mở ứng dụng</span>
+                                </label>
+                                <button class="fb-btn-primary" style="margin-top: 10px; justify-content: center;" onclick="saveUserProfilePreferences()">
+                                    Lưu Thiết Lập Hồ Sơ
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3405,6 +3789,50 @@ function switchWizardMode(mode) {
 
 
 
+
+
+    
+    <!-- ============================================================
+         TRANG TOÀN CẢNH DỊCH VỤ KHÁCH SẠN & NƠI LƯU TRÚ (VIEW HOTELS)
+         ============================================================ -->
+    <div id="viewHotels" class="page-view-container" style="display: none; max-width: 1200px; margin: 0 auto; padding: 24px 20px 80px;">
+        <!-- Banner Header -->
+        <div style="background: linear-gradient(135deg, #0F172A, #1E293B); border-radius: 20px; padding: 32px 28px; color: #FFFFFF; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15); position: relative; overflow: hidden;">
+            <div style="position: relative; z-index: 2; max-width: 800px;">
+                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.2); color: #FBBF24; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(245, 158, 11, 0.4);">
+                    🏨 TRAVELOKA & AGODA STYLE EXPERIENCES
+                </div>
+                <h1 style="margin: 0 0 10px; font-size: 26px; font-weight: 800; line-height: 1.3;">Dịch Vụ Khách Sạn & Nơi Lưu Trú Toàn Quốc</h1>
+                <p style="margin: 0; font-size: 14px; color: #94A3B8; line-height: 1.5;">Khám phá các khách sạn, homestay & resort cao cấp có vị trí đắc địa nhất, tối ưu thời gian di chuyển và trải nghiệm trọn vẹn chuyến đi.</p>
+            </div>
+            <div style="position: absolute; right: 20px; bottom: -10px; font-size: 120px; opacity: 0.08; user-select: none;">
+                🏨
+            </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div style="background: #FFFFFF; border-radius: 16px; border: 1px solid #E2E8F0; padding: 16px 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="viewHotelCityTabs">
+                <button class="hotel-page-tab active" onclick="switchHotelPageCity('Hà Nội', this)" style="padding: 8px 18px; border-radius: 24px; border: 1px solid #0F172A; background: #0F172A; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🏛️ Hà Nội</button>
+                <button class="hotel-page-tab" onclick="switchHotelPageCity('Đà Nẵng', this)" style="padding: 8px 18px; border-radius: 24px; border: 1px solid #CBD5E1; background: #fff; color: #475569; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🌊 Đà Nẵng</button>
+                <button class="hotel-page-tab" onclick="switchHotelPageCity('Sa Pa', this)" style="padding: 8px 18px; border-radius: 24px; border: 1px solid #CBD5E1; background: #fff; color: #475569; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🏔️ Sa Pa</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-size: 12px; background: #FEF3C7; color: #92400E; padding: 6px 12px; border-radius: 8px; font-weight: 600;">
+                    ℹ️ Dữ liệu phòng & giá mang tính chất tham khảo
+                </span>
+                <button onclick="switchMainTab('itinerary', event)" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #CBD5E1; background: #F8FAFC; color: #334155; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    🗺️ Về Lộ Trình AI
+                </button>
+            </div>
+        </div>
+
+        <!-- Hotels Cards Grid -->
+        <div id="hotelPageCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+            <!-- Rendered dynamically by app.js -->
+        </div>
+    </div>
 
 
     <!-- Notifications Drawer Side Panel -->
@@ -4265,7 +4693,7 @@ function switchWizardMode(mode) {
 
 
 
-    <script src="/static/app.js?v=33"></script>
+    <script src="/static/app.js?v=39_history_button_added"></script>
 
 
 
@@ -8871,7 +9299,343 @@ function switchWizardMode(mode) {
 </div>
 <style>
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
+
+        /* ============================================================
+           SPLIT BUILDER MEGA 2-COLUMN LAYOUT CSS
+           ============================================================ */
+        .split-builder-wrapper {
+            max-width: 1240px;
+            margin: 20px auto 40px auto;
+            padding: 0 15px;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .builder-top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .builder-title-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .builder-logo-img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+        .builder-main-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1E293B;
+            margin: 0;
+        }
+        .builder-sub-title {
+            font-size: 13px;
+            color: #64748B;
+            margin: 2px 0 0 0;
+        }
+        .split-builder-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+            align-items: flex-start;
+        }
+        .builder-left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .builder-section-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+        .builder-section-card:hover {
+            border-color: #CBD5E1;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+        }
+        .builder-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        .builder-card-header .card-icon {
+            font-size: 20px;
+        }
+        .builder-card-header h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0F172A;
+            margin: 0;
+        }
+        .form-group-item label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+        .builder-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #CBD5E1;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #1E293B;
+            background: #F8FAFC;
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .builder-input:focus {
+            border-color: #E8B923;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(232, 185, 35, 0.2);
+        }
+        .chip-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .form-chip {
+            padding: 8px 14px;
+            border: 1px solid #E2E8F0;
+            background: #F8FAFC;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .form-chip:hover {
+            background: #F1F5F9;
+            border-color: #CBD5E1;
+        }
+        .form-chip.active {
+            background: #E8B923;
+            color: #FFFFFF;
+            border-color: #E8B923;
+            box-shadow: 0 4px 14px rgba(232, 185, 35, 0.35);
+        }
+        .checkbox-member-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .custom-chk-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            background: #F8FAFC;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+            transition: all 0.2s ease;
+        }
+        .custom-chk-label:hover {
+            background: #F1F5F9;
+        }
+        .mode-b-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        /* Live Preview Sticky Card */
+        .builder-right-col {
+            position: sticky;
+            top: 85px;
+        }
+        .live-preview-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        .preview-hero-img-wrap {
+            position: relative;
+            height: 140px;
+            overflow: hidden;
+        }
+        .preview-hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .preview-img-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.85) 100%);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            color: white;
+        }
+        .preview-tag-live {
+            font-size: 10px;
+            font-weight: 800;
+            background: #10B981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 6px;
+            width: fit-content;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        .preview-dest-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .preview-dest-origin {
+            font-size: 12px;
+            color: rgba(255,255,255,0.85);
+            margin: 2px 0 0 0;
+        }
+        .preview-content-body {
+            padding: 18px;
+        }
+        .preview-badges-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .preview-badge-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #F8FAFC;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid #F1F5F9;
+        }
+        .preview-badge-item .badge-icon {
+            font-size: 16px;
+        }
+        .preview-badge-item .badge-text small {
+            display: block;
+            font-size: 10px;
+            color: #94A3B8;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .preview-badge-item .badge-text strong {
+            font-size: 12px;
+            color: #1E293B;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        .preview-cost-box {
+            background: linear-gradient(135deg, rgba(232, 185, 35, 0.08), rgba(245, 158, 11, 0.05));
+            border: 1px solid rgba(232, 185, 35, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+        .cost-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+        .cost-badge-tag {
+            font-size: 10px;
+            background: rgba(232, 185, 35, 0.18);
+            color: #D97706;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cost-box-amount {
+            font-size: 20px;
+            font-weight: 800;
+            color: #D97706;
+        }
+        .cost-box-breakdown {
+            font-size: 11px;
+            color: #64748B;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .preview-notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .preview-note-item {
+            background: #F8FAFC;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border-left: 3px solid #E8B923;
+        }
+        .btn-mega-generate {
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .btn-mega-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(217, 119, 6, 0.45);
+        }
+        .preview-guarantee-text {
+            font-size: 11px;
+            color: #94A3B8;
+            text-align: center;
+            margin-top: 8px;
+            line-height: 1.3;
+        }
+        @media (max-width: 960px) {
+            .split-builder-layout {
+                grid-template-columns: 1fr;
+            }
+            .builder-right-col {
+                position: static;
+            }
+        }
+
+    </style>
 
 
     <!-- Destination Info Modal -->
@@ -9360,6 +10124,86 @@ function switchWizardMode(mode) {
             color: #64748B;
         }
     </style>
+
+    <!-- FULLSCREEN MAP MODAL (ROOT BODY LEVEL TO ESCAPE STICKY & TRANSFORM CONTAINERS) -->
+    <div id="mapFullscreenModal" style="display: none; position: fixed; inset: 0; background: #FFFFFF; z-index: 999999999; flex-direction: column; width: 100vw; height: 100vh;">
+        <div style="padding: 12px 24px; background: #FFFFFF; border-bottom: 2px solid #CBD5E1; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #1E293B; display: flex; align-items: center; gap: 8px;">
+                    🗺️ Bản Đồ Lộ Trình Tuyến Đường (Toàn Màn Hình)
+                </h3>
+                <span id="fsActiveMapDayLabel" style="font-size: 12px; background: rgba(232, 185, 35, 0.25); color: #B45309; padding: 4px 12px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(232, 185, 35, 0.4);">
+                    Ngày 1
+                </span>
+            </div>
+            <button type="button" onclick="closeMapFullscreenModal()" style="background: linear-gradient(135deg, #EF4444, #DC2626); color: #FFFFFF; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35); transition: all 0.2s;">
+                ✕ Thu Nhỏ Màn Hình (Esc)
+            </button>
+        </div>
+        <div id="fullscreenMapHolder" style="flex: 1 1 auto; width: 100vw; height: calc(100vh - 65px); position: relative; background: #F8FAFC;"></div>
+    </div>
+
+    <script>
+        window.toggleMapFullscreen = function() {
+            const modal = document.getElementById('mapFullscreenModal');
+            const holder = document.getElementById('fullscreenMapHolder');
+            const originalParent = document.getElementById('originalMapParent');
+            const mapEl = document.getElementById('leafletMap');
+            const btnZoomOverlay = document.getElementById('btnMapFullscreenOverlay');
+
+            if (!modal || !holder || !mapEl) {
+                console.error("Map elements missing for fullscreen", { modal, holder, mapEl });
+                return;
+            }
+
+            const isFullscreen = modal.style.display === 'flex';
+
+            if (isFullscreen) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                if (originalParent) {
+                    originalParent.appendChild(mapEl);
+                }
+                mapEl.style.height = '400px';
+                mapEl.style.borderRadius = '';
+                if (btnZoomOverlay) btnZoomOverlay.innerHTML = '⛶ Phóng To Bản Đồ';
+            } else {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                holder.appendChild(mapEl);
+                mapEl.style.height = 'calc(100vh - 65px)';
+                mapEl.style.borderRadius = '0';
+                if (btnZoomOverlay) btnZoomOverlay.innerHTML = '✕ Thu nhỏ';
+
+                const labelSrc = document.getElementById('activeMapDayLabel');
+                const labelTarget = document.getElementById('fsActiveMapDayLabel');
+                if (labelSrc && labelTarget) {
+                    labelTarget.textContent = labelSrc.textContent;
+                }
+            }
+
+            [50, 150, 300, 500, 800].forEach(delay => {
+                setTimeout(() => {
+                    if (window.leafletMap) {
+                        window.leafletMap.invalidateSize(true);
+                    }
+                }, delay);
+            });
+        };
+
+        window.closeMapFullscreenModal = function() {
+            const modal = document.getElementById('mapFullscreenModal');
+            if (modal && modal.style.display === 'flex') {
+                window.toggleMapFullscreen();
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.closeMapFullscreenModal();
+            }
+        });
+    </script>
 
 </body>
 

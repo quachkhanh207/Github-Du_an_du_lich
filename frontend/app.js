@@ -425,11 +425,13 @@ const CHECKLIST_DB = {
 document.addEventListener("DOMContentLoaded", () => {
     checkAuthStatus();
     initLeafletMap();
-    renderItineraryForDestination("danang");
     initChecklistEvents();
     initHeroEvents();
     initChatDrawerEvents();
-    showCoverageBanner("full_data", "BeeNavi hiện có dữ liệu địa điểm thực tế tại Hà Nội. Các điểm đến khác sẽ được gợi ý dựa trên kiến thức chung (cần kiểm chứng thêm).");
+    // Khai báo Form Wizard sẵn sàng tạo chuyến đi mới
+    if (typeof resetToWizard === 'function') {
+        resetToWizard();
+    }
 });
 
 
@@ -682,88 +684,217 @@ async function renderItineraryForDestination(destKey) {
 
 
 
-function updateMapForDestination(destData) {
+window.resolveHotelObject = function(data) {
+    const subtitle = (data && data.subtitle) || (window.currentAiData && window.currentAiData.phu_de) || "";
+    const lowerSub = subtitle.toLowerCase();
+    
+    // Nếu chọn 'Chưa chọn' / 'tự do' / 'đi trong ngày' -> TUYỆT ĐỐI KHÔNG VẼ KHÁCH SẠN
+    const accInput = document.getElementById('wizAccommodation')?.value;
+    if (accInput === 'Chưa chọn' || lowerSub.includes('chưa chọn') || lowerSub.includes('tự do') || lowerSub.includes('đi trong ngày')) {
+        return null;
+    }
 
+    if (data && data.hotel && data.hotel.lat && (data.hotel.lon || data.hotel.lng)) {
+        if (data.hotel.name && (data.hotel.name.includes("Chưa chọn") || data.hotel.name.includes("tự do"))) {
+            return null;
+        }
+        return data.hotel;
+    }
+    if (window.currentAiData && window.currentAiData.hotel && window.currentAiData.hotel.lat) {
+        if (window.currentAiData.hotel.name && (window.currentAiData.hotel.name.includes("Chưa chọn") || window.currentAiData.hotel.name.includes("tự do"))) {
+            return null;
+        }
+        return window.currentAiData.hotel;
+    }
+
+    const catalog = [
+        { keys: ["somerset"], name: "Somerset Grand Hanoi", lat: 21.0258, lon: 105.8463, address: "49 Hai Bà Trưng, Hoàn Kiếm, Hà Nội", rating: 8.9, price: 2100000, stars: "5⭐" },
+        { keys: ["metropole", "sofitel"], name: "Sofitel Legend Metropole Hanoi", lat: 21.0258, lon: 105.8562, address: "15 Ngô Quyền, Hoàn Kiếm, Hà Nội", rating: 9.6, price: 6500000, stars: "5⭐" },
+        { keys: ["apricot"], name: "Apricot Hotel Hanoi", lat: 21.0287, lon: 105.8504, address: "136 Hàng Trống, Hoàn Kiếm, Hà Nội", rating: 9.2, price: 3100000, stars: "5⭐" },
+        { keys: ["oriental"], name: "The Oriental Jade Hotel", lat: 21.0305, lon: 105.8502, address: "94 Hàng Trống, Hoàn Kiếm, Hà Nội", rating: 9.5, price: 2400000, stars: "5⭐" },
+        { keys: ["lotte"], name: "Lotte Hotel Hanoi", lat: 21.0322, lon: 105.8122, address: "54 Liễu Giai, Ba Đình, Hà Nội", rating: 9.4, price: 3400000, stars: "5⭐" },
+        { keys: ["intercontinental", "westlake"], name: "InterContinental Hanoi Westlake", lat: 21.0580, lon: 105.8330, address: "05 Từ Hoa, Tây Hồ, Hà Nội", rating: 9.3, price: 3200000, stars: "5⭐" },
+        { keys: ["marriott"], name: "JW Marriott Hotel Hanoi", lat: 21.0120, lon: 105.7830, address: "08 Đỗ Đức Dục, Nam Từ Liêm, Hà Nội", rating: 9.5, price: 3800000, stars: "5⭐" },
+        { keys: ["pan pacific"], name: "Pan Pacific Hanoi", lat: 21.0475, lon: 105.8398, address: "01 Thanh Niên, Ba Đình, Hà Nội", rating: 9.1, price: 2600000, stars: "5⭐" },
+        { keys: ["sheraton"], name: "Sheraton Hanoi Hotel", lat: 21.0620, lon: 105.8310, address: "11 Xuân Diệu, Tây Hồ, Hà Nội", rating: 9.0, price: 2850000, stars: "5⭐" },
+        { keys: ["golden lake", "wyndham"], name: "Dolce Golden Lake", lat: 21.0255, lon: 105.8198, address: "B7 Giảng Võ, Ba Đình, Hà Nội", rating: 9.2, price: 3600000, stars: "5⭐" },
+        { keys: ["classic"], name: "Hanoi Classic 2", lat: 21.0346, lon: 105.8517, address: "49 Lương Ngọc Quyến, Hoàn Kiếm", rating: 8.4, price: 450000, stars: "3⭐" },
+        { keys: ["davue"], name: "Davue Hotel Đà Nẵng", lat: 16.0592, lon: 108.2435, address: "57 Đỗ Bát, Mỹ Khê, Đà Nẵng", rating: 8.9, price: 360000, stars: "3⭐" }
+    ];
+
+    for (const h of catalog) {
+        if (h.keys.some(k => lowerSub.includes(k))) {
+            return h;
+        }
+    }
+
+    return null;
+};
+
+function drawItineraryMap(destData, activeDayNum = 1) {
     if (!leafletMap) return;
+    if (destData) window.currentStructuredItinerary = destData;
+    const data = destData || window.currentStructuredItinerary;
+    if (!data) return;
 
-
-
+    // Xóa markers & polyline cũ
     leafletMarkers.forEach(m => leafletMap.removeLayer(m));
-
     leafletMarkers = [];
-
     if (leafletPolyline) leafletMap.removeLayer(leafletPolyline);
 
-
-
-    leafletMap.flyTo(destData.center, 12, { duration: 1.2 });
-
-
+    // Lọc theo ngày kích hoạt nếu có
+    let targetDays = (activeDayNum && data.days) ? data.days.filter(d => d.dayNum == activeDayNum) : (data.days || []);
+    if (!targetDays || targetDays.length === 0) targetDays = data.days || [];
 
     const polylineCoords = [];
+    const navWaypoints = [];
+    let actIndex = 1;
 
-    destData.days.forEach(day => {
-
-        day.activities.forEach(act => {
-
-            if (act.lat && act.lng && !isNaN(act.lat) && !isNaN(act.lng)) {
-
-                const marker = L.marker([act.lat, act.lng]).addTo(leafletMap)
-
-                    .bindPopup(`<b>${act.title}</b><br>${act.desc}`);
-
-                leafletMarkers.push(marker);
-
-                polylineCoords.push([act.lat, act.lng]);
-
-            }
-
+    // 🏨 VẼ PIN NƠI LƯU TRÚ / KHÁCH SẠN (HOTEL HOME BASE - NỔI BẬT ĐẶC BIỆT CÓ TOOLTIP CỐ ĐỊNH)
+    const hotelObj = window.resolveHotelObject(data);
+    if (hotelObj && hotelObj.lat && (hotelObj.lon || hotelObj.lng)) {
+        const hLat = parseFloat(hotelObj.lat);
+        const hLng = parseFloat(hotelObj.lon || hotelObj.lng);
+        
+        const hotelIcon = L.divIcon({
+            className: 'custom-hotel-pin-super',
+            html: `
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;">
+                    <div style="position: absolute; width: 44px; height: 44px; border-radius: 50%; background: rgba(99, 102, 241, 0.45); animation: pulseRing 2s infinite ease-out;"></div>
+                    <div style="background: linear-gradient(135deg, #3730A3, #6366F1); color: #fff; font-size: 19px; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #FFFFFF; box-shadow: 0 4px 14px rgba(55, 48, 163, 0.6); cursor: pointer; position: relative; z-index: 2;">🏨</div>
+                </div>
+            `,
+            iconSize: [44, 44],
+            iconAnchor: [22, 22],
+            popupAnchor: [0, -22]
         });
 
+        const hGmapsUrl = `https://www.google.com/maps/search/?api=1&query=${hLat},${hLng}`;
+        const hotelMarker = L.marker([hLat, hLng], { icon: hotelIcon, zIndexOffset: 2000 }).addTo(leafletMap);
+
+        // Nhãn nổi cố định hiển thị ngay trên ghim
+        if (typeof hotelMarker.bindTooltip === 'function') {
+            hotelMarker.bindTooltip(`<b>🏨 Nơi ở: ${hotelObj.name.split('(')[0].trim()}</b>`, {
+                permanent: true,
+                direction: 'top',
+                offset: [0, -24],
+                className: 'hotel-permanent-tooltip'
+            });
+        }
+
+        hotelMarker.bindPopup(`
+            <div style="font-family: inherit; font-size: 13px; max-width: 250px; padding: 4px;">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                    <span style="font-size: 18px;">🏨</span>
+                    <strong style="color: #3730A3; font-size: 14px;">${hotelObj.name}</strong>
+                </div>
+                <div style="font-size: 11.5px; color: #475569; margin-bottom: 6px;">📍 ${hotelObj.address || 'Trung tâm thành phố'}</div>
+                <div style="font-size: 11px; background: #EEF2FF; border: 1px solid #C7D2FE; color: #3730A3; padding: 4px 8px; border-radius: 6px; margin-bottom: 8px; font-weight: 700;">
+                    ⭐ ${hotelObj.rating || '8.9'}/10 • Giá từ ${(hotelObj.price || hotelObj.price_per_night || 500000).toLocaleString('vi-VN')} đ/đêm
+                </div>
+                <div style="font-size: 11.5px; color: #059669; font-weight: 700; margin-bottom: 8px;">🚶 Điểm xuất phát & trở về mỗi ngày</div>
+                <a href="${hGmapsUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: #2563EB; font-weight: 700; text-decoration: none;">📍 Xem vị trí trên Google Maps &rarr;</a>
+            </div>
+        `);
+
+        leafletMarkers.push(hotelMarker);
+        polylineCoords.push([hLat, hLng]);
+        navWaypoints.push(`${hLat},${hLng}`);
+    }
+
+    targetDays.forEach(day => {
+        (day.activities || []).forEach(act => {
+            if (act.lat && act.lng && !isNaN(act.lat) && !isNaN(act.lng)) {
+                const lat = parseFloat(act.lat);
+                const lng = parseFloat(act.lng);
+                
+                // Custom Icon số thứ tự màu vàng
+                const customIcon = L.divIcon({
+                    className: 'custom-map-pin',
+                    html: `<div style="background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; font-weight: 800; font-size: 12px; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.35); cursor: pointer;">${actIndex}</div>`,
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 13],
+                    popupAnchor: [0, -14]
+                });
+
+                const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                const marker = L.marker([lat, lng], { icon: customIcon }).addTo(leafletMap)
+                    .bindPopup(`
+                        <div style="font-family: inherit; font-size: 13px; max-width: 220px;">
+                            <div style="font-weight: 700; color: #1E293B; margin-bottom: 4px;">#${actIndex}. ${act.title || act.ten}</div>
+                            <div style="font-size: 11px; color: #64748B; margin-bottom: 8px;">${act.desc || act.mo_ta || ''}</div>
+                            <a href="${gmapsUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #2563EB; font-weight: 600; text-decoration: none;">📍 Xem trên Google Maps &rarr;</a>
+                        </div>
+                    `);
+
+                leafletMarkers.push(marker);
+                polylineCoords.push([lat, lng]);
+                navWaypoints.push(`${lat},${lng}`);
+                actIndex++;
+            }
+        });
     });
 
-
-
+    // Vẽ đường nối Polyline từ Khách sạn -> Các điểm tham quan
     if (polylineCoords.length > 1) {
-
         leafletPolyline = L.polyline(polylineCoords, {
-
             color: '#E8B923',
-
             weight: 4,
-
-            opacity: 0.8,
-
-            dashArray: '8, 8'
-
+            opacity: 0.85,
+            dashArray: '6, 8'
         }).addTo(leafletMap);
-
+        
+        leafletMap.fitBounds(polylineCoords, { padding: [40, 40], maxZoom: 15 });
+    } else if (polylineCoords.length === 1) {
+        leafletMap.flyTo(polylineCoords[0], 14, { duration: 1 });
+    } else if (data.center) {
+        leafletMap.flyTo(data.center, 12, { duration: 1 });
     }
 
+    // Cập nhật nút Google Maps Navigation (Xuất phát từ Khách Sạn)
+    const gmapsBtn = document.getElementById("btnGoogleMapsRoute");
+    if (gmapsBtn) {
+        if (navWaypoints.length >= 2) {
+            const origin = navWaypoints[0];
+            const destination = navWaypoints[navWaypoints.length - 1];
+            const waypoints = navWaypoints.slice(1, -1).join('|');
+            const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypoints ? '&waypoints=' + waypoints : ''}&travelmode=driving`;
+            gmapsBtn.href = url;
+            gmapsBtn.style.display = "inline-flex";
+            gmapsBtn.title = `Mở chỉ đường Google Maps cho Ngày ${activeDayNum} (Từ Khách Sạn)`;
+        } else if (navWaypoints.length === 1) {
+            gmapsBtn.href = `https://www.google.com/maps/search/?api=1&query=${navWaypoints[0]}`;
+            gmapsBtn.style.display = "inline-flex";
+        } else {
+            gmapsBtn.style.display = "none";
+        }
+    }
 }
 
-
+function updateMapForDestination(destData) {
+    drawItineraryMap(destData, 1);
+}
 
 window.toggleAccordion = function (headerEl) {
-
     const acc = headerEl.closest(".day-accordion");
-
+    if (!acc) return;
     const isActive = acc.classList.contains("active");
 
-    document.querySelectorAll(".day-accordion").forEach(a => a.classList.remove("active"));
+    document.querySelectorAll(".day-accordion").forEach(a => {
+        a.classList.remove("active");
+        const body = a.querySelector(".day-body");
+        if (body) body.style.display = "";
+    });
 
     if (!isActive) {
-
         acc.classList.add("active");
-
         const dayNum = acc.getAttribute("data-day");
-
         const label = document.getElementById("activeMapDayLabel");
-
         if (label) label.textContent = `Ngày ${dayNum}`;
-
+        
+        // Lọc bản đồ theo ngày kích hoạt
+        drawItineraryMap(null, parseInt(dayNum) || 1);
     }
-
 };
 
 
@@ -771,22 +902,27 @@ window.toggleAccordion = function (headerEl) {
 window.focusMapLocation = async function (dummyLat, dummyLng, title) {
     if (!leafletMap) return;
     
-    showToast("Đang tìm đường đi...");
+    let finalLat = (dummyLat && !isNaN(dummyLat) && parseFloat(dummyLat) > 0) ? parseFloat(dummyLat) : null;
+    let finalLng = (dummyLng && !isNaN(dummyLng) && parseFloat(dummyLng) > 0) ? parseFloat(dummyLng) : null;
     
-    let finalLat = null;
-    let finalLng = null;
-    
-    try {
-        const res = await fetch(`/location?name=${encodeURIComponent(title)}`);
-        if (res.ok) {
-            const data = await res.json();
-            if (data && data.lat) {
-                finalLat = data.lat;
-                finalLng = data.lon;
+    if (!finalLat || !finalLng) {
+        showToast("Đang tìm vị trí địa điểm...");
+        // Tách lấy tên thực của địa điểm (bỏ các tiền tố icon như 🍳 Ăn sáng & Cà phê: ...)
+        let cleanName = title ? title.replace(/^[^\w\s\u00C0-\u1EF9]+.*?:/u, '').replace(/^.*?:/, '').trim() : '';
+        if (!cleanName) cleanName = title;
+
+        try {
+            const res = await fetch(`/location?name=${encodeURIComponent(cleanName)}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.lat) {
+                    finalLat = data.lat;
+                    finalLng = data.lon;
+                }
             }
+        } catch(e) {
+            console.error("Lỗi lấy tọa độ", e);
         }
-    } catch(e) {
-        console.error("Lỗi lấy tọa độ", e);
     }
     
     if (!finalLat || !finalLng) {
@@ -794,7 +930,7 @@ window.focusMapLocation = async function (dummyLat, dummyLng, title) {
         return;
     }
 
-    leafletMap.flyTo([finalLat, finalLng], 14, { duration: 1 });
+    leafletMap.flyTo([finalLat, finalLng], 15, { duration: 1 });
     
     if (destMarker) leafletMap.removeLayer(destMarker);
     destMarker = L.marker([finalLat, finalLng])
@@ -1894,6 +2030,8 @@ window.openZaloProfileModal = async function (tabKey = 'journal') {
     if (modal) {
         modal.style.display = "flex";
         modal.classList.add("active");
+        modal.style.opacity = "1";
+        modal.style.pointerEvents = "auto";
         window.switchProfileTab(tabKey);
     }
 
@@ -1922,6 +2060,8 @@ window.openZaloProfileModal = async function (tabKey = 'journal') {
             if (pSpent) pSpent.textContent = stats.total_spent ? `${stats.total_spent.toLocaleString('vi-VN')} đ` : "0 đ";
         }
     } catch(e) {}
+
+    window.loadUserSavedPhotos();
 };
 
 window.closeZaloProfileModal = function () {
@@ -1930,6 +2070,98 @@ window.closeZaloProfileModal = function () {
         modal.style.display = "none";
         modal.classList.remove("active");
     }
+};
+
+/* ==========================================================================
+   FACEBOOK PROFILE IMAGE UPLOAD & PHOTO PERSISTENCE HANDLERS
+   ========================================================================== */
+window.triggerCoverFileUpload = function () {
+    const inp = document.getElementById("inputCoverPhotoUpload");
+    if (inp) inp.click();
+};
+
+window.triggerAvatarFileUpload = function () {
+    const inp = document.getElementById("inputAvatarUpload");
+    if (inp) inp.click();
+};
+
+window.handleCoverPhotoUpload = function (event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const dataUrl = e.target.result;
+        const banner = document.querySelector(".fb-cover-banner");
+        if (banner) {
+            banner.style.background = `linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.65) 100%), url('${dataUrl}') center/cover no-repeat`;
+        }
+        try {
+            localStorage.setItem("user_custom_cover_photo", dataUrl);
+        } catch (err) { }
+        if (typeof showToast === 'function') {
+            showToast("📷 Đã nạp & lưu ảnh bìa mới từ máy tính thành công!");
+        }
+    };
+    reader.readAsDataURL(file);
+};
+
+window.handleAvatarUpload = function (event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const dataUrl = e.target.result;
+        const avatarBox = document.getElementById("profileAvatarBox");
+        const creatorAvatar = document.querySelector(".fb-creator-avatar");
+        if (avatarBox) {
+            avatarBox.style.backgroundImage = `url('${dataUrl}')`;
+            avatarBox.style.backgroundSize = "cover";
+            avatarBox.style.backgroundPosition = "center";
+            avatarBox.textContent = "";
+        }
+        if (creatorAvatar) {
+            creatorAvatar.style.backgroundImage = `url('${dataUrl}')`;
+            creatorAvatar.style.backgroundSize = "cover";
+            creatorAvatar.style.backgroundPosition = "center";
+            creatorAvatar.textContent = "";
+        }
+        try {
+            localStorage.setItem("user_custom_avatar_photo", dataUrl);
+        } catch (err) { }
+        if (typeof showToast === 'function') {
+            showToast("🖼️ Đã nạp & lưu ảnh đại diện mới từ máy tính thành công!");
+        }
+    };
+    reader.readAsDataURL(file);
+};
+
+window.loadUserSavedPhotos = function () {
+    try {
+        const savedCover = localStorage.getItem("user_custom_cover_photo");
+        if (savedCover) {
+            const banner = document.querySelector(".fb-cover-banner");
+            if (banner) {
+                banner.style.background = `linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.65) 100%), url('${savedCover}') center/cover no-repeat`;
+            }
+        }
+        const savedAvatar = localStorage.getItem("user_custom_avatar_photo");
+        if (savedAvatar) {
+            const avatarBox = document.getElementById("profileAvatarBox");
+            const creatorAvatar = document.querySelector(".fb-creator-avatar");
+            if (avatarBox) {
+                avatarBox.style.backgroundImage = `url('${savedAvatar}')`;
+                avatarBox.style.backgroundSize = "cover";
+                avatarBox.style.backgroundPosition = "center";
+                avatarBox.textContent = "";
+            }
+            if (creatorAvatar) {
+                creatorAvatar.style.backgroundImage = `url('${savedAvatar}')`;
+                creatorAvatar.style.backgroundSize = "cover";
+                creatorAvatar.style.backgroundPosition = "center";
+                creatorAvatar.textContent = "";
+            }
+        }
+    } catch (e) { }
 };
 
 window.switchProfileTab = async function (tabKey) {
@@ -2845,10 +3077,12 @@ window.switchMainTab = function (tabKey, event) {
     const viewHome = document.getElementById("viewHome");
     const viewItinerary = document.getElementById("viewItinerary");
     const viewJournal = document.getElementById("viewJournal");
+    const viewHotels = document.getElementById("viewHotels");
 
     if (viewHome) viewHome.style.display = "none";
     if (viewItinerary) viewItinerary.style.display = "none";
     if (viewJournal) viewJournal.style.display = "none";
+    if (viewHotels) viewHotels.style.display = "none";
 
     // 3. Handle Home view (Logo click or Trang Chủ tab)
     if (tabKey === 'home') {
@@ -2869,7 +3103,7 @@ window.switchMainTab = function (tabKey, event) {
     }
 
     // 5. Switch to target dedicated page view
-    if (tabKey === 'itinerary' || tabKey === 'service') {
+    if (tabKey === 'itinerary') {
         if (viewItinerary) viewItinerary.style.display = "block";
         if (typeof leafletMap !== 'undefined' && leafletMap) {
             setTimeout(() => { leafletMap.invalidateSize(); }, 150);
@@ -2881,6 +3115,11 @@ window.switchMainTab = function (tabKey, event) {
             window.renderJournalView();
         }
         showToast("📖 Đã chuyển sang giao diện độc lập: Nhật Ký Hành Trình");
+    } else if (tabKey === 'hotels' || tabKey === 'service') {
+        if (viewHotels) viewHotels.style.display = "block";
+        const targetCity = window.currentTripDestination || "Hà Nội";
+        switchHotelPageCity(targetCity.includes("Đà Nẵng") ? "Đà Nẵng" : (targetCity.includes("Sa Pa") ? "Sa Pa" : "Hà Nội"));
+        showToast("🏨 Đã chuyển sang Dịch Vụ Khách Sạn & Chỗ Ở Toàn Quốc");
     }
 
 
@@ -3219,21 +3458,53 @@ async function generateItineraryFromWizard(event, mode = 'A') {
         const dest = document.getElementById('wizDest')?.value || 'Hà Nội';
         const days = document.getElementById('wizDays')?.value || '3';
         const budget = document.getElementById('wizBudget')?.value || '5000000';
+        const startDate = document.getElementById('wizStartDate')?.value || '';
+
+        const companion = document.getElementById('wizCompanion')?.value || 'Cặp đôi';
+        const groupSize = document.getElementById('wizGroupSize')?.value || '2 người';
+        const vehicle = document.getElementById('wizVehicle')?.value || 'Xe máy';
+        const accommodation = document.getElementById('wizAccommodation')?.value || 'Khách sạn 3-4 sao';
+        const specificHotel = document.getElementById('wizSpecificHotel')?.value?.trim() || '';
+
         const objective = document.getElementById('wizObjective')?.value || 'Khám phá';
+        const customObjective = document.getElementById('wizCustomObjective')?.value?.trim() || '';
+        const diningStyle = document.getElementById('wizDiningStyle')?.value || 'Hài hòa';
+        const activityLevel = document.getElementById('wizActivityLevel')?.value || 'Nhẹ nhàng';
         const shopping = document.getElementById('wizShopping')?.value || 'Bình thường';
         const nightlife = document.getElementById('wizNightlife')?.value || 'Cà phê, Chợ đêm';
-        const photo = document.getElementById('wizPhotography')?.value || 'Bình thường';
+
+        const specialMembers = Array.from(document.querySelectorAll('.wiz-member-chk:checked')).map(c => c.value);
+        const diningConstraints = document.getElementById('wizDiningConstraints')?.value || '';
+        const pacing = document.getElementById('wizPacing')?.value || 'Cân bằng';
+
+        const mustVisit = document.getElementById('wizMustVisit')?.value || '';
+        const mustAvoid = document.getElementById('wizMustAvoid')?.value || '';
+        const extraNotes = document.getElementById('wizExtra')?.value || '';
 
         tripData = {
             mode: 'A',
-            destination: dest,
             origin: origin,
+            destination: dest,
             num_days: parseInt(days) || 3,
             budget: budget,
-            trip_objective: objective,
-            photography_preference: photo,
+            start_date: startDate,
+            companion: companion,
+            group_size: groupSize,
+            vehicle: vehicle,
+            accommodation: accommodation,
+            specific_hotel: specificHotel,
+            trip_objective: customObjective ? `${objective} (${customObjective})` : objective,
+            custom_objective: customObjective,
+            dining_style: diningStyle,
+            activity_level: activityLevel,
+            shopping_interest: shopping,
             nightlife_preference: nightlife,
-            shopping_interest: shopping
+            special_members: specialMembers,
+            dining_constraints: diningConstraints,
+            pacing: pacing,
+            must_visit: mustVisit,
+            must_avoid: mustAvoid,
+            extra_notes: extraNotes
         };
     } else {
         const dest = document.getElementById('wizPoiName')?.value || 'Lăng Bác';
@@ -3262,27 +3533,50 @@ async function generateItineraryFromWizard(event, mode = 'A') {
         if (!response.ok) throw new Error('API Error');
 
         const structured = await response.json();
+        window.currentTripDestination = tripData.destination;
+        window.currentStructuredItinerary = structured;
         
         // Convert to aiData format expected by renderAIItinerary
         const aiData = {
             tieu_de: structured.title || `Lịch Trình Khám Phá`,
+            phu_de: structured.subtitle || "AI đã tối ưu hóa quãng đường di chuyển và thời điểm tham quan đẹp nhất.",
             tong_chi_phi: structured.cost || "",
             chi_tiet_chi_phi_str: structured.costDetails || "",
             thoi_tiet: structured.weather ? structured.weather.desc : "Nắng đẹp",
+            hotel: structured.hotel || null,
             lich_trinh: []
         };
         
         if (structured.days) {
-            aiData.lich_trinh = structured.days.map(d => {
+            aiData.lich_trinh = structured.days.map((d, index) => {
+                let fullTitle = d.title || `Ngày ${d.dayNum || (index + 1)}`;
+                let badgeText = `Ngày ${d.dayNum || (index + 1)}`;
+                let titleText = 'Khám phá điểm đến';
+                
+                if (fullTitle.includes(':')) {
+                    const parts = fullTitle.split(':');
+                    badgeText = parts[0].trim();
+                    titleText = parts.slice(1).join(':').trim();
+                } else if (fullTitle.includes('-')) {
+                    const parts = fullTitle.split('-');
+                    badgeText = parts[0].trim();
+                    titleText = parts.slice(1).join('-').trim();
+                } else {
+                    titleText = fullTitle;
+                }
+
                 return {
-                    ngay: d.title || `Ngày ${d.dayNum}`,
+                    ngay_badge: badgeText,
+                    tieu_de_ngay: titleText,
+                    ngay: badgeText,
                     diem_den: d.activities.map(a => ({
                         thoi_gian: a.time,
                         ten: a.title,
                         mo_ta: a.desc,
                         toa_do: [a.lat, a.lng],
                         img: a.img,
-                        distance_from_prev: a.distance_from_prev
+                        distance_from_prev: a.distance_from_prev,
+                        transport_badge: a.transport_badge
                     }))
                 };
             });
@@ -3295,7 +3589,9 @@ async function generateItineraryFromWizard(event, mode = 'A') {
         
         renderAIItinerary(aiData, tripData.destination, structured.weather);
         
-        // Ghi thẳng vào Supabase table ai_itineraries
+        if (typeof drawItineraryMap === 'function' && structured) {
+            drawItineraryMap(structured);
+        }
         if (window.db_supabase) {
             window.db_supabase.from('ai_itineraries').insert([{
                 user_id: window.currentUser ? window.currentUser.id : null,
@@ -3318,12 +3614,15 @@ async function generateItineraryFromWizard(event, mode = 'A') {
 
 async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
     window.currentAiData = aiData;
-    // Cập nhật tiêu đề, chi phí
+    if (destName) window.currentTripDestination = destName;
+    // Cập nhật tiêu đề, phụ đề, chi phí
     const titleEl = document.getElementById("itinerarySectionTitle");
+    const subTitleEl = document.getElementById("itinerarySectionSubtitle");
     const costAmount = document.getElementById("costAmountText");
     const costDetails = document.getElementById("costDetailsText");
     
     if (titleEl && aiData.tieu_de) titleEl.textContent = aiData.tieu_de;
+    if (subTitleEl && aiData.phu_de) subTitleEl.textContent = aiData.phu_de;
     if (costAmount && aiData.tong_chi_phi) costAmount.textContent = aiData.tong_chi_phi;
     if (costDetails && aiData.chi_tiet_chi_phi_str) costDetails.textContent = aiData.chi_tiet_chi_phi_str;
 
@@ -3361,15 +3660,17 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
         aiData.lich_trinh.forEach((day, index) => {
             const isActive = index === 0 ? "active" : "";
             const activitiesList = day.diem_den || day.hoat_dong || [];
+            const badgeText = day.ngay_badge || day.ngay || `Ngày ${index+1}`;
+            const titleText = day.tieu_de_ngay || 'Khám phá & Trải nghiệm';
             
             html += `
             <div class="day-accordion ${isActive}" data-day="${index+1}">
                 <div class="day-header" onclick="toggleAccordion(this)">
-                    <div class="day-title-group">
-                        <div class="day-badge">${day.ngay || 'Ngày ' + (index+1)}</div>
+                    <div class="day-title-group" style="display: flex; align-items: center; gap: 12px;">
+                        <div class="day-badge" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; font-weight: 700; border: 1px solid #FCD34D; font-size: 13px; padding: 4px 12px; border-radius: 8px; white-space: nowrap;">${badgeText}</div>
                         <div class="day-info">
-                            <h3>${day.tieu_de_ngay || day.ngay || 'Khám phá'}</h3>
-                            <p>${activitiesList.length} địa điểm</p>
+                            <h3 style="font-size: 15px; font-weight: 700; color: #1E293B; margin: 0 0 2px 0;">${titleText}</h3>
+                            <p style="font-size: 12px; color: #64748B; margin: 0;">${activitiesList.length} địa điểm • Tuyến đường tối ưu</p>
                         </div>
                     </div>
                     <div class="accordion-toggle-icon">
@@ -3381,7 +3682,7 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
             `;
             
             if (activitiesList && Array.isArray(activitiesList)) {
-                activitiesList.forEach(act => {
+                activitiesList.forEach((act, actIndex) => {
                     const safeTitle = (act.ten || act.ten_diem || 'Địa điểm').replace(/'/g, "\\'");
                     const desc = act.mo_ta || act.chi_tiet || '';
                     const time = act.thoi_gian || act.gio || '08:00';
@@ -3389,7 +3690,12 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
                     const lng = act.toa_do ? act.toa_do[1] : 105.8542;
                     
                     let distHtml = '';
-                    if (act.distance_from_prev > 0) {
+                    if (act.transport_badge) {
+                        distHtml = `<div style="margin-left: 55px; margin-bottom: 10px; font-size: 12px; color: #555; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                            <span style="display:inline-block; border-left: 2px dashed #E8B923; height: 20px;"></span> 
+                            <span style="background: rgba(232, 185, 35, 0.15); color: #B45309; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(232, 185, 35, 0.3);">${act.transport_badge}</span>
+                        </div>`;
+                    } else if (act.distance_from_prev > 0) {
                         const dist = act.distance_from_prev;
                         const tool = dist < 1.0 ? '🚶 Đi bộ' : '🚕 Gọi xe';
                         distHtml = `<div style="margin-left: 55px; margin-bottom: 10px; font-size: 12px; color: #666; font-style: italic; display: flex; align-items: center; gap: 5px;">
@@ -3416,7 +3722,12 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             </div>
                             <div class="activity-content">
-                                <div class="activity-title">${safeTitle} <span class="location-tag">📍 Xem vị trí & Chỉ đường</span></div>
+                                <div class="activity-title" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 6px;">
+                                    <span>${safeTitle} <span class="location-tag">📍 Xem vị trí</span></span>
+                                    <button class="btn-swap-poi" title="Đổi địa điểm khác phù hợp" onclick="event.stopPropagation(); swapItineraryActivity(${index}, ${actIndex})" style="background: rgba(245, 158, 11, 0.12); color: #B45309; border: 1px solid rgba(245, 158, 11, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;">
+                                        🔄 Đổi điểm
+                                    </button>
+                                </div>
                                 <p class="activity-desc">${desc}</p>
                             </div>
                         </div>
@@ -3443,6 +3754,194 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
         }
     }, 400);
 }
+
+/* ==========================================================================
+   TRANG TOÀN CẢNH DỊCH VỤ KHÁCH SẠN & NƠI LƯU TRÚ (VIEW HOTELS)
+   ========================================================================== */
+window.currentHotelPageCity = "Hà Nội";
+
+window.switchHotelPageCity = async function(city, btnEl) {
+    window.currentHotelPageCity = city;
+    
+    // Update active tab buttons
+    if (btnEl) {
+        document.querySelectorAll(".hotel-page-tab").forEach(t => {
+            t.style.background = "#fff";
+            t.style.color = "#475569";
+            t.style.borderColor = "#CBD5E1";
+        });
+        btnEl.style.background = "#0F172A";
+        btnEl.style.color = "#fff";
+        btnEl.style.borderColor = "#0F172A";
+    }
+
+    const gridEl = document.getElementById("hotelPageCardsGrid");
+    if (!gridEl) return;
+
+    gridEl.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #64748B; font-size: 15px;">⏳ Đang nạp danh sách khách sạn tại <strong>${city}</strong>...</div>`;
+
+    try {
+        const res = await fetch(`/api/hotels?city=${encodeURIComponent(city)}`);
+        const data = await res.json();
+        
+        if (data && data.hotels && data.hotels.length > 0) {
+            let html = '';
+            data.hotels.forEach(h => {
+                html += `
+                <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;">
+                    <!-- Ảnh & Huy hiệu sao -->
+                    <div style="position: relative; width: 100%; height: 210px; background: #F1F5F9;">
+                        <img src="${h.img_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'}" alt="${h.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <div style="position: absolute; top: 12px; left: 12px; background: rgba(15, 23, 42, 0.85); color: #fff; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 8px; backdrop-filter: blur(4px);">
+                            ${h.stars}
+                        </div>
+                        <div style="position: absolute; top: 12px; right: 12px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                            ⭐ ${h.rating || 8.5}/10 (${(h.review_count || 1000).toLocaleString('vi-VN')} đánh giá)
+                        </div>
+                    </div>
+
+                    <!-- Nội dung chi tiết -->
+                    <div style="padding: 20px; display: flex; flex-direction: column; justify-content: space-between; flex: 1; gap: 14px;">
+                        <div>
+                            <h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 800; color: #0F172A; line-height: 1.4;">${h.name}</h3>
+                            <p style="margin: 0 0 10px; font-size: 12.5px; color: #64748B; display: flex; align-items: flex-start; gap: 4px;">
+                                <span>📍</span> <span>${h.address}</span>
+                            </p>
+                            
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+                                <span style="font-size: 11px; background: #F1F5F9; color: #334155; padding: 3px 8px; border-radius: 6px; font-weight: 600;">🚶 Vị trí đắc địa</span>
+                                <span style="font-size: 11px; background: #FEF3C7; color: #92400E; padding: 3px 8px; border-radius: 6px; font-weight: 600;">⚡ Phổ biến nhất</span>
+                                ${h.phone ? `<span style="font-size: 11px; background: #E0E7FF; color: #3730A3; padding: 3px 8px; border-radius: 6px; font-weight: 600;">📞 ${h.phone}</span>` : ''}
+                            </div>
+
+                            <div style="font-size: 12px; color: #475569; background: #F8FAFC; padding: 10px 12px; border-radius: 10px; border: 1px solid #F1F5F9; line-height: 1.5;">
+                                ✨ <strong>Tiện ích nổi bật:</strong> ${h.amenities || 'WiFi tốc độ cao, Điều hòa, Lễ tân 24/7, Dọn phòng hàng ngày'}
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px dashed #E2E8F0; padding-top: 14px; margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                <div>
+                                    <span style="font-size: 11px; color: #64748B;">Giá tham khảo:</span>
+                                    <div style="font-size: 18px; font-weight: 800; color: #EA580C;">
+                                        ${(h.price_per_night || 500000).toLocaleString('vi-VN')} VNĐ <span style="font-size: 11px; font-weight: normal; color: #64748B;">/đêm</span>
+                                    </div>
+                                </div>
+                                <a href="${h.website || '#'}" target="_blank" style="background: linear-gradient(135deg, #0284C7, #0369A1); color: #FFFFFF; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);">
+                                    🔗 Xem phòng & Đặt chỗ →
+                                </a>
+                            </div>
+                            <button onclick="selectHotelForItinerary('${h.name.replace(/'/g, "\\'")}')" style="background: #F1F5F9; border: 1px solid #CBD5E1; color: #334155; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; transition: all 0.2s;">
+                                🎯 Dùng làm nơi ở cho Lộ Trình AI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+            gridEl.innerHTML = html;
+        } else {
+            gridEl.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #64748B;">Chưa có dữ liệu khách sạn tại ${city}.</div>`;
+        }
+    } catch (e) {
+        gridEl.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #EF4444;">❌ Lỗi khi tải dữ liệu khách sạn: ${e.message}</div>`;
+    }
+};
+
+window.selectHotelForItinerary = function(hotelName) {
+    const input = document.getElementById("wizSpecificHotel");
+    if (input) {
+        input.value = hotelName;
+    }
+    window.switchMainTab('itinerary');
+    showToast(`🏨 Đã chọn "${hotelName}" làm nơi lưu trú cho chuyến đi!`);
+};
+
+window.swapItineraryActivity = async function (dayIndex, actIndex) {
+    if (!window.currentAiData || !window.currentAiData.lich_trinh) return;
+    const dayObj = window.currentAiData.lich_trinh[dayIndex];
+    if (!dayObj || !dayObj.diem_den || !dayObj.diem_den[actIndex]) return;
+    
+    const currAct = dayObj.diem_den[actIndex];
+    const currName = currAct.ten ? currAct.ten.replace(/^[^\w\s\u00C0-\u1EF9]+.*?:/u, '').replace(/^.*?:/, '').trim() : '';
+    
+    // Trích xuất điểm đến chính xác từ tiêu đề hoặc biến toàn cục
+    let dest = window.currentTripDestination;
+    if (!dest && window.currentAiData && window.currentAiData.tieu_de) {
+        const title = window.currentAiData.tieu_de;
+        if (title.includes('•')) {
+            dest = title.split('•')[1].split('(')[0].trim();
+        } else if (title.includes('-')) {
+            dest = title.split('-')[1].split('(')[0].trim();
+        }
+    }
+    if (!dest) {
+        const destSelect = document.getElementById("prefDestinationSelect");
+        if (destSelect && destSelect.value) dest = destSelect.value;
+    }
+    if (!dest) dest = "Đà Nẵng";
+
+    // Thu thập tất cả các POI đã có trong chuyến đi để tránh trùng lặp
+    const allUsedNames = [];
+    window.currentAiData.lich_trinh.forEach(d => {
+        (d.diem_den || []).forEach(a => {
+            const raw = a.ten ? a.ten.replace(/^[^\w\s\u00C0-\u1EF9]+.*?:/u, '').replace(/^.*?:/, '').trim() : '';
+            if (raw) allUsedNames.push(raw);
+        });
+    });
+
+    showToast("🔄 Đang tìm địa điểm thay thế phù hợp...");
+
+    try {
+        const url = `/api/alternative_poi?destination=${encodeURIComponent(dest)}&category=${encodeURIComponent(currAct.ten || '')}&current_name=${encodeURIComponent(currName)}&exclude_names=${encodeURIComponent(allUsedNames.join(','))}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data && data.name) {
+            // Cập nhật POI mới
+            currAct.ten = currAct.ten.includes(':') ? (currAct.ten.split(':')[0] + ': ' + data.name) : data.name;
+            currAct.mo_ta = data.description || `Khám phá ${data.name}.`;
+            currAct.toa_do = [data.lat, data.lon];
+            if (data.img) currAct.img = data.img;
+
+            // Tính lại khoảng cách so với điểm liền trước
+            if (actIndex > 0 && dayObj.diem_den[actIndex - 1] && dayObj.diem_den[actIndex - 1].toa_do) {
+                const prev = dayObj.diem_den[actIndex - 1].toa_do;
+                const dLat = (data.lat - prev[0]) * Math.PI / 180;
+                const dLon = (data.lon - prev[1]) * Math.PI / 180;
+                const aDist = Math.sin(dLat/2)**2 + Math.cos(prev[0]*Math.PI/180) * Math.cos(data.lat*Math.PI/180) * Math.sin(dLon/2)**2;
+                currAct.distance_from_prev = Math.round(6371 * 2 * Math.asin(Math.sqrt(aDist)) * 10) / 10;
+            }
+
+            // Đồng bộ sang structured itinerary nếu có
+            if (window.currentStructuredItinerary && window.currentStructuredItinerary.days) {
+                const sDay = window.currentStructuredItinerary.days[dayIndex];
+                if (sDay && sDay.activities && sDay.activities[actIndex]) {
+                    sDay.activities[actIndex].title = currAct.ten;
+                    sDay.activities[actIndex].raw_name = data.name;
+                    sDay.activities[actIndex].desc = currAct.mo_ta;
+                    sDay.activities[actIndex].lat = data.lat;
+                    sDay.activities[actIndex].lng = data.lon;
+                    sDay.activities[actIndex].distance_from_prev = currAct.distance_from_prev;
+                    if (data.img) sDay.activities[actIndex].img = data.img;
+                }
+            }
+
+            renderAIItinerary(window.currentAiData, dest);
+            drawItineraryMap(window.currentStructuredItinerary, dayIndex + 1);
+            showToast(`✅ Đã đổi sang: "${data.name}"!`);
+        } else {
+            showToast("ℹ️ Đã sử dụng hết địa điểm thay thế phù hợp trong khu vực.");
+        }
+    } catch(e) {
+        console.error("Lỗi đổi địa điểm:", e);
+        showToast("❌ Không thể đổi địa điểm lúc này, vui lòng thử lại.");
+    }
+};
+
+window.exportItineraryPDF = function() {
+    window.print();
+};
 
 /* ==========================================================================
    COVERAGE BANNER — hiển thị phạm vi dữ liệu hỗ trợ theo từng điểm đến
@@ -4528,4 +5027,444 @@ window.submitUserFeedback = async function() {
 // Khởi chạy khi tài liệu tải xong
 document.addEventListener("DOMContentLoaded", function() {
     loadActiveAnnouncements();
+});
+
+
+
+/* ==========================================================================
+   MODULE: SPLIT-SCREEN MEGA BUILDER & LIVE TRIP PREVIEW (UPGRADED V3)
+   ========================================================================== */
+
+window.handleCustomDaysInput = function(inputEl) {
+    if (!inputEl) return;
+    let val = parseInt(inputEl.value) || 2;
+    if (val < 2) val = 2;
+    if (val > 30) val = 30;
+    inputEl.value = val;
+
+    const hiddenDays = document.getElementById('wizDays');
+    if (hiddenDays) hiddenDays.value = val;
+
+    // Bỏ active của các chip chọn nhanh nếu số ngày không khớp
+    const chips = document.querySelectorAll('#daysChipGroup .form-chip');
+    chips.forEach(chip => {
+        const text = chip.textContent;
+        if (text.includes(`${val}N`) || text.includes(`${val} Ngày`)) {
+            chip.classList.add('active');
+        } else {
+            chip.classList.remove('active');
+        }
+    });
+
+    updateLiveTripPreview();
+};
+
+window.selectFormChip = function(groupName, value, btnEl) {
+    if (!btnEl) return;
+    const parentGroup = btnEl.closest('.chip-group') || btnEl.parentElement;
+    if (parentGroup) {
+        parentGroup.querySelectorAll('.form-chip').forEach(chip => chip.classList.remove('active'));
+    }
+    btnEl.classList.add('active');
+
+    // Cập nhật hidden input tương ứng
+    if (groupName === 'days') {
+        const hiddenInput = document.getElementById('wizDays');
+        if (hiddenInput) hiddenInput.value = value;
+        const customInput = document.getElementById('wizDaysCustom');
+        if (customInput) customInput.value = value;
+    } else if (groupName === 'companion') {
+        const input = document.getElementById('wizCompanion');
+        if (input) input.value = value;
+    } else if (groupName === 'groupSize') {
+        const input = document.getElementById('wizGroupSize');
+        if (input) input.value = value;
+    } else if (groupName === 'vehicle') {
+        const input = document.getElementById('wizVehicle');
+        if (input) input.value = value;
+    } else if (groupName === 'accommodation') {
+        const input = document.getElementById('wizAccommodation');
+        if (input) input.value = value;
+
+        const hotelWrapper = document.getElementById('wizHotelChipsWrapper');
+        const hotelInput = document.getElementById('wizSpecificHotel');
+        const hotelChipsContainer = document.getElementById('wizHotelChipsContainer');
+        const hotelNote = document.getElementById('wizHotelNote');
+
+        if (value === 'Chưa chọn') {
+            if (hotelInput) {
+                hotelInput.value = '';
+                hotelInput.disabled = true;
+                hotelInput.placeholder = 'Bạn chọn Tự do / Đi trong ngày';
+            }
+            if (hotelWrapper) {
+                hotelWrapper.style.opacity = '0.35';
+                hotelWrapper.style.pointerEvents = 'none';
+            }
+            if (hotelChipsContainer) {
+                hotelChipsContainer.querySelectorAll('.wiz-hotel-chip').forEach(c => {
+                    c.style.background = '#FFFFFF';
+                    c.style.color = '#334155';
+                    c.style.borderColor = '#CBD5E1';
+                });
+            }
+            if (hotelNote) {
+                hotelNote.innerHTML = 'Chuyến đi tự do / đi trong ngày (không tính chi phí khách sạn)';
+                hotelNote.style.color = '#64748B';
+            }
+        } else {
+            if (hotelInput) {
+                hotelInput.disabled = false;
+                hotelInput.placeholder = 'Chọn ở trên hoặc gõ tên khách sạn...';
+            }
+            if (hotelWrapper) {
+                hotelWrapper.style.opacity = '1';
+                hotelWrapper.style.pointerEvents = 'auto';
+            }
+            if (hotelNote) {
+                if (hotelInput && hotelInput.value) {
+                    hotelNote.innerHTML = `<strong>Đã chọn "${hotelInput.value}":</strong> AI sẽ tự động lập lộ trình xuất phát & về lại đây mỗi ngày.`;
+                    hotelNote.style.color = '#059669';
+                } else {
+                    hotelNote.innerHTML = 'AI sẽ xếp đường đi xuất phát và về lại khách sạn này mỗi ngày';
+                    hotelNote.style.color = '#059669';
+                }
+            }
+        }
+    } else if (groupName === 'objective') {
+        const input = document.getElementById('wizObjective');
+        if (input) input.value = value;
+    } else if (groupName === 'diningStyle') {
+        const input = document.getElementById('wizDiningStyle');
+        if (input) input.value = value;
+    } else if (groupName === 'activityLevel') {
+        const input = document.getElementById('wizActivityLevel');
+        if (input) input.value = value;
+    } else if (groupName === 'pacing') {
+        const input = document.getElementById('wizPacing');
+        if (input) input.value = value;
+    } else if (groupName === 'nightlife') {
+        const input = document.getElementById('wizNightlife');
+        if (input) input.value = value;
+    } else if (groupName === 'shopping') {
+        const input = document.getElementById('wizShopping');
+        if (input) input.value = value;
+    }
+
+    updateLiveTripPreview();
+};
+
+window.updateLiveTripPreview = function() {
+    const dest = document.getElementById('wizDest')?.value || 'Hà Nội';
+    const origin = document.getElementById('wizOrigin')?.value || 'Hồ Chí Minh';
+    const days = parseInt(document.getElementById('wizDays')?.value || '3') || 3;
+    const nights = Math.max(1, days - 1);
+    
+    const companion = document.getElementById('wizCompanion')?.value || 'Cặp đôi';
+    const groupSize = document.getElementById('wizGroupSize')?.value || '2 người';
+    const vehicle = document.getElementById('wizVehicle')?.value || 'Xe máy';
+    const accommodation = document.getElementById('wizAccommodation')?.value || 'Khách sạn 3-4 sao';
+    const specificHotel = document.getElementById('wizSpecificHotel')?.value?.trim();
+    
+    const objective = document.getElementById('wizObjective')?.value || 'Khám phá';
+    const customObjective = document.getElementById('wizCustomObjective')?.value?.trim();
+    const finalObjective = customObjective || objective;
+
+    const diningStyle = document.getElementById('wizDiningStyle')?.value || 'Hài hòa';
+    const activityLevel = document.getElementById('wizActivityLevel')?.value || 'Nhẹ nhàng';
+    const pacing = document.getElementById('wizPacing')?.value || 'Cân bằng';
+    const startDate = document.getElementById('wizStartDate')?.value;
+
+    const budgetRaw = parseFloat(document.getElementById('wizBudget')?.value || '5000000') || 5000000;
+
+    // Cập nhật ảnh đại diện điểm đến
+    const destImg = document.getElementById('previewDestImg');
+    if (destImg) {
+        const dLower = dest.toLowerCase();
+        if (dLower.includes('đà nẵng') || dLower.includes('danang')) {
+            destImg.src = 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80';
+        } else if (dLower.includes('sa pa') || dLower.includes('sapa') || dLower.includes('hà giang')) {
+            destImg.src = 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=600&q=80';
+        } else if (dLower.includes('phú quốc') || dLower.includes('nha trang') || dLower.includes('quy nhơn')) {
+            destImg.src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80';
+        } else if (dLower.includes('đà lạt')) {
+            destImg.src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80';
+        } else {
+            destImg.src = 'https://images.unsplash.com/photo-1548625361-125026723b72?auto=format&fit=crop&w=600&q=80';
+        }
+    }
+
+    // Cập nhật tiêu đề
+    const titleEl = document.getElementById('previewDestTitle');
+    if (titleEl) titleEl.textContent = `${dest} (${days}N${nights}Đ)`;
+
+    const originEl = document.getElementById('previewOriginSubtitle');
+    if (originEl) {
+        let dateStr = "";
+        if (startDate) {
+            try {
+                const dObj = new Date(startDate);
+                dateStr = ` • Khởi hành ${dObj.getDate()}/${dObj.getMonth()+1}/${dObj.getFullYear()}`;
+            } catch(e) {}
+        }
+        originEl.textContent = `Xuất phát từ ${origin}${dateStr}`;
+    }
+
+    // Cập nhật badges
+    const badgeComp = document.getElementById('previewBadgeCompanion');
+    if (badgeComp) badgeComp.textContent = `${companion} (${groupSize})`;
+
+    const badgeVeh = document.getElementById('previewBadgeVehicle');
+    if (badgeVeh) badgeVeh.textContent = vehicle;
+
+    const badgeAcc = document.getElementById('previewBadgeAcc');
+    if (badgeAcc) badgeAcc.textContent = specificHotel ? specificHotel : (accommodation === 'Chưa chọn' ? 'Tự do / Đi trong ngày' : accommodation);
+
+    const badgeObj = document.getElementById('previewBadgeObjective');
+    if (badgeObj) badgeObj.textContent = `${finalObjective} • ${pacing}`;
+
+    // Dự toán chi phí động
+    let hotelRate = 750000;
+    if (accommodation === 'Chưa chọn') hotelRate = 0;
+    else if (accommodation.includes('Homestay') || accommodation.includes('Hostel')) hotelRate = 350000;
+    else if (accommodation.includes('Resort') || accommodation.includes('5 sao')) hotelRate = 2200000;
+
+    let foodPerDay = diningStyle.includes('Sang trọng') ? 750000 : (diningStyle.includes('Vỉa hè') ? 280000 : 450000);
+    let transPerDay = vehicle.includes('Taxi') ? 350000 : (vehicle.includes('Ô tô') ? 450000 : 150000);
+
+    let totalEst = (hotelRate * nights) + ((foodPerDay + transPerDay) * days);
+    if (budgetRaw > 0 && Math.abs(budgetRaw - totalEst) < totalEst * 0.4) {
+        totalEst = budgetRaw;
+    }
+
+    const costAmountEl = document.getElementById('previewCostAmount');
+    if (costAmountEl) costAmountEl.textContent = `~${totalEst.toLocaleString('vi-VN')} VNĐ / người`;
+
+    const costBreakdownEl = document.getElementById('previewCostBreakdown');
+    if (costBreakdownEl) {
+        costBreakdownEl.textContent = `${specificHotel || accommodation} (${nights} đêm): ${Math.round((hotelRate * nights)/1000)}k • Ẩm thực (${days}N): ${Math.round((foodPerDay * days)/1000)}k • Vé & Xe: ${Math.round((transPerDay * days)/1000)}k`;
+    }
+
+    // Cập nhật các ghi chú đặc biệt
+    const mustVisit = document.getElementById('wizMustVisit')?.value?.trim();
+    const noteMustVisit = document.getElementById('previewNoteMustVisit');
+    const textMustVisit = document.getElementById('previewMustVisitText');
+    if (mustVisit && noteMustVisit && textMustVisit) {
+        textMustVisit.textContent = mustVisit;
+        noteMustVisit.style.display = 'block';
+    } else if (noteMustVisit) {
+        noteMustVisit.style.display = 'none';
+    }
+
+    const mustAvoid = document.getElementById('wizMustAvoid')?.value?.trim();
+    const noteAvoid = document.getElementById('previewNoteAvoid');
+    const textAvoid = document.getElementById('previewMustAvoidText');
+    if (mustAvoid && noteAvoid && textAvoid) {
+        textAvoid.textContent = mustAvoid;
+        noteAvoid.style.display = 'block';
+    } else if (noteAvoid) {
+        noteAvoid.style.display = 'none';
+    }
+
+    const specialChks = Array.from(document.querySelectorAll('.wiz-member-chk:checked')).map(c => c.value);
+    const noteSpecial = document.getElementById('previewNoteSpecial');
+    const textSpecial = document.getElementById('previewSpecialText');
+    if (specialChks.length > 0 && noteSpecial && textSpecial) {
+        textSpecial.textContent = specialChks.join(', ');
+        noteSpecial.style.display = 'block';
+    } else if (noteSpecial) {
+        noteSpecial.style.display = 'none';
+    }
+};
+
+window.switchWizardMode = function(mode) {
+    const btnA = document.getElementById('btnModeA');
+    const btnB = document.getElementById('btnModeB');
+    if (btnA && btnB) {
+        btnA.classList.remove('active');
+        btnB.classList.remove('active');
+        if (mode === 'A') btnA.classList.add('active');
+        else btnB.classList.add('active');
+    }
+
+    const paneA = document.getElementById('wizardPanesModeA');
+    const paneB = document.getElementById('wizardPaneModeB');
+    if (paneA && paneB) {
+        if (mode === 'A') {
+            paneA.style.display = 'grid';
+            paneB.style.display = 'none';
+        } else {
+            paneA.style.display = 'none';
+            paneB.style.display = 'block';
+        }
+    }
+};
+
+/* ==========================================================================
+   GỢI Ý KHÁCH SẠN NỔI TIẾNG TRONG TRÌNH TẠO LỘ TRÌNH (WIZARD HOTEL PICKER)
+   ========================================================================== */
+window.lastLoadedHotelCity = "";
+
+window.loadWizardHotelSuggestions = async function(city) {
+    const container = document.getElementById("wizHotelChipsContainer");
+    const datalist = document.getElementById("wizHotelsDatalist");
+    if (!container) return;
+
+    const targetCity = city || document.getElementById('wizDest')?.value || 'Hà Nội';
+    if (window.lastLoadedHotelCity === targetCity && container.children.length > 0) return;
+    window.lastLoadedHotelCity = targetCity;
+
+    container.innerHTML = `<span style="font-size: 12px; color: #64748B;">⏳ Đang nạp khách sạn nổi tiếng tại ${targetCity}...</span>`;
+
+    try {
+        const res = await fetch(`/api/hotels?city=${encodeURIComponent(targetCity)}`);
+        const data = await res.json();
+        
+        if (data && data.hotels && data.hotels.length > 0) {
+            let chipsHtml = '';
+            let optionsHtml = '';
+            data.hotels.forEach((h) => {
+                const cleanName = h.name.replace(/'/g, "\\'");
+                const shortName = h.name.split('(')[0].replace('Khách Sạn', '').replace('Hotel', '').trim();
+                const cleanStars = (h.stars || '4★').replace('⭐', '★');
+                const goldStars = cleanStars.replace(/★/g, '<span class="star-gold">★</span>');
+                chipsHtml += `
+                    <button type="button" class="form-chip wiz-hotel-chip" onclick="selectWizardHotel('${cleanName}', this)" style="border-radius: 20px; font-size: 12.5px; font-weight: 600; padding: 5px 12px; transition: all 0.2s; background: #FFFFFF; border: 1px solid #CBD5E1; color: #334155; cursor: pointer;">
+                        ${shortName} (${goldStars})
+                    </button>
+                `;
+                optionsHtml += `<option value="${h.name}">${h.address} • ★ ${h.rating}/10</option>`;
+            });
+            container.innerHTML = chipsHtml;
+            if (datalist) datalist.innerHTML = optionsHtml;
+        } else {
+            container.innerHTML = `<span style="font-size: 12px; color: #64748B;">Gõ tên khách sạn bạn đã chọn bên dưới, AI sẽ tự động định vị vị trí!</span>`;
+        }
+    } catch (e) {
+        console.warn("Lỗi nạp gợi ý khách sạn:", e);
+        container.innerHTML = `<span style="font-size: 12px; color: #64748B;">Nhập tên khách sạn tùy chọn bên dưới để AI sắp xếp.</span>`;
+    }
+};
+
+window.selectWizardHotel = function(hotelName, btnEl) {
+    // Nếu đang ở trạng thái 'Chưa chọn', tự động đổi sang Khách sạn 3-4 sao
+    const accInput = document.getElementById('wizAccommodation');
+    if (accInput && accInput.value === 'Chưa chọn') {
+        accInput.value = 'Khách sạn 3-4 sao';
+        const accChips = document.querySelectorAll('.chip-group button[onclick*="accommodation"]');
+        accChips.forEach(chip => {
+            if (chip.getAttribute('onclick').includes('Khách sạn 3-4 sao')) {
+                chip.classList.add('active');
+            } else {
+                chip.classList.remove('active');
+            }
+        });
+        const hotelWrapper = document.getElementById('wizHotelChipsWrapper');
+        if (hotelWrapper) {
+            hotelWrapper.style.opacity = '1';
+            hotelWrapper.style.pointerEvents = 'auto';
+        }
+    }
+
+    const input = document.getElementById("wizSpecificHotel");
+    const note = document.getElementById("wizHotelNote");
+    if (input) {
+        input.disabled = false;
+        input.value = hotelName;
+    }
+    
+    // Highlight active chip
+    if (btnEl) {
+        document.querySelectorAll(".wiz-hotel-chip").forEach(c => {
+            c.style.background = "#FFFFFF";
+            c.style.color = "#334155";
+            c.style.borderColor = "#CBD5E1";
+        });
+        btnEl.style.background = "#4338CA";
+        btnEl.style.color = "#FFFFFF";
+        btnEl.style.borderColor = "#4338CA";
+    }
+
+    if (note) {
+        note.innerHTML = `<strong>Đã chọn "${hotelName}":</strong> AI sẽ tự động lập lộ trình xuất phát & về lại đây mỗi ngày.`;
+        note.style.color = '#059669';
+    }
+
+    if (typeof updateLiveTripPreview === 'function') {
+        updateLiveTripPreview();
+    }
+};
+
+// Kích hoạt cập nhật lần đầu khi trang load
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        updateLiveTripPreview();
+        loadWizardHotelSuggestions();
+    }, 300);
+});
+
+/* ==========================================================================
+   PHÓNG TO / THU NHỎ BẢN ĐỒ LEAFLET TOÀN MÀN HÌNH (MAP FULLSCREEN TOGGLE)
+   ========================================================================== */
+window.toggleMapFullscreen = function() {
+    const modal = document.getElementById('mapFullscreenModal');
+    const holder = document.getElementById('fullscreenMapHolder');
+    const originalParent = document.getElementById('originalMapParent');
+    const mapEl = document.getElementById('leafletMap');
+    const btnZoom = document.getElementById('btnMapFullscreen');
+    const btnZoomOverlay = document.getElementById('btnMapFullscreenOverlay');
+
+    if (!modal || !holder || !mapEl) {
+        console.error("Map element or modal holder missing", { modal, holder, mapEl });
+        return;
+    }
+
+    const isFullscreen = modal.style.display === 'flex';
+
+    if (isFullscreen) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        if (originalParent) {
+            originalParent.appendChild(mapEl);
+        }
+        mapEl.style.height = '400px';
+        mapEl.style.borderRadius = '';
+        if (btnZoom) btnZoom.innerHTML = '⛶ Phóng to';
+        if (btnZoomOverlay) btnZoomOverlay.innerHTML = '⛶ Phóng To Bản Đồ';
+    } else {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        holder.appendChild(mapEl);
+        mapEl.style.height = 'calc(100vh - 65px)';
+        mapEl.style.borderRadius = '0';
+        if (btnZoom) btnZoom.innerHTML = '✕ Thu nhỏ';
+        if (btnZoomOverlay) btnZoomOverlay.innerHTML = '✕ Thu nhỏ';
+
+        const labelSrc = document.getElementById('activeMapDayLabel');
+        const labelTarget = document.getElementById('fsActiveMapDayLabel');
+        if (labelSrc && labelTarget) {
+            labelTarget.textContent = labelSrc.textContent;
+        }
+    }
+
+    [50, 150, 300, 500, 800].forEach(delay => {
+        setTimeout(() => {
+            if (window.leafletMap) {
+                window.leafletMap.invalidateSize(true);
+            }
+        }, delay);
+    });
+};
+
+window.closeMapFullscreenModal = function() {
+    const modal = document.getElementById('mapFullscreenModal');
+    if (modal && modal.style.display === 'flex') {
+        window.toggleMapFullscreen();
+    }
+};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        window.closeMapFullscreenModal();
+    }
 });
