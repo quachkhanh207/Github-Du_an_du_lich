@@ -282,9 +282,22 @@ CREATE POLICY "Anyone can create AI itinerary logs" ON public.ai_itineraries FOR
 CREATE POLICY "Users can view own AI itineraries" ON public.ai_itineraries FOR SELECT 
 USING (auth.uid() = user_id OR user_id IS NULL OR EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
 
--- 8.7. Announcements & POIs
-CREATE POLICY "Announcements are viewable by everyone" ON public.announcements FOR SELECT USING (is_active = true);
+-- 8.7. Chính sách cho Announcements & POIs
+DROP POLICY IF EXISTS "Announcements are viewable by everyone" ON public.announcements;
+CREATE POLICY "Announcements are viewable by everyone" ON public.announcements FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert announcements" ON public.announcements FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update announcements" ON public.announcements FOR UPDATE USING (true);
+CREATE POLICY "Anyone can delete announcements" ON public.announcements FOR DELETE USING (true);
+
+DROP POLICY IF EXISTS "POIs are viewable by everyone" ON public.pois;
 CREATE POLICY "POIs are viewable by everyone" ON public.pois FOR SELECT USING (true);
+CREATE POLICY "Admins can insert pois" ON public.pois FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admins can update pois" ON public.pois FOR UPDATE USING (true);
+CREATE POLICY "Admins can delete pois" ON public.pois FOR DELETE USING (true);
+
+-- 8.8. Quyền sửa & xóa cho Feedbacks
+CREATE POLICY "Admins can update feedbacks" ON public.user_feedbacks FOR UPDATE USING (true);
+CREATE POLICY "Admins can delete feedbacks" ON public.user_feedbacks FOR DELETE USING (true);
 
 -- ==============================================================================
 -- 9. DỮ LIỆU MẪU BAN ĐẦU

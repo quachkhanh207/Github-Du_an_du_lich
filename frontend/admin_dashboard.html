@@ -535,18 +535,32 @@
         }
 
         async function toggleAnnounce(id, newState) {
-            if (newState) {
-                // Tắt các cái khác trước khi bật cái này
-                await window.db_supabase.from('announcements').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000');
+            try {
+                if (newState) {
+                    // Tắt các cái khác trước khi bật cái này
+                    await window.db_supabase.from('announcements').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000');
+                }
+                const { error } = await window.db_supabase.from('announcements').update({ is_active: newState }).eq('id', id);
+                if (error) {
+                    alert("Lỗi phân quyền Supabase (RLS): " + error.message);
+                }
+                fetchAnnouncements();
+            } catch(e) {
+                alert("Lỗi kết nối: " + e.message);
             }
-            await window.db_supabase.from('announcements').update({ is_active: newState }).eq('id', id);
-            fetchAnnouncements();
         }
 
         async function deleteAnnounce(id) {
             if (confirm("Chắc chắn muốn xóa thông báo này?")) {
-                await window.db_supabase.from('announcements').delete().eq('id', id);
-                fetchAnnouncements();
+                try {
+                    const { error } = await window.db_supabase.from('announcements').delete().eq('id', id);
+                    if (error) {
+                        alert("Lỗi phân quyền Supabase (RLS): " + error.message);
+                    }
+                    fetchAnnouncements();
+                } catch(e) {
+                    alert("Lỗi kết nối: " + e.message);
+                }
             }
         }
 
