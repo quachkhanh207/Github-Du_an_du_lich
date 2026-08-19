@@ -1,0 +1,9282 @@
+<!DOCTYPE html>
+
+
+<html lang="vi">
+
+
+<head>
+
+
+    <meta charset="UTF-8">
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>Beenavi - The Smart Travel Ecosystem</title>
+
+
+    
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+
+    <link rel="stylesheet" href="/static/style.css?v=chat_fix_2026">
+
+
+
+</head>
+
+
+<body>
+
+
+    <header class="navbar navbar-traveloka" id="mainHeader">
+
+
+        <div class="nav-left">
+
+
+            <!-- Logo beenavi (Clicking returns to Home & clears active underlines) -->
+
+
+
+
+
+            <a href="javascript:void(0)" onclick="switchMainTab('home', event)" class="brand-logo-traveloka" title="beenavi - Trang Chủ">
+
+
+
+
+
+                <span class="logo-icon-box" style="background: none; padding: 0; box-shadow: none;">
+
+
+
+
+
+                    <img src="/static/beenavi_logo_nobg.png" alt="BeeNavi mascot" style="width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(232,185,35,.35)); margin-top: 4px;">
+
+
+
+
+
+                </span>
+
+
+
+
+
+                <span class="logo-text-beenavi" style="font-size: 1.4rem; font-weight: 900; letter-spacing: -.5px; color: #111111;">
+
+
+
+
+
+                    <span class="bee-bold" style="background: linear-gradient(120deg, #C99A10 0%, #E8B923 50%, #F5C842 100%); background-size: 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">bee</span><span class="navi-light" style="font-weight: 500;">navi</span>
+
+
+
+
+
+                </span>
+
+
+
+
+
+            </a>
+
+
+
+
+
+
+
+
+
+
+
+            <!-- Dải Menu Chính (Mặc định Trang chủ không gạch chân, click tab mới gạch chân) -->
+
+
+
+
+
+            <nav class="traveloka-nav-links">
+                <a href="javascript:void(0)" onclick="switchMainTab('home', event)" class="trv-link active whitespace-nowrap">Trang Chủ</a>
+                <a href="#itinerarySection" onclick="switchMainTab('itinerary', event)" class="trv-link whitespace-nowrap">Lộ Trình AI</a>
+                <a href="javascript:void(0)" onclick="switchMainTab('journal', event)" class="trv-link whitespace-nowrap">Nhật Ký</a>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Dropdown Dịch Vụ Gom Nhóm -->
+
+
+
+
+
+                <div class="nav-dropdown-wrapper">
+
+
+
+
+
+                    <a href="javascript:void(0)" class="trv-link trv-dropdown-trigger whitespace-nowrap">
+
+
+
+
+
+                        Dịch Vụ <span class="dropdown-arrow">▼</span>
+
+
+
+
+
+                    </a>
+
+
+
+
+
+                    <div class="nav-dropdown-menu">
+
+
+
+
+
+                        <a href="#itinerarySection" onclick="switchMainTab('service', event)" class="dropdown-item">
+
+
+
+
+
+                            <span class="item-icon">🏨</span> Khách sạn
+
+
+
+
+
+                        </a>
+
+
+
+
+
+                        <a href="#itinerarySection" onclick="switchMainTab('service', event)" class="dropdown-item">
+
+
+
+
+
+                            <span class="item-icon">✈️</span> Vé máy bay
+
+
+
+
+
+                        </a>
+
+
+
+
+
+                        <a href="#itinerarySection" onclick="switchMainTab('service', event)" class="dropdown-item">
+
+
+
+
+
+                            <span class="item-icon">🚌</span> Vé xe khách
+
+
+
+
+
+                        </a>
+
+
+
+
+
+                        <a href="#itinerarySection" onclick="switchMainTab('service', event)" class="dropdown-item">
+
+
+
+
+
+                            <span class="item-icon">🚗</span> Đưa đón sân bay
+
+
+
+
+
+                        </a>
+
+
+
+
+
+                        <a href="#itinerarySection" onclick="switchMainTab('service', event)" class="dropdown-item">
+
+
+
+
+
+                            <span class="item-icon">🔑</span> Cho thuê xe
+
+
+
+
+
+                        </a>
+
+
+
+
+
+                        <a href="#itinerarySection" onclick="switchMainTab('service', event)" class="dropdown-item">
+
+
+
+
+
+                            <span class="item-icon">🎟️</span> Hoạt động & Vui chơi
+
+
+
+
+
+                        </a>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </nav>
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+        <div class="nav-right traveloka-right" id="navRightContainer">
+            <!-- Nút Đăng nhập / Đăng ký (Hiển thị khi chưa đăng nhập) -->
+            <div id="navGuestBox" style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn-nav-auth" onclick="openAuthModal('login')">
+                    <span>🔐</span> Đăng Nhập / Đăng Ký
+                </button>
+            </div>
+
+            <!-- Menu Người dùng (Hiển thị khi đã đăng nhập) -->
+            <div id="navUserBox" style="display: none;" class="hamburger-menu-container">
+                <button class="hamburger-toggle-btn" id="hamburgerBtn" onclick="toggleHamburgerMenu(event)" title="Tài Khoản Cá Nhân">
+                    <span id="navUserAvatarText" style="font-weight: 800; font-size: 13px; color: #1E293B;">U</span>
+                    <span class="hamburger-badge-dot"></span>
+                </button>
+
+                <div class="hamburger-popup-panel" id="hamburgerPanel">
+                    <div class="panel-user-header" onclick="openZaloProfileModal('journal'); closeHamburgerMenu();">
+                        <div class="panel-avatar-wrapper">
+                            <div class="panel-avatar-img" id="navPanelAvatarInitial" style="background: linear-gradient(135deg, #F5C842, #E8B923); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #111827; font-size: 16px;">U</div>
+                            <span class="panel-online-dot"></span>
+                        </div>
+                        <div class="panel-user-info">
+                            <div class="panel-user-name" id="navPanelUserName">Người dùng <span class="vip-badge">MEMBER</span></div>
+                            <div class="panel-user-sub" id="navPanelUserEmail">user@beenavi.vn</div>
+                        </div>
+                    </div>
+
+                    <div class="panel-divider"></div>
+
+                    <div class="panel-section-title">Quản Lý Cá Nhân</div>
+                    <a href="javascript:void(0)" onclick="openZaloProfileModal('pref'); closeHamburgerMenu();" class="panel-menu-item">
+                        <span class="menu-item-icon">⚙️</span> Hồ Sơ & Sở Thích AI
+                    </a>
+                    <a href="javascript:void(0)" onclick="openZaloProfileModal('trips'); closeHamburgerMenu();" class="panel-menu-item">
+                        <span class="menu-item-icon">🗺️</span> Lịch Sử Chuyến Đi
+                    </a>
+                    <a href="javascript:void(0)" onclick="openZaloProfileModal('journal'); closeHamburgerMenu();" class="panel-menu-item">
+                        <span class="menu-item-icon">📖</span> Nhật Ký & Ảnh Check-in
+                    </a>
+
+                    <div class="panel-divider"></div>
+
+                    <a href="javascript:void(0)" onclick="handleLogout(); closeHamburgerMenu();" class="panel-menu-item" style="color: #EF4444;">
+                        <span class="menu-item-icon">🚪</span> Đăng Xuất
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ==========================================
+
+
+
+
+
+         PAGE VIEW 1: TRANG CHỦ (HOME)
+
+
+
+
+
+         ========================================== -->
+
+
+
+
+
+    <div id="viewHome" class="page-view-container">
+
+
+
+
+
+        <!-- 2. TRẠM TẠO LỘ TRÌNH DU LỊCH AI THÔNG MINH (BỐ CỤC CHUẨN TRAVELOKA & NỀN BIỂN SẦM SƠN) -->
+
+
+
+
+
+        <section class="hero-gateway-section traveloka-hero-samson">
+
+
+
+
+
+            <div class="hero-overlay-samson"></div>
+
+
+
+
+
+            <div class="hero-gateway-content traveloka-container-samson">
+
+
+
+
+
+                
+
+
+
+
+
+                <!-- Headline Chuyên Biệt Lộ Trình AI (Bố cục chuẩn Traveloka) -->
+
+
+
+
+
+                <h1 class="traveloka-headline-white">
+
+
+
+
+
+                    App du lịch hàng đầu, một chạm đi bất cứ đâu
+
+
+
+
+
+                </h1>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Nút Tạo Lộ Trình AI Căn Giữa Nổi Bật -->
+                <div style="display: flex; justify-content: center; margin-top: 32px;">
+                    <button class="hero-create-itinerary-btn" onclick="switchMainTab('itinerary', event)">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                        <span>Tạo Lộ Trình AI Ngay</span>
+                        <span class="hero-hot-badge">HOT 🔥</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             KHỐI LỘ TRÌNH AI ĐƯỢC ĐỀ XUẤT & SẴN SÀNG CLONE (CURATED AI ROUTES)
+             ============================================================ -->
+        <section class="inspiration-section">
+            <!-- Thanh Tabs Phân Loại Danh Mục -->
+            <div class="curated-category-pills">
+                <button class="curated-pill-btn active" onclick="filterCuratedTrips('all', this)">🌟 Tất Cả (8)</button>
+                <button class="curated-pill-btn" onclick="filterCuratedTrips('beach', this)">🏝️ Biển Đảo Nghỉ Dưỡng</button>
+                <button class="curated-pill-btn" onclick="filterCuratedTrips('mountain', this)">🏔️ Săn Mây Vùng Cao</button>
+                <button class="curated-pill-btn" onclick="filterCuratedTrips('foodtour', this)">🍜 Ẩm Thực & Foodtour</button>
+                <button class="curated-pill-btn" onclick="filterCuratedTrips('adventure', this)">🛵 Phượt & Di Sản</button>
+            </div>
+
+            <!-- Lưới Các Thẻ Lộ Trình AI Sẵn Sàng Xem Hoặc Clone -->
+            <div class="curated-trips-grid" id="curatedTripsGrid">
+                <!-- 1. Đà Nẵng - Hội An -->
+                <div class="curated-trip-card" data-category="beach">
+                    <div class="curated-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80" alt="Đà Nẵng" class="curated-card-img">
+                        <div class="curated-card-badges">
+                            <span class="curated-badge-duration">⏱️ 3 Ngày 2 Đêm</span>
+                            <span class="curated-badge-clone">🔥 1.4k Clone</span>
+                        </div>
+                    </div>
+                    <div class="curated-card-body">
+                        <div class="curated-card-price">Dự toán: <span>~2.850.000 đ</span></div>
+                        <h3 class="curated-card-title">Đà Nẵng - Hội An: Biển Xanh & Phố Cổ</h3>
+                        <p class="curated-card-desc">Tắm biển Mỹ Khê cát trắng, check-in Cầu Vàng Bà Nà Hills, dạo thuyền hoa đăng Phố cổ Hội An và thưởng thức hải sản tươi sống.</p>
+                        <div class="curated-tags-row">
+                            <span class="curated-tag">Bà Nà Hills</span>
+                            <span class="curated-tag">Biển Mỹ Khê</span>
+                            <span class="curated-tag">Phố Cổ Hội An</span>
+                        </div>
+                        <div class="curated-actions-row">
+                            <button class="btn-curated-preview" onclick="previewPrebuiltTrip('danang')">
+                                <span>👀</span> Xem Lộ Trình
+                            </button>
+                            <button class="btn-curated-clone" onclick="clonePrebuiltTrip('danang', 'Đà Nẵng - Hội An: Biển Xanh & Phố Cổ 3N2Đ')">
+                                <span>📋</span> Clone Lịch Trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Sa Pa Fansipan -->
+                <div class="curated-trip-card" data-category="mountain">
+                    <div class="curated-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=600&q=80" alt="Sa Pa" class="curated-card-img">
+                        <div class="curated-card-badges">
+                            <span class="curated-badge-duration">⏱️ 3 Ngày 2 Đêm</span>
+                            <span class="curated-badge-clone">🔥 980 Clone</span>
+                        </div>
+                    </div>
+                    <div class="curated-card-body">
+                        <div class="curated-card-price">Dự toán: <span>~3.200.000 đ</span></div>
+                        <h3 class="curated-card-title">Sa Pa: Chinh Phục Nóc Nhà Đông Dương</h3>
+                        <p class="curated-card-desc">Chinh phục đỉnh Fansipan 3.143m ngắm biển mây bồng bềnh, khám phá Bản Cát Cát, Đèo Ô Quy Hồ và lẩu cá hồi Tây Bắc.</p>
+                        <div class="curated-tags-row">
+                            <span class="curated-tag">Đỉnh Fansipan</span>
+                            <span class="curated-tag">Bản Cát Cát</span>
+                            <span class="curated-tag">Đèo Ô Quy Hồ</span>
+                        </div>
+                        <div class="curated-actions-row">
+                            <button class="btn-curated-preview" onclick="previewPrebuiltTrip('sapa')">
+                                <span>👀</span> Xem Lộ Trình
+                            </button>
+                            <button class="btn-curated-clone" onclick="clonePrebuiltTrip('sapa', 'Sa Pa: Chinh Phục Fansipan & Săn Mây 3N2Đ')">
+                                <span>📋</span> Clone Lịch Trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Phú Quốc Đảo Ngọc -->
+                <div class="curated-trip-card" data-category="beach">
+                    <div class="curated-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1540206351-d6465b3ac5c1?auto=format&fit=crop&w=600&q=80" alt="Phú Quốc" class="curated-card-img">
+                        <div class="curated-card-badges">
+                            <span class="curated-badge-duration">⏱️ 4 Ngày 3 Đêm</span>
+                            <span class="curated-badge-clone">🔥 1.8k Clone</span>
+                        </div>
+                    </div>
+                    <div class="curated-card-body">
+                        <div class="curated-card-price">Dự toán: <span>~4.500.000 đ</span></div>
+                        <h3 class="curated-card-title">Phú Quốc: Đảo Ngọc & Hoàng Hôn Sunset</h3>
+                        <p class="curated-card-desc">Ngắm hoàng hôn tuyệt đẹp Sunset Sanato, vui chơi thả ga tại VinWonders & Safari, tour lặn ngắm san hô 4 đảo phía Nam.</p>
+                        <div class="curated-tags-row">
+                            <span class="curated-tag">Sunset Sanato</span>
+                            <span class="curated-tag">Tour 4 Đảo</span>
+                            <span class="curated-tag">VinWonders</span>
+                        </div>
+                        <div class="curated-actions-row">
+                            <button class="btn-curated-preview" onclick="previewPrebuiltTrip('phuquoc')">
+                                <span>👀</span> Xem Lộ Trình
+                            </button>
+                            <button class="btn-curated-clone" onclick="clonePrebuiltTrip('phuquoc', 'Phú Quốc 4N3Đ - Đắm Mình Trong Hoàng Hôn Đảo Ngọc')">
+                                <span>📋</span> Clone Lịch Trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Hà Giang Hùng Vĩ -->
+                <div class="curated-trip-card" data-category="adventure">
+                    <div class="curated-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80" alt="Hà Giang" class="curated-card-img">
+                        <div class="curated-card-badges">
+                            <span class="curated-badge-duration">⏱️ 3 Ngày 2 Đêm</span>
+                            <span class="curated-badge-clone">🔥 1.2k Clone</span>
+                        </div>
+                    </div>
+                    <div class="curated-card-body">
+                        <div class="curated-card-price">Dự toán: <span>~2.650.000 đ</span></div>
+                        <h3 class="curated-card-title">Hà Giang: Cung Đường Đèo Mã Pí Lèng</h3>
+                        <p class="curated-card-desc">Cung phượt kinh điển qua Cao nguyên đá Đồng Văn, đi thuyền sông Nho Quế ngắm Hẻm Tu Sản và Cột cờ Lũng Cú.</p>
+                        <div class="curated-tags-row">
+                            <span class="curated-tag">Mã Pí Lèng</span>
+                            <span class="curated-tag">Sông Nho Quế</span>
+                            <span class="curated-tag">Cột Cờ Lũng Cú</span>
+                        </div>
+                        <div class="curated-actions-row">
+                            <button class="btn-curated-preview" onclick="previewPrebuiltTrip('sapa')">
+                                <span>👀</span> Xem Lộ Trình
+                            </button>
+                            <button class="btn-curated-clone" onclick="clonePrebuiltTrip('sapa', 'Phượt Hà Giang 3N2Đ - Chinh Phục Mã Pí Lèng')">
+                                <span>📋</span> Clone Lịch Trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Đà Lạt Săn Mây -->
+                <div class="curated-trip-card" data-category="mountain">
+                    <div class="curated-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?auto=format&fit=crop&w=600&q=80" alt="Đà Lạt" class="curated-card-img">
+                        <div class="curated-card-badges">
+                            <span class="curated-badge-duration">⏱️ 3 Ngày 2 Đêm</span>
+                            <span class="curated-badge-clone">🔥 2.1k Clone</span>
+                        </div>
+                    </div>
+                    <div class="curated-card-body">
+                        <div class="curated-card-price">Dự toán: <span>~2.400.000 đ</span></div>
+                        <h3 class="curated-card-title">Đà Lạt: Săn Mây Đồi Chè & Cà Phê Mơ</h3>
+                        <p class="curated-card-desc">Săn mây sớm tại Đồi chè Cầu Đất, dạo Chợ đêm Đà Lạt thưởng thức bánh tráng nướng, check-in các quán cà phê thung lũng lãng mạn.</p>
+                        <div class="curated-tags-row">
+                            <span class="curated-tag">Đồi Chè Cầu Đất</span>
+                            <span class="curated-tag">Chợ Đêm</span>
+                            <span class="curated-tag">Cafe Thung Lũng</span>
+                        </div>
+                        <div class="curated-actions-row">
+                            <button class="btn-curated-preview" onclick="previewPrebuiltTrip('dalat')">
+                                <span>👀</span> Xem Lộ Trình
+                            </button>
+                            <button class="btn-curated-clone" onclick="clonePrebuiltTrip('dalat', 'Săn Mây & Cà Phê Đà Lạt 3N2Đ Mộng Mơ')">
+                                <span>📋</span> Clone Lịch Trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Ninh Bình Tràng An -->
+                <div class="curated-trip-card" data-category="adventure">
+                    <div class="curated-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=600&q=80" alt="Ninh Bình" class="curated-card-img">
+                        <div class="curated-card-badges">
+                            <span class="curated-badge-duration">⏱️ 2 Ngày 1 Đêm</span>
+                            <span class="curated-badge-clone">🔥 850 Clone</span>
+                        </div>
+                    </div>
+                    <div class="curated-card-body">
+                        <div class="curated-card-price">Dự toán: <span>~1.750.000 đ</span></div>
+                        <h3 class="curated-card-title">Ninh Bình: Di Sản Tràng An & Hang Múa</h3>
+                        <p class="curated-card-desc">Ngồi thuyền nan xuyên hang động Tràng An, leo 500 bậc đá Hang Múa ngắm toàn cảnh Tam Cốc tuyệt mỹ và viếng Chùa Bái Đính.</p>
+                        <div class="curated-tags-row">
+                            <span class="curated-tag">Di Sản Tràng An</span>
+                            <span class="curated-tag">Hang Múa</span>
+                            <span class="curated-tag">Chùa Bái Đính</span>
+                        </div>
+                        <div class="curated-actions-row">
+                            <button class="btn-curated-preview" onclick="previewPrebuiltTrip('hanoi')">
+                                <span>👀</span> Xem Lộ Trình
+                            </button>
+                            <button class="btn-curated-clone" onclick="clonePrebuiltTrip('hanoi', 'Khám Phá Ninh Bình 2N1Đ - Tràng An Non Nước Hữu Tình')">
+                                <span>📋</span> Clone Lịch Trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Hà Nội Foodtour -->
+                <div class="curated-trip-card" data-category="foodtour">
+                    <div class="curated-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80" alt="Hà Nội" class="curated-card-img">
+                        <div class="curated-card-badges">
+                            <span class="curated-badge-duration">⏱️ 2 Ngày 1 Đêm</span>
+                            <span class="curated-badge-clone">🔥 1.6k Clone</span>
+                        </div>
+                    </div>
+                    <div class="curated-card-body">
+                        <div class="curated-card-price">Dự toán: <span>~1.500.000 đ</span></div>
+                        <h3 class="curated-card-title">Hà Nội: 36 Phố Phường & Foodtour</h3>
+                        <p class="curated-card-desc">Thưởng thức Phở Bát Đàn, bún chả Hàng Mành, cà phê trứng Giảng nức tiếng, dạo Hồ Gươm và khám phá Hoàng Thành Thăng Long.</p>
+                        <div class="curated-tags-row">
+                            <span class="curated-tag">Phở Hà Nội</span>
+                            <span class="curated-tag">Cà Phê Trứng</span>
+                            <span class="curated-tag">Hồ Hoàn Kiếm</span>
+                        </div>
+                        <div class="curated-actions-row">
+                            <button class="btn-curated-preview" onclick="previewPrebuiltTrip('hanoi')">
+                                <span>👀</span> Xem Lộ Trình
+                            </button>
+                            <button class="btn-curated-clone" onclick="clonePrebuiltTrip('hanoi', 'Foodtour Hà Nội 2N1Đ - 36 Phố Phường Tinh Hoa Ẩm Thực')">
+                                <span>📋</span> Clone Lịch Trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. Nha Trang Biển Xanh -->
+                <div class="curated-trip-card" data-category="beach">
+                    <div class="curated-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80" alt="Nha Trang" class="curated-card-img">
+                        <div class="curated-card-badges">
+                            <span class="curated-badge-duration">⏱️ 3 Ngày 2 Đêm</span>
+                            <span class="curated-badge-clone">🔥 1.1k Clone</span>
+                        </div>
+                    </div>
+                    <div class="curated-card-body">
+                        <div class="curated-card-price">Dự toán: <span>~3.400.000 đ</span></div>
+                        <h3 class="curated-card-title">Nha Trang: Vịnh Biển & Cáp Treo Vượt Biển</h3>
+                        <p class="curated-card-desc">Trải nghiệm Vinpearl Harbour, lặn biển ngắm rạn san hô Hòn Mun, thư giãn tắm bùn khoáng nóng và chiêm bái Tháp Bà Ponagar.</p>
+                        <div class="curated-tags-row">
+                            <span class="curated-tag">Vinpearl Harbour</span>
+                            <span class="curated-tag">Hòn Mun</span>
+                            <span class="curated-tag">Tháp Bà Ponagar</span>
+                        </div>
+                        <div class="curated-actions-row">
+                            <button class="btn-curated-preview" onclick="previewPrebuiltTrip('danang')">
+                                <span>👀</span> Xem Lộ Trình
+                            </button>
+                            <button class="btn-curated-clone" onclick="clonePrebuiltTrip('danang', 'Nha Trang 3N2Đ - Thiên Đường Biển Đảo & Vinpearl')">
+                                <span>📋</span> Clone Lịch Trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div><!-- End #viewHome -->
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ==========================================
+
+
+
+
+
+         PAGE VIEW 2: GIAO DIỆN CỘNG ĐỒNG (COMMUNITY)
+
+
+
+
+
+         ========================================== -->
+
+
+
+
+
+    <div id="viewCommunity" class="page-view-container" style="display: none;">
+
+
+
+
+
+        <section class="community-section" id="communitySection">
+
+
+
+
+
+            <div class="section-header" style="margin-bottom: 28px;">
+
+
+
+
+
+                <div>
+
+
+
+
+
+                    <h2 class="section-title">
+
+
+
+
+
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+
+
+
+
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+
+
+
+
+
+                            <circle cx="9" cy="7" r="4"></circle>
+
+
+
+
+
+                            <path d="M23 21v-2a4 4 0 0 1 0 7.75"></path>
+
+
+
+
+
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+
+
+
+
+
+                        </svg>
+
+
+
+
+
+                        Nguồn Cảm Hứng Từ Cộng Đồng Beenavi
+
+
+
+
+
+                    </h2>
+
+
+
+
+
+                    <p class="section-subtitle">Khám phá và nhân bản những lịch trình xuất sắc nhất được đề xuất bởi cộng đồng du lịch.</p>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <!-- Community Trending Grid Cards -->
+
+
+
+
+
+            <div class="community-grid">
+
+
+
+
+
+                
+
+
+
+
+
+                <!-- Community Card 1: Hà Giang -->
+
+
+
+
+
+                <div class="community-card">
+
+
+
+
+
+                    <div class="community-cover-wrap">
+
+
+
+
+
+                        <img src="https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=600&q=80" class="community-cover-img" alt="Hà Giang">
+
+
+
+
+
+                        <span class="community-badge">🔥 TRENDING #1</span>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    <div class="community-body">
+
+
+
+
+
+                        <div>
+
+
+
+
+
+                            <h3 class="community-title">Phượt Hà Giang 3N2Đ - Chinh Phục Mã Pí Lèng</h3>
+
+
+
+
+
+                            <p class="community-desc">Săn mây Dốc Thẩm Mã, đi thuyền sông Nho Quế và ngắm cánh đồng hoa Tam Giác Mạch.</p>
+
+
+
+
+
+                            
+
+
+
+
+
+                            <div class="community-author-row">
+
+
+
+
+
+                                <div class="author-info">
+
+
+
+
+
+                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="author-avatar" alt="Avatar">
+
+
+
+
+
+                                    <div>
+
+
+
+
+
+                                        <div class="author-name">Hoàng Nam</div>
+
+
+
+
+
+                                        <div class="author-handle">@nam.phuot • Hạt giống Phượt</div>
+
+
+
+
+
+                                    </div>
+
+
+
+
+
+                                </div>
+
+
+
+
+
+                                <div class="community-stats">
+
+
+
+
+
+                                    <span>👁️ 4.2k</span>
+
+
+
+
+
+                                    <span>❤️ 850</span>
+
+
+
+
+
+                                </div>
+
+
+
+
+
+                            </div>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+
+
+                        <button class="clone-ai-btn" onclick="cloneCommunityTrip('sapa', 'Phượt Hà Giang 3N2Đ - Chinh Phục Mã Pí Lèng'); switchMainTab('itinerary', event);">
+
+
+
+
+
+                            <span>Clone & Tùy Chỉnh Với AI 🚀</span>
+
+
+
+
+
+                        </button>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Community Card 2: Phú Quốc -->
+
+
+
+
+
+                <div class="community-card">
+
+
+
+
+
+                    <div class="community-cover-wrap">
+
+
+
+
+
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80" class="community-cover-img" alt="Phú Quốc">
+
+
+
+
+
+                        <span class="community-badge">🏝️ NGHĨ DƯỠNG</span>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    <div class="community-body">
+
+
+
+
+
+                        <div>
+
+
+
+
+
+                            <h3 class="community-title">Phú Quốc 4N3Đ - Đắm Mình Trong Hoàng Hôn</h3>
+
+
+
+
+
+                            <p class="community-desc">Nghỉ dưỡng Resort 5*, lặn ngắm san hô đảo Hòn Mây Rút và cocktail hoàng hôn Sunset Sanato.</p>
+
+
+
+
+
+                            
+
+
+
+
+
+                            <div class="community-author-row">
+
+
+
+
+
+                                <div class="author-info">
+
+
+
+
+
+                                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" class="author-avatar" alt="Avatar">
+
+
+
+
+
+                                    <div>
+
+
+
+
+
+                                        <div class="author-name">Linh Trần</div>
+
+
+
+
+
+                                        <div class="author-handle">@linh.traveler • Luxe Explorer</div>
+
+
+
+
+
+                                    </div>
+
+
+
+
+
+                                </div>
+
+
+
+
+
+                                <div class="community-stats">
+
+
+
+
+
+                                    <span>👁️ 3.1k</span>
+
+
+
+
+
+                                    <span>❤️ 640</span>
+
+
+
+
+
+                                </div>
+
+
+
+
+
+                            </div>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+
+
+                        <button class="clone-ai-btn" onclick="cloneCommunityTrip('phuquoc', 'Phú Quốc 4N3Đ - Đắm Mình Trong Hoàng Hôn'); switchMainTab('itinerary', event);">
+
+
+
+
+
+                            <span>Clone & Tùy Chỉnh Với AI 🚀</span>
+
+
+
+
+
+                        </button>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Community Card 3: Đà Lạt -->
+
+
+
+
+
+                <div class="community-card">
+
+
+
+
+
+                    <div class="community-cover-wrap">
+
+
+
+
+
+                        <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80" class="community-cover-img" alt="Đà Lạt">
+
+
+
+
+
+                        <span class="community-badge">☕ SĂN MÂY</span>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    <div class="community-body">
+
+
+
+
+
+                        <div>
+
+
+
+
+
+                            <h3 class="community-title">Săn Mây & Cà Phê Đà Lạt 3N2Đ Mộng Mơ</h3>
+
+
+
+
+
+                            <p class="community-desc">Cà phê Đồi Chè Cầu Đất lúc 05:00 sáng, check-in Nụ hoa Atiso và thưởng thức bánh mì xíu mại.</p>
+
+
+
+
+
+                            
+
+
+
+
+
+                            <div class="community-author-row">
+
+
+
+
+
+                                <div class="author-info">
+
+
+
+
+
+                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" class="author-avatar" alt="Avatar">
+
+
+
+
+
+                                    <div>
+
+
+
+
+
+                                        <div class="author-name">Tuấn Anh</div>
+
+
+
+
+
+                                        <div class="author-handle">@tuananh.dl • Chill Vibe</div>
+
+
+
+
+
+                                    </div>
+
+
+
+
+
+                                </div>
+
+
+
+
+
+                                <div class="community-stats">
+
+
+
+
+
+                                    <span>👁️ 2.8k</span>
+
+
+
+
+
+                                    <span>❤️ 512</span>
+
+
+
+
+
+                                </div>
+
+
+
+
+
+                            </div>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+
+
+                        <button class="clone-ai-btn" onclick="cloneCommunityTrip('dalat', 'Săn Mây & Cà Phê Đà Lạt 3N2Đ Mộng Mơ'); switchMainTab('itinerary', event);">
+
+
+
+
+
+                            <span>Clone & Tùy Chỉnh Với AI 🚀</span>
+
+
+
+
+
+                        </button>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+            </div>
+
+
+
+
+
+        </section>
+
+
+
+
+
+    </div><!-- End #viewCommunity -->
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ==========================================
+
+
+
+
+
+         PAGE VIEW 3: GIAO DIỆN LỘ TRÌNH AI (ITINERARY)
+
+
+
+
+
+         ========================================== -->
+
+
+
+
+
+    <div id="viewItinerary" class="page-view-container" style="display: none;">
+
+
+
+
+
+        <main class="main-container">
+
+
+
+
+
+
+
+
+
+
+
+        <!-- MODULE 1: ITINERARY ACCORDIONS & STICKY MAP -->
+
+
+
+
+
+        <section id="itinerarySection">
+
+        <!-- Bắt đầu: Lịch sử Modal -->
+        <div style="text-align: right; margin-bottom: 15px; padding-right: 20px; max-width: 1200px; margin-left: auto; margin-right: auto; padding-top: 15px;">
+            <button class="history-btn-trigger" onclick="showHistoryModal()">🕒 Xem Lịch Sử Tự Tạo</button>
+        </div>
+
+        <div class="history-modal-overlay" id="historyModal" onclick="if(event.target===this) hideHistoryModal()">
+            <div class="history-modal-content">
+                <div class="history-modal-header">
+                    <h3>🕒 Lịch Sử Lộ Trình</h3>
+                    <button class="history-close-btn" onclick="hideHistoryModal()">&times;</button>
+                </div>
+                <div class="history-modal-body" id="historyModalBody">
+                    <div class="history-empty">Chưa có lịch sử lộ trình nào.</div>
+                </div>
+            </div>
+        </div>
+        <!-- Kết thúc: Lịch sử Modal -->
+
+<div id="emptyItineraryState" class="wizard-wrapper">
+    <div class="wizard-header">
+        <img src="/static/beenavi_logo_nobg.png" alt="BeeNavi">
+        <h3>Khởi Tạo Lộ Trình Độc Bản</h3>
+        <p>BeeNavi AI sẽ thiết kế lịch trình hoàn hảo dựa trên nhu cầu của riêng bạn.</p>
+        
+        <div class="wizard-progress">
+            <div class="wizard-progress-bar" id="wizardProgressBar" style="width: 0%;"></div>
+            <div class="wizard-step-indicator active" data-step="1">1</div>
+            <div class="wizard-step-indicator" data-step="2">2</div>
+            <div class="wizard-step-indicator" data-step="3">3</div>
+            <div class="wizard-step-indicator" data-step="4">4</div>
+        </div>
+    </div>
+
+    <div class="wizard-body">
+        <!-- Bước 1: Thông tin cơ bản -->
+        <div class="wizard-pane active" id="wizardStep1">
+            <div class="wizard-pane-title">🛫 Thông tin cơ bản</div>
+            <div class="wizard-form-grid">
+                <div class="wizard-form-group">
+                    <label>Điểm xuất phát *</label>
+                    <input type="text" id="wizOrigin" class="wizard-input" placeholder="VD: Hồ Chí Minh" value="Hồ Chí Minh">
+                </div>
+                <div class="wizard-form-group">
+                    <label>Điểm đến *</label>
+                    <input type="text" id="wizDest" class="wizard-input" placeholder="VD: Hà Nội" value="Hà Nội">
+                </div>
+                <div class="wizard-form-group">
+                    <label>Số ngày đi *</label>
+                    <input type="number" id="wizDays" class="wizard-input" value="3" min="1" max="5" oninput="if(this.value>5){this.value=5; alert('Do giới hạn bộ nhớ của AI Local, bạn chỉ nên tạo tối đa 5 ngày trong 1 lần để lịch trình không bị ngắt quãng. Sau khi tạo xong, bạn có thể yêu cầu Chatbot bổ sung thêm ngày!');}">
+                </div>
+                <div class="wizard-form-group">
+                    <label>Ngân sách tổng (VNĐ)</label>
+                    <input type="number" id="wizBudget" class="wizard-input" value="5000000">
+                </div>
+                <div class="wizard-form-group">
+                    <label>Giờ đến nơi (Dự kiến)</label>
+                    <input type="time" id="wizArrivalTime" class="wizard-input" value="08:00">
+                </div>
+                <div class="wizard-form-group">
+                    <label>Giờ kết thúc / bay về</label>
+                    <input type="time" id="wizDepartureTime" class="wizard-input" value="18:00">
+                </div>
+            </div>
+        </div>
+
+        <!-- Bước 2: Sở thích -->
+        <div class="wizard-pane" id="wizardStep2">
+            <div class="wizard-pane-title">🎨 Sở thích cá nhân</div>
+            <div class="wizard-form-grid">
+                <div class="wizard-form-group full-width">
+                    <label>Mục tiêu chuyến đi *</label>
+                    <select id="wizObjective" class="wizard-input">
+                        <option value="Khám phá">🎒 Khám phá & Trải nghiệm</option>
+                        <option value="Nghỉ dưỡng">🌴 Nghỉ dưỡng & Thư giãn</option>
+                        <option value="Chụp ảnh sống ảo">📸 Chụp ảnh sống ảo</option>
+                        <option value="Ẩm thực">🍜 Food tour Ẩm thực</option>
+                    </select>
+                </div>
+                <div class="wizard-form-group">
+                    <label>Sở thích mua sắm</label>
+                    <select id="wizShopping" class="wizard-input">
+                        <option value="Bình thường">Bình thường</option>
+                        <option value="Mua sắm TTTM">Trung tâm thương mại</option>
+                        <option value="Mua quà đặc sản">Chợ đặc sản/Lưu niệm</option>
+                    </select>
+                </div>
+                <div class="wizard-form-group">
+                    <label>Sở thích Về Đêm (Nightlife)</label>
+                    <select id="wizNightlife" class="wizard-input">
+                        <option value="Cà phê, Chợ đêm">Cà phê, Chợ đêm</option>
+                        <option value="Bar, Pub, Vũ trường">Bar, Pub, Club</option>
+                        <option value="Nghỉ ngơi sớm">Nghỉ ngơi sớm</option>
+                    </select>
+                </div>
+                <div class="wizard-form-group">
+                    <label>Thích chụp ảnh</label>
+                    <select id="wizPhotography" class="wizard-input">
+                        <option value="Bình thường">Bình thường</option>
+                        <option value="Đam mê sống ảo">Đam mê sống ảo (Tìm view đẹp)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bước 3: Sức khỏe & Nhịp độ -->
+        <div class="wizard-pane" id="wizardStep3">
+            <div class="wizard-pane-title">❤️ Sức khỏe & Nhịp độ</div>
+            <div class="wizard-form-grid">
+                <div class="wizard-form-group full-width">
+                    <label>Đoàn có thành viên đặc biệt? (Sẽ né các điểm leo núi, đi bộ xa)</label>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
+                        <label><input type="checkbox" class="wiz-member-chk" value="Người già"> Người cao tuổi</label>
+                        <label><input type="checkbox" class="wiz-member-chk" value="Trẻ nhỏ"> Trẻ nhỏ</label>
+                        <label><input type="checkbox" class="wiz-member-chk" value="Phụ nữ mang thai"> Phụ nữ mang thai</label>
+                    </div>
+                </div>
+                <div class="wizard-form-group">
+                    <label>Món ăn dị ứng / Cần tránh</label>
+                    <input type="text" id="wizDiningConstraints" class="wizard-input" placeholder="VD: Hải sản, Đậu phộng...">
+                </div>
+                <div class="wizard-form-group">
+                    <label>Nhịp độ chuyến đi</label>
+                    <select id="wizPacing" class="wizard-input">
+                        <option value="Cân bằng">Cân bằng (3-4 điểm/ngày)</option>
+                        <option value="Thư giãn">Thư giãn (Chỉ 2 điểm/ngày)</option>
+                        <option value="Khám phá tối đa">Dày đặc (5+ điểm/ngày)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bước 4: Yêu cầu đặc biệt -->
+        <div class="wizard-pane" id="wizardStep4">
+            <div class="wizard-pane-title">⭐ Điểm Bắt Buộc & Tránh Xa</div>
+            <div class="wizard-form-grid">
+                <div class="wizard-form-group full-width">
+                    <label>Điểm BẮT BUỘC PHẢI ĐI (Mỗi điểm cách nhau dấu phẩy)</label>
+                    <input type="text" id="wizMustVisit" class="wizard-input" placeholder="VD: Lăng Bác, Chợ Đồng Xuân">
+                </div>
+                <div class="wizard-form-group full-width">
+                    <label>Điểm TUYỆT ĐỐI KHÔNG ĐI (Đã đi rồi hoặc không thích)</label>
+                    <input type="text" id="wizMustAvoid" class="wizard-input" placeholder="VD: Hồ Hoàn Kiếm">
+                </div>
+                <div class="wizard-form-group full-width">
+                    <label>Ghi chú thêm cho AI</label>
+                    <textarea id="wizExtra" class="wizard-input" style="height: 60px;" placeholder="VD: Sắp xếp cho tôi đi quán cafe view hoàng hôn vào chiều ngày 2..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="wizard-footer">
+        <button class="wizard-btn wizard-btn-back" id="wizBtnBack" onclick="navigateWizard(-1)" style="visibility: hidden;">Quay Lại</button>
+        <button class="wizard-btn wizard-btn-next" id="wizBtnNext" onclick="navigateWizard(1)">Tiếp Tục ➔</button>
+        <button class="wizard-btn wizard-btn-next" id="wizBtnSubmit" onclick="generateItineraryFromWizard(event)" style="display: none;">Tạo Lộ Trình Ngay ➔</button>
+    </div>
+</div>
+<div id="itineraryContent" style="display: none;">
+
+
+
+
+
+
+            <div class="section-header">
+
+
+
+
+
+                <div>
+
+
+
+
+
+                    <h2 class="section-title">
+
+
+
+
+
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+
+
+
+
+                            <path d="M14.5 2H6a2 2 0 0 1-2 2v16a2 2 0 0 1 2 2h12a2 2 0 0 1 2-2V7.5L14.5 2z"></path>
+
+
+
+
+
+                            <polyline points="14 2 14 8 20 8"></polyline>
+
+
+
+
+
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+
+
+
+
+
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+
+
+
+
+
+                        </svg>
+
+
+
+
+
+                        <span id="itinerarySectionTitle">Lịch Trình Chi Tiết • Đà Nẵng & Hội An</span>
+
+
+
+
+
+                    </h2>
+
+
+
+
+
+                    <p class="section-subtitle" id="itinerarySectionSubtitle">AI đã tối ưu hóa quãng đường di chuyển và thời điểm tham quan đẹp nhất.</p>
+
+
+
+
+
+                </div>
+
+
+
+
+
+                
+
+
+
+
+
+                <div style="display: flex; gap: 10px;">
+
+
+
+
+
+                    <button class="pref-select" style="padding: 8px 16px;" onclick="prepareItineraryAdjustment()">
+                        💬 Yêu cầu AI điều chỉnh
+                    </button>
+                    <button class="pref-select" style="padding: 8px 16px;" onclick="resetToWizard()">
+                        ➕ Tạo lịch trình mới
+                    </button>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <div class="itinerary-grid">
+
+
+
+
+
+                <!-- Timeline Accordions Left Column -->
+
+
+
+
+
+                <div class="timeline-container" id="timelineAccordionContainer">
+    
+    <!-- Dynamic Accordions Rendered via app.js -->
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Sticky Mini-Map Sidebar Right Column -->
+
+
+
+
+
+                <div class="sticky-map-sidebar">
+
+
+
+
+
+                    <div class="map-card">
+
+
+
+
+
+                        <div class="map-header">
+
+
+
+
+
+                            <h4>
+
+
+
+
+
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+
+
+
+
+                                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+
+
+
+
+
+                                    <line x1="8" y1="2" x2="8" y2="18"></line>
+
+
+
+
+
+                                    <line x1="16" y1="6" x2="16" y2="22"></line>
+
+
+
+
+
+                                </svg>
+
+
+
+
+
+                                Bản Đồ Lộ Trình Tuyến Đường
+
+
+
+
+
+                            </h4>
+
+
+
+
+
+                            <span style="font-size: 12px; color: var(--primary); font-weight: 700;" id="activeMapDayLabel">Ngày 1</span>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="map-container" id="leafletMap"></div>
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="map-overlay-info">
+
+
+
+
+
+                            <div class="weather-widget">
+
+
+
+
+
+                                <span style="font-size: 26px;" id="weatherIcon">☀️</span>
+
+
+
+
+
+                                <div>
+
+
+
+
+
+                                    <div class="weather-temp" id="weatherTemp">29°C</div>
+
+
+
+
+
+                                    <div class="weather-desc" id="weatherDesc">Đà Nẵng • Nắng ráo, biển êm</div>
+
+
+
+
+
+                                </div>
+
+
+
+
+
+                            </div>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+                    <div class="cost-summary-card">
+
+
+
+
+
+                        <div class="cost-header">Dự Toán Chi Phí AI Chi Tiết</div>
+
+
+
+
+
+                        <div class="cost-amount" id="costAmountText">2.850.000 VNĐ / người</div>
+
+
+
+
+
+                        <div class="cost-details" id="costDetailsText">
+
+
+
+
+
+                            <span>Khách sạn: 1.200k</span>
+
+
+
+
+
+                            <span>Ăn uống: 950k</span>
+
+
+
+
+
+                            <span>Vé & Xe: 700k</span>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                        <button class="save-trip-btn" onclick="saveCurrentTripToJournal()">
+
+
+
+
+
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+
+
+
+
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+
+
+
+
+
+                            </svg>
+
+
+
+
+
+                            Lưu Vào Nhật Ký Trong Trang Cá Nhân
+
+
+
+
+
+                        </button>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+        
+</div>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+        <!-- MODULE 4: SMART TRAVEL CHECKLIST -->
+
+
+
+
+
+        <section class="checklist-section" id="checklistSection" style="display: none;">
+
+
+
+
+
+            <div class="section-header">
+
+
+
+
+
+                <div>
+
+
+
+
+
+                    <h2 class="section-title">
+
+
+
+
+
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+
+
+
+
+                            <path d="M9 11l3 3L22 4"></path>
+
+
+
+
+
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+
+
+
+
+
+                        </svg>
+
+
+
+
+
+                        Checklist Hành Trang Du Lịch AI
+
+
+
+
+
+                    </h2>
+
+
+
+
+
+                    <p class="section-subtitle" id="checklistSubtitle">Tự động gợi ý danh sách chuẩn bị dựa trên thời tiết và phương tiện di chuyển.</p>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <!-- Rule Engine Mapping Filters -->
+
+
+
+
+
+            <div class="checklist-filter-bar">
+
+
+
+
+
+                <div class="filter-group">
+
+
+
+
+
+                    <label>☀️ Thời tiết mapping:</label>
+
+
+
+
+
+                    <select class="pref-select" id="checklistWeatherSelect" onchange="updateChecklistMapping()">
+
+
+
+
+
+                        <option value="sunny">Nắng ấm & Biển</option>
+
+
+
+
+
+                        <option value="cold">Lạnh & Sương mù (Núi)</option>
+
+
+
+
+
+                        <option value="rain">Mưa nhẹ & Thất thường</option>
+
+
+
+
+
+                    </select>
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                <div class="filter-group">
+
+
+
+
+
+                    <label>✈️ Phương tiện mapping:</label>
+
+
+
+
+
+                    <select class="pref-select" id="checklistTransportSelect" onchange="updateChecklistMapping()">
+
+
+
+
+
+                        <option value="plane">Máy bay (Vé & Hộ chiếu/CCCD)</option>
+
+
+
+
+
+                        <option value="motorbike">Xe máy phượt (Bằng lái & Áo mưa)</option>
+
+
+
+
+
+                        <option value="car">Ô ô / Xe khách (Gối cổ & Thuốc say xe)</option>
+
+
+
+
+
+                    </select>
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                <div class="filter-group" style="margin-left: auto;">
+
+
+
+
+
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+
+
+
+
+
+                        <input type="checkbox" id="reminderToggle" checked onchange="toggleReminder(this)">
+
+
+
+
+
+                        <span>🔔 Nhắc nhở trước 24h</span>
+
+
+
+
+
+                    </label>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <div class="progress-container">
+
+
+
+
+
+                <div class="progress-info">
+
+
+
+
+
+                    <span class="progress-text" id="progressText">Đã chuẩn bị 7/15 đồ dùng</span>
+
+
+
+
+
+                    <span class="progress-percentage" id="progressPercentage">46%</span>
+
+
+
+
+
+                </div>
+
+
+
+
+
+                <div class="progress-bar-bg">
+
+
+
+
+
+                    <div class="progress-bar-fill" id="progressBarFill" style="width: 46%;"></div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <div class="checklist-grid" id="checklistGridContainer">
+
+
+
+
+
+                <!-- Group 1: Weather Mapping -->
+
+
+
+
+
+                <div class="checklist-group">
+
+
+
+
+
+                    <div class="group-title">
+
+
+
+
+
+                        <div class="group-icon">
+
+
+
+
+
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+
+
+
+
+                                <circle cx="12" cy="12" r="5"></circle>
+
+
+
+
+
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+
+
+
+
+
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+
+
+
+
+
+                            </svg>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                        Theo Thời Tiết Điểm Đến
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    <div class="checklist-items" id="weatherChecklistItems">
+
+
+
+
+
+                        <label class="check-item completed">
+
+
+
+
+
+                            <input type="checkbox" checked onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Kem chống nắng SPF 50+</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                        <label class="check-item completed">
+
+
+
+
+
+                            <input type="checkbox" checked onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Kính mát & Mũ rộng vành</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                        <label class="check-item">
+
+
+
+
+
+                            <input type="checkbox" onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Đồ bơi & Khăn tắm biển</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                        <label class="check-item">
+
+
+
+
+
+                            <input type="checkbox" onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Dép đi biển chống trượt</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Group 2: Transport & Documents -->
+
+
+
+
+
+                <div class="checklist-group">
+
+
+
+
+
+                    <div class="group-title">
+
+
+
+
+
+                        <div class="group-icon">
+
+
+
+
+
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+
+
+
+
+                                <path d="M178 192L22 136l80-32 32-80 56 156z"></path>
+
+
+
+
+
+                            </svg>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                        Giấy Tờ & Phương Tiện
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    <div class="checklist-items" id="transportChecklistItems">
+
+
+
+
+
+                        <label class="check-item completed">
+
+
+
+
+
+                            <input type="checkbox" checked onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>CCCD / Hộ chiếu bản gốc</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                        <label class="check-item completed">
+
+
+
+
+
+                            <input type="checkbox" checked onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Vé máy bay điện tử (Boarding Pass)</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                        <label class="check-item completed">
+
+
+
+
+
+                            <input type="checkbox" checked onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Xác nhận đặt phòng khách sạn</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                        <label class="check-item">
+
+
+
+
+
+                            <input type="checkbox" onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Bằng lái xe & Bảo hiểm du lịch</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Group 3: Tech & Personal -->
+
+
+
+
+
+                <div class="checklist-group">
+
+
+
+
+
+                    <div class="group-title">
+
+
+
+
+
+                        <div class="group-icon">
+
+
+
+
+
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+
+
+
+
+                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+
+
+
+
+
+                            </svg>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                        Công Nghệ & Đồ Cá Nhân
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    <div class="checklist-items" id="techChecklistItems">
+
+
+
+
+
+                        <label class="check-item completed">
+
+
+
+
+
+                            <input type="checkbox" checked onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Sạc dự phòng 20,000mAh</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                        <label class="check-item completed">
+
+
+
+
+
+                            <input type="checkbox" checked onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Thuốc say xe & Thuốc cá nhân</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                        <label class="check-item">
+
+
+
+
+
+                            <input type="checkbox" onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Túi chống nước điện thoại</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                        <label class="check-item">
+
+
+
+
+
+                            <input type="checkbox" onchange="updateChecklistProgress()">
+
+
+
+
+
+                            <span>Máy ảnh / Gậy chụp hình</span>
+
+
+
+
+
+                        </label>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <div class="add-item-box">
+
+
+
+
+
+                <input type="text" class="add-item-input" id="customChecklistInput" placeholder="Thêm món đồ cần chuẩn bị thêm..." onkeydown="if(event.key==='Enter'){event.preventDefault();addNewChecklistItem();}">
+
+
+
+
+
+                <button type="button" class="add-item-btn" id="addChecklistBtn" onclick="addNewChecklistItem()">Thêm Item</button>
+
+
+
+
+
+            </div>
+
+
+
+
+
+        </section>
+
+
+
+
+
+    </main>
+
+
+
+
+
+    </div><!-- End #viewItinerary -->
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ==========================================
+
+
+
+
+
+         PAGE VIEW 4: GIAO DIỆN NHẬT KÝ HÀNH TRÌNH (JOURNAL)
+
+
+
+
+
+         ========================================== -->
+
+
+
+
+
+    <div id="viewJournal" class="page-view-container" style="display: none;">
+        <section class="journal-page-section">
+            <!-- GIAO DIỆN KHI CHƯA ĐĂNG NHẬP (GUEST STATE) -->
+            <div id="journalGuestState" style="display: none;">
+                <div class="journal-guest-hero">
+                    <div class="journal-header-badge">📖 NHẬT KÝ DU LỊCH</div>
+                    <h2 class="journal-guest-title">Khám Phá & Lưu Giữ Kỷ Niệm Của Riêng Bạn</h2>
+                    <p class="journal-guest-desc">Đăng nhập tài khoản BeeNavi để tự động lưu trữ tất cả các lịch trình AI đã tạo, ghi lại kỷ niệm chuyến đi, quản lý checklist hành trang và tối ưu hóa sở thích du lịch cá nhân.</p>
+                    
+                    <div class="journal-guest-actions">
+                        <button class="btn-primary-large" onclick="openAuthModal('login')">
+                            <span>🔐</span> Đăng Nhập / Đăng Ký Ngay
+                        </button>
+                        <button class="btn-secondary-large" onclick="switchMainTab('itinerary', event)">
+                            <span>🗺️</span> Tạo Lộ Trình AI Mới
+                        </button>
+                    </div>
+
+                    <!-- Lợi ích khi có tài khoản -->
+                    <div class="journal-features-grid">
+                        <div class="journal-feature-card">
+                            <div class="feature-card-icon">🗺️</div>
+                            <h4>Lưu Trữ Lịch Trình AI</h4>
+                            <p>Toàn bộ kế hoạch 3N2Đ, 4N3Đ bạn tạo với AI đều được lưu an toàn trên hệ thống để xem lại bất kỳ lúc nào.</p>
+                        </div>
+                        <div class="journal-feature-card">
+                            <div class="feature-card-icon">📸</div>
+                            <h4>Bộ Sưu Tập Check-in</h4>
+                            <p>Lưu trữ hình ảnh kỷ niệm, đánh dấu các tỉnh thành và địa danh nổi tiếng bạn đã đặt chân tới.</p>
+                        </div>
+                        <div class="journal-feature-card">
+                            <div class="feature-card-icon">⚙️</div>
+                            <h4>Cá Nhân Hóa Trí Tuệ</h4>
+                            <p>AI ghi nhớ ngân sách, phong cách du lịch (nghỉ dưỡng, phượt, ẩm thực) để đề xuất lộ trình chuẩn xác nhất.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GIAO DIỆN KHI ĐÃ ĐĂNG NHẬP (AUTHENTICATED USER STATE) -->
+            <div id="journalAuthState" style="display: none;">
+                <div class="journal-page-header">
+                    <div class="journal-header-badge">📖 NHẬT KÝ DU LỊCH</div>
+                    <h2 class="journal-header-title">Nhật Ký Hành Trình Của <span id="journalHeaderName">Bạn</span></h2>
+                    <p class="journal-header-sub">Tổng hợp thông tin cá nhân, thống kê số chuyến đi và kho lưu trữ tất cả các lịch trình AI đã tạo.</p>
+                </div>
+
+                <div class="journal-profile-card">
+                    <div class="journal-banner"></div>
+                    <div class="journal-profile-body">
+                        <div class="journal-avatar-wrap">
+                            <div id="journalAvatarBox" class="journal-avatar-initial">U</div>
+                            <span class="journal-vip-badge">MEMBER</span>
+                        </div>
+                        <div class="journal-user-details">
+                            <div class="journal-name"><span id="journalDisplayName">Người Dùng</span> <span class="blue-check">✓</span></div>
+                            <div class="journal-handle" id="journalUserHandle">@user • Thành Viên Beenavi Smart 🇻🇳</div>
+                            <div class="journal-bio" id="journalBioText">💬 "🚀 Đam mê du lịch & khám phá Việt Nam cùng trợ lý AI Beenavi ✨"</div>
+                        </div>
+                        <div class="journal-stats-grid">
+                            <div class="journal-stat-box">
+                                <span class="stat-num" id="journalStatTrips">0</span>
+                                <span class="stat-lbl">Chuyến đi</span>
+                            </div>
+                            <div class="journal-stat-box">
+                                <span class="stat-num" id="journalStatPhotos">0</span>
+                                <span class="stat-lbl">Ảnh kỷ niệm</span>
+                            </div>
+                            <div class="journal-stat-box">
+                                <span class="stat-num" id="journalStatDests">0</span>
+                                <span class="stat-lbl">Điểm đến</span>
+                            </div>
+                            <div class="journal-stat-box">
+                                <span class="stat-num" id="journalStatSpent">0 đ</span>
+                                <span class="stat-lbl">Chi tiêu</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="journal-history-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                        <h3 class="journal-sub-title" style="margin: 0;">🗺️ Các Chuyến Đi Đã Lưu Trong CSDL</h3>
+                        <button class="btn-primary" style="padding: 9px 18px; font-size: 13.5px;" onclick="switchMainTab('itinerary', event)">
+                            <span>➕</span> Tạo Thêm Chuyến Đi Mới
+                        </button>
+                    </div>
+
+                    <!-- Container nạp động danh sách các chuyến đi thực tế -->
+                    <div class="journal-cards-grid" id="journalTripsGrid">
+                        <!-- Nạp động qua JS từ CSDL SQLite -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========================================================
+         MODAL 1: ĐĂNG NHẬP / ĐĂNG KÝ TÀI KHOẢN (AUTH MODAL)
+         ======================================================== -->
+    <div class="modal-overlay" id="authModal" style="display: none; z-index: 999999;">
+        <div class="auth-modal-card">
+            <div class="auth-modal-header">
+                <button class="auth-modal-close-btn" onclick="closeAuthModal()">✕</button>
+                <div style="font-size: 28px; margin-bottom: 4px;">🐝</div>
+                <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: #FFFFFF;" id="authModalTitle">Chào mừng đến với BeeNavi</h3>
+                <p style="font-size: 13px; color: #94A3B8; margin: 4px 0 0;">Lưu nhật ký, cá nhân hóa lịch trình AI và quản lý chuyến đi</p>
+            </div>
+
+            <div class="auth-modal-tabs">
+                <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthTab('login')">Đăng Nhập</button>
+                <button class="auth-tab-btn" id="tabBtnRegister" onclick="switchAuthTab('register')">Đăng Ký Mới</button>
+            </div>
+
+            <!-- Form Đăng Nhập -->
+            <form id="formLogin" class="auth-form-body" onsubmit="handleLoginSubmit(event)">
+                <div class="auth-input-group">
+                    <label class="auth-input-label">Tên đăng nhập hoặc Email</label>
+                    <input type="text" id="loginUsername" class="auth-input-field" placeholder="Ví dụ: nguyenvana hoặc email" required autocomplete="username">
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-input-label">Mật khẩu</label>
+                    <input type="password" id="loginPassword" class="auth-input-field" placeholder="Nhập mật khẩu..." required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-auth-submit" id="btnLoginSubmit">Đăng Nhập Ngay</button>
+                <div class="auth-switch-prompt">
+                    Chưa có tài khoản? <span class="auth-switch-link" onclick="switchAuthTab('register')">Tạo tài khoản mới</span>
+                </div>
+            </form>
+
+            <!-- Form Đăng Ký -->
+            <form id="formRegister" class="auth-form-body" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+                <div class="auth-input-group">
+                    <label class="auth-input-label">Họ và Tên</label>
+                    <input type="text" id="regFullName" class="auth-input-field" placeholder="Ví dụ: Nguyễn Văn A" required>
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-input-label">Tên đăng nhập (Username)</label>
+                    <input type="text" id="regUsername" class="auth-input-field" placeholder="Ví dụ: nguyenvana (viết liền không dấu)" required autocomplete="username">
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-input-label">Email</label>
+                    <input type="email" id="regEmail" class="auth-input-field" placeholder="name@gmail.com" required autocomplete="email">
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-input-label">Mật khẩu</label>
+                    <input type="password" id="regPassword" class="auth-input-field" placeholder="Tối thiểu 4 ký tự" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn-auth-submit" id="btnRegisterSubmit">Đăng Ký Tài Khoản</button>
+                <div class="auth-switch-prompt">
+                    Đã có tài khoản? <span class="auth-switch-link" onclick="switchAuthTab('login')">Đăng nhập tại đây</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================================
+         MODAL 2: HỒ SƠ CÁ NHÂN, NHẬT KÝ & SỞ THÍCH AI
+         ======================================================== -->
+    <div class="modal-overlay" id="zaloProfileModal" style="display: none; z-index: 999998;">
+        <div class="zalo-profile-modal-card">
+            <!-- Cover Photo & Avatar Header -->
+            <div class="zalo-cover-banner">
+                <button class="zalo-close-btn" onclick="closeZaloProfileModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <div class="zalo-profile-header-content">
+                <div class="zalo-avatar-row">
+                    <div class="zalo-avatar-box">
+                        <div class="zalo-avatar-img" id="profileAvatarBox" style="background: linear-gradient(135deg, #F5C842, #E8B923); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #111827; font-size: 24px;">U</div>
+                        <div class="zalo-online-dot"></div>
+                    </div>
+                </div>
+
+                <div class="zalo-user-name" id="profileUserName">Người Dùng <span style="color: var(--primary); font-size: 16px;">✓</span></div>
+                <div class="zalo-user-handle" id="profileUserHandle">@user • Thành Viên Beenavi Smart 🇻🇳</div>
+                <div class="zalo-bio-text" id="profileUserBio">
+                    💬 "🚀 Đam mê du lịch & khám phá Việt Nam cùng trợ lý AI Beenavi ✨"
+                </div>
+
+                <!-- Profile Stats Bar -->
+                <div class="zalo-stats-row">
+                    <div class="zalo-stat-item">
+                        <span class="zalo-stat-num" id="profileStatTrips">0</span>
+                        <span class="zalo-stat-label">Chuyến đi</span>
+                    </div>
+                    <div class="zalo-stat-item">
+                        <span class="zalo-stat-num" id="profileStatPhotos">0</span>
+                        <span class="zalo-stat-label">Ảnh kỷ niệm</span>
+                    </div>
+                    <div class="zalo-stat-item">
+                        <span class="zalo-stat-num" id="profileStatDests">0</span>
+                        <span class="zalo-stat-label">Điểm đến</span>
+                    </div>
+                    <div class="zalo-stat-item">
+                        <span class="zalo-stat-num" id="profileStatSpent">0 đ</span>
+                        <span class="zalo-stat-label">Chi tiêu</span>
+                    </div>
+                </div>
+
+                <!-- Profile Navigation Tabs -->
+                <div class="zalo-profile-tabs">
+                    <button class="zalo-tab-btn active" id="profileTabJournal" onclick="switchProfileTab('journal')">📖 Nhật Ký & Ảnh</button>
+                    <button class="zalo-tab-btn" id="profileTabTrips" onclick="switchProfileTab('trips')">🗺️ Chuyến Đi Đã Lưu</button>
+                    <button class="zalo-tab-btn" id="profileTabPref" onclick="switchProfileTab('pref')">⚙️ Sở Thích Cá Nhân (AI)</button>
+                </div>
+
+                <!-- Tab 1: Nhật Ký & Ảnh Check-in Thật -->
+                <div id="profileContentJournal" style="display: block;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                        <h4 style="font-size: 14.5px; font-weight: 700; color: #1E293B; margin: 0;">Bộ Sưu Tập Ảnh & Check-in</h4>
+                        <button class="add-item-btn" style="padding: 6px 12px; font-size: 12px;" onclick="promptAddPhotoToCheckin()">📷 + Thêm Ảnh Check-in</button>
+                    </div>
+                    <div id="journalFeedContainer">
+                        <!-- Nạp động từ CSDL -->
+                    </div>
+                </div>
+
+                <!-- Tab 2: Lịch Sử Chuyến Đi Đã Lưu Thật -->
+                <div id="profileContentTrips" style="display: none;">
+                    <div id="savedTripsListContainer">
+                        <!-- Nạp động từ CSDL -->
+                    </div>
+                </div>
+
+                <!-- Tab 3: AI Preferences Settings -->
+                <div id="profileContentPref" style="display: none;">
+                    <div style="background: var(--bg-page); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                        <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">⚙️ Tùy Chỉnh Sở Thích Du Lịch Cá Nhân</h4>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 10px; cursor: pointer;">
+                            <input type="checkbox" class="user-pref-style" value="Ẩm thực đặc sản" checked> <span>Ưu tiên đề xuất món ăn đặc sản địa phương (Local Cuisine)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 10px; cursor: pointer;">
+                            <input type="checkbox" class="user-pref-style" value="Nghỉ dưỡng nhẹ nhàng" checked> <span>Giới hạn thời gian di chuyển giữa các điểm < 40 phút</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 14px; cursor: pointer;">
+                            <input type="checkbox" class="user-pref-style" value="Check-in sống ảo" checked> <span>Tự động cập nhật thời tiết điểm đến khi mở ứng dụng</span>
+                        </label>
+                        <button class="add-item-btn" onclick="saveUserProfilePreferences()">Lưu Thiết Lập Hồ Sơ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Notifications Drawer Side Panel -->
+
+
+
+
+
+    <div class="chat-drawer-overlay" id="notificationsOverlay" onclick="toggleNotificationsDrawer()"></div>
+
+
+
+
+
+    <aside class="chat-drawer" id="notificationsDrawer">
+
+
+
+
+
+        <div class="drawer-header">
+
+
+
+
+
+            <div class="drawer-title-group">
+
+
+
+
+
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+
+
+
+
+
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+
+
+
+
+
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+
+
+
+
+
+                </svg>
+
+
+
+
+
+                <div class="drawer-title">Thông Báo Chuyến Đi (2)</div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+            <button class="drawer-close-btn" onclick="toggleNotificationsDrawer()">
+
+
+
+
+
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+
+
+
+
+
+            </button>
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+
+
+
+
+
+            <div style="background: var(--primary-light); padding: 14px; border-radius: var(--radius-md); border: 1px solid #BFDBFE;">
+
+
+
+
+
+                <div style="font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">🔔 Nhắc Nhở Hành Trang • 10 phút trước</div>
+
+
+
+
+
+                <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">Chuyến đi Đà Nẵng của bạn chuẩn bị khởi hành!</div>
+
+
+
+
+
+                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Bạn đã hoàn thành 7/15 đồ dùng trong Checklist. Đừng quên mang theo CCCD và Vé máy bay điện tử.</div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <div style="background: var(--teal-light); padding: 14px; border-radius: var(--radius-md); border: 1px solid #A7F3D0;">
+
+
+
+
+
+                <div style="font-size: 12px; font-weight: 700; color: var(--teal); margin-bottom: 4px;">🌤️ Dự Báo Thời Tiết • 2 giờ trước</div>
+
+
+
+
+
+                <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">Đà Nẵng tuần này thời tiết rất đẹp!</div>
+
+
+
+
+
+                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Nhiệt độ 29°C nắng ráo, bãi biển Mỹ Khê sóng nhẹ thích hợp tắm biển và chụp ảnh.</div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+        </div>
+
+
+
+
+
+    </aside>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Toast Notification -->
+
+
+
+
+
+    <div class="toast" id="toastNotification">Đã cập nhật dữ liệu!</div>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ==========================================
+
+
+
+
+
+         BEENAVI AI CHATBOT — FLOATING WIDGET
+
+
+
+
+
+         Backend: FastAPI /chat, /ws, /transcribe
+
+
+
+
+
+         ========================================== -->
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Nút logo nổi góc phải dưới -->
+
+
+
+
+
+    <button class="cb-fab" id="cbFabBtn" onclick="cbToggle()" title="Beenavi AI">
+
+
+
+
+
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+
+
+
+
+
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+
+
+
+
+
+        </svg>
+
+
+
+
+
+    </button>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Khung Chat -->
+
+
+
+
+
+    <div class="cb-panel" id="cbPanel">
+
+
+
+
+
+        <!-- Header -->
+
+
+
+
+
+        <div class="cb-header">
+
+
+
+
+
+            <div class="cb-header-left">
+
+
+
+
+
+                <div class="cb-avatar">
+
+
+
+
+
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+
+
+
+
+
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+
+
+
+
+
+                    </svg>
+
+
+
+
+
+                </div>
+
+
+
+
+
+                <div>
+
+
+
+
+
+                    <div class="cb-header-name">Beenavi AI</div>
+
+
+
+
+
+                    <div class="cb-header-status"><span class="cb-dot"></span> Trợ lý du lịch thông minh</div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+            <div class="cb-header-actions">
+
+
+
+
+
+                <button class="cb-close-btn" onclick="cbToggle()" title="Đóng">
+
+
+
+
+
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+
+
+
+
+
+                </button>
+
+
+
+
+
+            </div>
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+        <!-- Component 1: ChatView (Bọc toàn bộ phần tin nhắn và toolbar nhập liệu) -->
+
+
+
+
+
+        <div class="cb-chat-view" id="cbChatView">
+
+
+
+
+
+            <!-- Body chat -->
+
+
+
+
+
+            <div class="cb-body" id="cbBody">
+
+
+
+
+
+                <!-- Tin nhắn chào mừng -->
+
+
+
+
+
+                <div class="cb-msg bot">
+
+
+
+
+
+                    <div class="cb-bubble">
+
+
+
+
+
+                        <p>Xin chào bạn! Mình là <strong>Beenavi AI</strong> — Trợ lý du lịch thông minh của bạn.</p>
+
+
+
+
+
+                        <p>• Hỏi tôi bất kỳ về lộ trình hoàn hảo, mẹo du lịch và gợi ý quán ngon trên toàn quốc.</p>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <!-- Typing indicator (ẩn mặc định) -->
+
+
+
+
+
+            <div class="cb-typing" id="cbTyping" style="display:none;">
+
+
+
+
+
+                <div class="cb-bubble" style="padding:10px 14px;">
+
+
+
+
+
+                    <span class="cb-typing-dot"></span>
+
+
+
+
+
+                    <span class="cb-typing-dot"></span>
+
+
+
+
+
+                    <span class="cb-typing-dot"></span>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <!-- Camera modal -->
+
+
+
+
+
+            <div class="cb-camera-modal" id="cbCameraModal" style="display:none;">
+
+
+
+
+
+                <div class="cb-camera-box">
+
+
+
+
+
+                    <div class="cb-camera-header">
+
+
+
+
+
+                        <span>📸 Chụp Ảnh</span>
+
+
+
+
+
+                        <button onclick="cbCloseCamera()">✕</button>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    <video id="cbVideoStream" autoplay playsinline style="width:100%;border-radius:8px;"></video>
+
+
+
+
+
+                    <div style="display:flex;gap:8px;margin-top:10px;">
+
+
+
+
+
+                        <button class="cb-tool-btn" style="flex:1;justify-content:center;" onclick="cbCapturePhoto()">📸 Chụp</button>
+
+
+
+
+
+                        <button class="cb-tool-btn" style="flex:1;justify-content:center;" onclick="cbCloseCamera()">✕ Huỷ</button>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    <canvas id="cbCaptureCanvas" style="display:none;"></canvas>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+            <!-- Input toolbar -->
+
+
+
+
+
+            <div class="cb-footer">
+
+
+
+
+
+                <div class="cb-toolbar">
+
+
+
+
+
+                    <!-- Chụp ảnh -->
+
+
+
+
+
+                    <button class="cb-tool-btn" id="cbCameraBtn" onclick="cbOpenCamera()" title="Chụp ảnh">
+
+
+
+
+
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+
+
+
+
+
+                        <span>Chụp ảnh</span>
+
+
+
+
+
+                    </button>
+
+
+
+
+
+                    <!-- Đăng ảnh -->
+
+
+
+
+
+                    <button class="cb-tool-btn" id="cbUploadBtn" onclick="document.getElementById('cbFileInput').click()" title="Tải ảnh">
+
+
+
+
+
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+
+
+
+
+
+                        <span>Tải ảnh</span>
+
+
+
+
+
+                    </button>
+
+
+
+
+
+                    <input type="file" id="cbFileInput" accept="image/*" style="display:none;" onchange="cbHandleImageUpload(event)">
+
+
+
+
+
+                    <!-- Cuộc gọi (Micro + Đàm thoại gộp lại) -->
+
+
+
+
+
+                    <button class="cb-tool-btn" id="cbCallBtn" onclick="cbToggleCall()" title="Cuộc gọi">
+
+
+
+
+
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+
+
+
+
+
+                        <span>Cuộc gọi</span>
+
+
+
+
+
+                    </button>
+
+
+
+
+
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- Input text -->
+
+
+
+
+
+                <div class="cb-input-row">
+
+
+
+
+
+                    <textarea class="cb-input" id="cbInput" placeholder="Hỏi về lịch trình, địa điểm, món ăn..." rows="1"
+
+
+
+
+
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();cbSendText();}"></textarea>
+
+
+
+
+
+                    <button class="cb-send-btn" id="cbSendBtn" onclick="cbSendText()" title="Gửi">
+
+
+
+
+
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+
+
+
+
+
+                    </button>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
+
+        </div>
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Leaflet JS for Map -->
+
+
+
+
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+
+
+
+    
+
+
+
+
+
+    <!-- App scripts -->
+
+
+
+
+
+    <script src="/static/app.js?v=33"></script>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Beenavi AI Chatbot Backend Integration -->
+
+
+
+
+
+    <script>
+
+
+
+
+
+    /* =======================================================
+
+
+
+
+
+       BEENAVI AI CHATBOT — Backend Integration
+
+
+
+
+
+       Endpoints:
+
+
+
+
+
+         POST /chat          — text chat (form: message, history)
+
+
+
+
+
+         POST /transcribe    — audio STT (form: audio file)
+
+
+
+
+
+         WS   /ws            — realtime voice WebSocket
+
+
+
+
+
+       ======================================================= */
+
+
+
+
+
+
+
+
+
+
+
+    const CB_API = window.location.origin; // Tự động lấy hostname & port từ trình duyệt
+
+
+
+
+
+
+
+
+
+
+
+    // State
+
+
+
+
+
+    let cbOpen = false;
+
+
+
+
+
+    let cbHistory = [];      // [{role, content}]
+
+
+
+
+
+    let cbWs = null;         // WebSocket cho đàm thoại
+
+
+
+
+
+    let cbMediaRecorder = null;
+
+
+
+
+
+    let cbAudioChunks = [];
+
+
+
+
+
+    let cbMicActive = false;
+
+
+
+
+
+    let cbVoiceActive = false;
+
+
+
+
+
+    let cbCameraStream = null;
+
+
+
+
+
+    let cbVoiceLastUserText = "";   // transcript của lượt nói hiện tại trong cuộc gọi
+
+
+
+
+
+    let cbVoiceLastAnswerText = ""; // câu trả lời tương ứng (để đồng bộ vào cbHistory)
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- Toggle panel ---- */
+
+
+
+
+
+    function cbToggle() {
+        cbOpen = !cbOpen;
+        const panel = document.getElementById("cbPanel");
+        const fab = document.getElementById("cbFabBtn");
+        if (!panel) return;
+
+        if (cbOpen) {
+            panel.classList.add("cb-open");
+            panel.style.setProperty("display", "flex", "important");
+            panel.style.setProperty("opacity", "1", "important");
+            panel.style.setProperty("visibility", "visible", "important");
+            panel.style.setProperty("pointer-events", "auto", "important");
+            panel.style.setProperty("transform", "scale(1) translateY(0)", "important");
+            panel.style.setProperty("z-index", "999999", "important");
+
+            if (fab) {
+                fab.style.opacity = "0";
+                fab.style.pointerEvents = "none";
+            }
+            setTimeout(() => cbScrollToBottom(), 80);
+        } else {
+            panel.classList.remove("cb-open");
+            panel.style.setProperty("opacity", "0", "important");
+            panel.style.setProperty("pointer-events", "none", "important");
+            panel.style.setProperty("visibility", "hidden", "important");
+            panel.style.setProperty("transform", "scale(0.92) translateY(16px)", "important");
+
+            if (fab) {
+                fab.style.opacity = "1";
+                fab.style.pointerEvents = "auto";
+            }
+            cbStopVoiceCall();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- Nút gọi gộp ---- */
+
+
+
+
+
+    function cbToggleCall() {
+
+
+
+
+
+        if (cbVoiceActive) {
+
+
+
+
+
+            cbStopVoiceCall();
+
+
+
+
+
+        } else {
+
+
+
+
+
+            cbStartVoiceCall();
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- Tự động mở chatbot khi trang tải ---- */
+
+
+
+
+
+    window.addEventListener('load', function() {
+
+
+
+
+
+        setTimeout(() => {
+
+
+
+
+
+            if (!cbOpen) cbToggle();
+
+
+
+
+
+        }, 600);
+
+
+
+
+
+    });
+
+
+
+
+
+
+
+
+
+
+
+    function cbScrollToBottom() {
+
+
+
+
+
+        const body = document.getElementById("cbBody");
+
+
+
+
+
+        if (!body) return;
+
+
+
+
+
+        body.scrollTop = body.scrollHeight;
+
+
+
+
+
+        setTimeout(() => {
+
+
+
+
+
+            if (body) {
+
+
+
+
+
+                body.scrollTo({ top: body.scrollHeight + 9999, behavior: "smooth" });
+
+
+
+
+
+            }
+
+
+
+
+
+        }, 15);
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- Add message bubble ---- */
+
+
+
+
+
+    function cbAddMsg(role, html, isHtml = false) {
+
+
+
+
+
+        const body = document.getElementById("cbBody");
+
+
+
+
+
+        if (!body) return;
+
+
+
+
+
+
+
+
+
+
+
+        const wrap = document.createElement("div");
+
+
+
+
+
+        wrap.className = `cb-msg ${role}`;
+
+
+
+
+
+
+
+
+
+
+
+        const bubble = document.createElement("div");
+
+
+
+
+
+        bubble.className = "cb-bubble";
+
+
+
+
+
+
+
+
+
+
+
+        if (isHtml) {
+
+
+
+
+
+            bubble.innerHTML = html;
+
+
+
+
+
+        } else {
+
+
+
+
+
+            // Convert newlines and markdown-like formatting
+
+
+
+
+
+            const safe = html
+
+
+
+
+
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+
+
+
+
+
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+
+
+
+
+
+                .replace(/\n/g, "<br>");
+
+
+
+
+
+            bubble.innerHTML = safe;
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        wrap.appendChild(bubble);
+
+
+
+
+
+        body.appendChild(wrap);
+
+
+
+
+
+        cbScrollToBottom();
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function cbShowTyping(show) {
+
+
+
+
+
+        const t = document.getElementById("cbTyping");
+
+
+
+
+
+        if (t) t.style.display = show ? "flex" : "none";
+
+
+
+
+
+        if (show) cbScrollToBottom();
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- TEXT CHAT via POST /chat ---- */
+
+
+
+
+
+    async function cbSendText() {
+        await window.cbSendProgrammaticText(null);
+    }
+
+    window.cbSendProgrammaticText = async function(text) {
+        const input = document.getElementById("cbInput");
+        let displayUserText = text;
+        if (text === null) {
+            displayUserText = (input.value || "").trim();
+            text = displayUserText;
+            input.value = "";
+            input.style.height = "auto";
+        }
+        
+        if (!displayUserText) return;
+
+        cbAddMsg("user", displayUserText);
+        cbShowTyping(true);
+
+        const formData = new FormData();
+        
+        let finalMessage = text;
+        if (window.isItineraryAdjustmentMode && window.hiddenItineraryContext) {
+            finalMessage = `${window.hiddenItineraryContext}\n\nNgười dùng yêu cầu: ${text}\n\nBẠN BẮT BUỘC PHẢI TRẢ VỀ TOÀN BỘ LỊCH TRÌNH MỚI BẰNG ĐÚNG CẤU TRÚC MARKDOWN GỐC (Bắt đầu bằng [TIÊU ĐỀ]..., sau đó # NGÀY 1... ). Không được trả lời suông!`;
+            // Reset mode sau khi gửỉ 1 lần để các câu hỏi sau không bị nhét context
+            window.isItineraryAdjustmentMode = false;
+        }
+
+
+        formData.append("message", finalMessage);
+        formData.append("history", JSON.stringify(cbHistory));
+
+        try {
+            const token = window.getAuthToken ? window.getAuthToken() : null;
+            if (token) {
+                formData.append("user_id", token);
+            }
+            const res = await fetch(`${CB_API}/chat`, { method: "POST", body: formData });
+            const data = await res.json();
+            const answer = data.answer || "(Không có phản hồi)";
+
+            cbHistory.push({ role: "user", content: displayUserText });
+            cbHistory.push({ role: "assistant", content: answer });
+            cbShowTyping(false);
+
+            const structItin = data.structured_itinerary;
+            const smartChecklist = data.smart_checklist;
+            const budgetBreakdown = data.budget_breakdown;
+            const mapMarkers = data.map_markers;
+
+            // CHỈ CẬP NHẬT VÀO BALO KHI INTENT THẬT SỰ LÀ LẬP LỊCH TRÌNH VÀ CÓ DỮ LIỆU HỢP LỆ
+            const isPlanIntent = data.intent === 'PLAN_ITINERARY';
+            const daysList = (structItin && (structItin.days || structItin.lich_trinh)) || [];
+            const hasValidItinerary = isPlanIntent && Array.isArray(daysList) && daysList.length > 0;
+
+            if (hasValidItinerary) {
+                let itinObj = structItin;
+                if (!itinObj.title || itinObj.title === "Chưa có lộ trình") {
+                    if (data.slots && data.slots.destination) {
+                        itinObj.title = `Lịch Trình Du Lịch ${data.slots.destination} (${daysList.length}N)`;
+                        itinObj.destination = data.slots.destination;
+                    }
+                }
+
+                // Lưu vào danh sách chờ chốt (Pending Proposals)
+                const proposalId = 'prop_' + Date.now();
+                if (!window.pendingProposals) window.pendingProposals = {};
+                window.pendingProposals[proposalId] = {
+                    itinObj: itinObj,
+                    smartChecklist: smartChecklist,
+                    budgetBreakdown: budgetBreakdown,
+                    mapMarkers: mapMarkers
+                };
+
+                // Hiển thị câu trả lời AI kèm Thẻ Đề Xuất Lộ Trình (Chờ khách chốt đơn)
+                const destTitle = itinObj.title || `Lịch Trình Khám Phá ${data.slots?.destination || 'Điểm Đến'}`;
+                const daysNum = daysList.length;
+                const budgetStr = budgetBreakdown?.formatted_summary || `~${(itinObj?.total_budget || 0).toLocaleString('vi-VN')} đ/người`;
+                const chkCount = (smartChecklist && smartChecklist.length) || 5;
+
+                const cardHtml = `
+                    <div style="margin-bottom: 12px;">${answer.replace(/\n/g, '<br>')}</div>
+                    <div class="itinerary-backpack-synced-card" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); border: 1.5px solid #10B981; border-radius: 14px; padding: 14px 16px; margin-top: 10px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="background: #059669; color: #FFFFFF; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px;">ĐỀ XUẤT LỘ TRÌNH DU LỊCH</span>
+                            <span style="font-size: 12px; color: #047857; font-weight: 700;">${daysNum} Ngày</span>
+                        </div>
+                        <h4 style="margin: 0 0 6px 0; color: #065F46; font-size: 14px; font-weight: 800;">${destTitle}</h4>
+                        <div style="font-size: 12px; color: #047857; margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
+                            <span>💰 <b>${budgetStr}</b></span>
+                            <span>•</span>
+                            <span>📋 <b>${chkCount} món hành trang</b></span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <button onclick="window.confirmTripToBackpack('${proposalId}', this)" style="background: linear-gradient(135deg, #059669, #10B981); color: #FFFFFF; border: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);">
+                                🎒 Chốt Đơn & Lưu Vào Balo
+                            </button>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="window.requestTripAdjustment('Tôi muốn điều chỉnh lại lịch trình: ')" style="flex: 1; background: #FFFFFF; color: #065F46; border: 1px solid #10B981; padding: 7px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                                    ✏️ Yêu Cầu Đổi Lại
+                                </button>
+                                <button onclick="window.syncBackpackToMap()" style="flex: 1; background: #FFFFFF; color: #065F46; border: 1px solid #10B981; padding: 7px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                                    🗺️ Xem Thử Bản Đồ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                cbAddMsg("bot", cardHtml, true);
+                return;
+            }
+
+            // Với mọi câu hỏi khác (Thời tiết, Chào hỏi, Tìm quán ăn, Hỏi ngày giờ...) -> Chỉ hiển thị tin nhắn chat bình thường, KHÔNG THÊM VÀO BALO
+            cbAddMsg("bot", answer);
+        } catch (err) {
+            cbShowTyping(false);
+            cbAddMsg("bot", "Có lỗi xảy ra: " + err.message);
+        }
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- IMAGE UPLOAD → gửi ảnh kèm mô tả ---- */
+
+
+
+
+
+    function cbHandleImageUpload(event) {
+
+
+
+
+
+        const file = event.target.files[0];
+
+
+
+
+
+        if (!file) return;
+
+
+
+
+
+
+
+
+
+
+
+        const reader = new FileReader();
+
+
+
+
+
+        reader.onload = (e) => {
+
+
+
+
+
+            // Show preview in chat
+
+
+
+
+
+            const imgHtml = `<img src="${e.target.result}" style="max-width:180px;border-radius:8px;margin-bottom:6px;" /><br><span style="font-size:11px;opacity:0.7;">Ảnh đã gửi</span>`;
+
+
+
+
+
+            cbAddMsg("user", imgHtml, true);
+
+
+
+
+
+
+
+
+
+
+
+            // Gửi kèm mô tả (backend hiện tại nhận text)
+
+
+
+
+
+            cbAddMsg("bot", "📸 Tôi đã nhận ảnh của bạn! Hãy mô tả thêm bạn muốn hỏi gì về địa điểm này nhé.");
+
+
+
+
+
+        };
+
+
+
+
+
+        reader.readAsDataURL(file);
+
+
+
+
+
+        event.target.value = "";
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- CAMERA CAPTURE ---- */
+
+
+
+
+
+    async function cbOpenCamera() {
+
+
+
+
+
+        const modal = document.getElementById("cbCameraModal");
+
+
+
+
+
+        const video = document.getElementById("cbVideoStream");
+
+
+
+
+
+        modal.style.display = "flex";
+
+
+
+
+
+        try {
+
+
+
+
+
+            cbCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+
+
+
+
+
+            video.srcObject = cbCameraStream;
+
+
+
+
+
+        } catch (err) {
+
+
+
+
+
+            cbAddMsg("bot", "⚠️ Không thể truy cập camera. Bạn kiểm tra lại quyền camera trong trình duyệt nhé!");
+
+
+
+
+
+            modal.style.display = "none";
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function cbCloseCamera() {
+
+
+
+
+
+        const modal = document.getElementById("cbCameraModal");
+
+
+
+
+
+        modal.style.display = "none";
+
+
+
+
+
+        if (cbCameraStream) {
+
+
+
+
+
+            cbCameraStream.getTracks().forEach(t => t.stop());
+
+
+
+
+
+            cbCameraStream = null;
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function cbCapturePhoto() {
+
+
+
+
+
+        const video = document.getElementById("cbVideoStream");
+
+
+
+
+
+        const canvas = document.getElementById("cbCaptureCanvas");
+
+
+
+
+
+        canvas.width = video.videoWidth;
+
+
+
+
+
+        canvas.height = video.videoHeight;
+
+
+
+
+
+        canvas.getContext("2d").drawImage(video, 0, 0);
+
+
+
+
+
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+
+
+
+
+
+
+
+
+
+
+
+        cbCloseCamera();
+
+
+
+
+
+        const imgHtml = `<img src="${dataUrl}" style="max-width:180px;border-radius:8px;margin-bottom:6px;" /><br><span style="font-size:11px;opacity:0.7;">Ảnh chụp</span>`;
+
+
+
+
+
+        cbAddMsg("user", imgHtml, true);
+
+
+
+
+
+        cbAddMsg("bot", "📸 Ảnh chụp đẹp! Bạn muốn hỏi gì về địa điểm này không?");
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- MICRO — ghi âm → POST /transcribe → POST /chat ---- */
+
+
+
+
+
+    async function cbToggleMic() {
+
+
+
+
+
+        if (cbMicActive) {
+
+
+
+
+
+            cbStopMic();
+
+
+
+
+
+        } else {
+
+
+
+
+
+            await cbStartMic();
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    async function cbStartMic() {
+
+
+
+
+
+        try {
+
+
+
+
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+
+
+
+
+            cbAudioChunks = [];
+
+
+
+
+
+            cbMediaRecorder = new MediaRecorder(stream);
+
+
+
+
+
+
+
+
+
+
+
+            cbMediaRecorder.ondataavailable = (e) => {
+
+
+
+
+
+                if (e.data.size > 0) cbAudioChunks.push(e.data);
+
+
+
+
+
+            };
+
+
+
+
+
+
+
+
+
+
+
+            cbMediaRecorder.onstop = async () => {
+
+
+
+
+
+                stream.getTracks().forEach(t => t.stop());
+
+
+
+
+
+                const blob = new Blob(cbAudioChunks, { type: "audio/webm" });
+
+
+
+
+
+                await cbTranscribeAndSend(blob);
+
+
+
+
+
+            };
+
+
+
+
+
+
+
+
+
+
+
+            cbMediaRecorder.start();
+
+
+
+
+
+            cbMicActive = true;
+
+
+
+
+
+
+
+
+
+
+
+            const btn = document.getElementById("cbMicBtn");
+
+
+
+
+
+            if (btn) btn.classList.add("cb-tool-active");
+
+
+
+
+
+            cbAddMsg("bot", "🎙️ Đang ghi âm... Nhấn Micro lần nữa để dừng và gửi.");
+
+
+
+
+
+        } catch (err) {
+
+
+
+
+
+            cbAddMsg("bot", "⚠️ Không thể truy cập microphone. Bạn kiểm tra lại quyền microphone trong trình duyệt nhé!");
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function cbStopMic() {
+
+
+
+
+
+        if (cbMediaRecorder && cbMediaRecorder.state !== "inactive") {
+
+
+
+
+
+            cbMediaRecorder.stop();
+
+
+
+
+
+        }
+
+
+
+
+
+        cbMicActive = false;
+
+
+
+
+
+        const btn = document.getElementById("cbMicBtn");
+
+
+
+
+
+        if (btn) btn.classList.remove("cb-tool-active");
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    async function cbTranscribeAndSend(audioBlob) {
+
+
+
+
+
+        cbShowTyping(true);
+
+
+
+
+
+        cbAddMsg("bot", "⏳ Đang nhận dạng giọng nói...");
+
+
+
+
+
+
+
+
+
+
+
+        const formData = new FormData();
+
+
+
+
+
+        formData.append("audio", audioBlob, "recording.webm");
+
+
+
+
+
+
+
+
+
+
+
+        try {
+
+
+
+
+
+            const res = await fetch(`${CB_API}/transcribe`, { method: "POST", body: formData });
+
+
+
+
+
+            const data = await res.json();
+
+
+
+
+
+            const transcript = data.text || "";
+
+
+
+
+
+
+
+
+
+
+
+            if (!transcript) {
+
+
+
+
+
+                cbShowTyping(false);
+
+
+
+
+
+                cbAddMsg("bot", "🎙️ Không nhận diện được giọng nói. Hãy thử lại nhé.");
+
+
+
+
+
+                return;
+
+
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+            cbAddMsg("user", `🎙️ "${transcript}"`);
+
+
+
+
+
+            cbShowTyping(true);
+
+
+
+
+
+
+
+
+
+
+
+            const formData2 = new FormData();
+
+
+
+
+
+            formData2.append("message", transcript);
+
+
+
+
+
+            formData2.append("history", JSON.stringify(cbHistory));
+
+
+
+
+
+
+
+
+
+
+
+            const res2 = await fetch(`${CB_API}/chat`, { method: "POST", body: formData2 });
+
+
+
+
+
+            const data2 = await res2.json();
+
+
+
+
+
+            const answer = data2.answer || "(Không có phản hồi)";
+
+
+
+
+
+
+
+
+
+
+
+            cbHistory.push({ role: "user", content: transcript });
+
+
+
+
+
+            cbHistory.push({ role: "assistant", content: answer });
+
+
+
+
+
+
+
+
+
+
+
+            cbShowTyping(false);
+
+
+
+
+
+            cbAddMsg("bot", answer);
+
+
+
+
+
+        } catch (err) {
+
+
+
+
+
+            cbShowTyping(false);
+
+
+
+
+
+            cbAddMsg("bot", "🙏 Xin lỗi, hệ thống đang tạm thời bận. Bạn vui lòng thử lại sau ít phút nhé!");
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- HELPERS: Voice overlay UI ---- */
+
+
+
+
+
+    function cbVoiceSetState(state, transcript) {
+
+
+
+
+
+        const overlay  = document.getElementById("cbVoiceOverlay");
+
+
+
+
+
+        const status   = document.getElementById("cbVoiceStatus");
+
+
+
+
+
+        const waves    = document.getElementById("cbWaveBars");
+
+
+
+
+
+        const transEl  = document.getElementById("cbVoiceTranscript");
+
+
+
+
+
+        if (!overlay) return;
+
+
+
+
+
+
+
+
+
+
+
+        // Reset classes
+
+
+
+
+
+        overlay.classList.remove("cb-speaking");
+
+
+
+
+
+        waves.classList.remove("cb-listening", "cb-speaking");
+
+
+
+
+
+
+
+
+
+
+
+        if (state === "connecting") {
+
+
+
+
+
+            if (status) status.textContent = "⏳ Đang kết nối...";
+
+
+
+
+
+        } else if (state === "listening") {
+
+
+
+
+
+            if (status) status.textContent = "🎙️ Đang lắng nghe...";
+
+
+
+
+
+            waves.classList.add("cb-listening");
+
+
+
+
+
+        } else if (state === "thinking") {
+
+
+
+
+
+            if (status) status.textContent = "💭 Beenavi AI đang suy nghĩ...";
+
+
+
+
+
+        } else if (state === "speaking") {
+
+
+
+
+
+            if (status) status.textContent = "🔊 Beenavi AI đang trả lời...";
+
+
+
+
+
+            overlay.classList.add("cb-speaking");
+
+
+
+
+
+            waves.classList.add("cb-speaking");
+
+
+
+
+
+        } else if (state === "ready") {
+
+
+
+
+
+            if (status) status.textContent = "🟢 Sẵn sàng — hãy nói!";
+
+
+
+
+
+            waves.classList.add("cb-listening");
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        if (transcript !== undefined && transEl) {
+
+
+
+
+
+            transEl.textContent = transcript || "";
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function cbVoiceShowError(msg) {
+
+
+
+
+
+        const errorBanner = document.getElementById("cbVoiceError");
+
+
+
+
+
+        const status = document.getElementById("cbVoiceStatus");
+
+
+
+
+
+        const waves = document.getElementById("cbWaveBars");
+
+
+
+
+
+        if (status) status.textContent = "⚠️ Lỗi cuộc gọi";
+
+
+
+
+
+        if (waves) waves.style.display = "none";
+
+
+
+
+
+        if (errorBanner) {
+
+
+
+
+
+            errorBanner.innerHTML = `
+
+
+
+
+
+                <div class="cb-error-content">
+
+
+
+
+
+                    <span>${msg}</span>
+
+
+
+
+
+                    <button class="cb-retry-btn" onclick="cbStartVoiceCall()">🔄 Thử lại</button>
+
+
+
+
+
+                </div>
+
+
+
+
+
+            `;
+
+
+
+
+
+            errorBanner.style.display = "block";
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function cbVoiceShowOverlay(show) {
+
+
+
+
+
+        cbVoiceActive = show;
+
+
+
+
+
+        let overlay = document.getElementById("cbVoiceOverlay");
+
+
+
+
+
+        const chatView = document.getElementById("cbChatView");
+
+
+
+
+
+        const panel = document.getElementById("cbPanel");
+
+
+
+
+
+
+
+
+
+
+
+        if (show) {
+
+
+
+
+
+            // Conditional Rendering: Khi gọi điện, ẩn ChatView để ngắt luồng DOM cũ
+
+
+
+
+
+            if (chatView) chatView.style.display = "none";
+
+
+
+
+
+
+
+
+
+
+
+            // Render Component CallView độc lập phủ kín container cha
+
+
+
+
+
+            if (!overlay && panel) {
+
+
+
+
+
+                overlay = document.createElement("div");
+
+
+
+
+
+                overlay.className = "cb-voice-overlay";
+
+
+
+
+
+                overlay.id = "cbVoiceOverlay";
+
+
+
+
+
+                overlay.innerHTML = `
+
+
+
+
+
+                    <div class="cb-voice-main">
+
+
+
+
+
+                        <div class="cb-voice-rings" id="cbVoiceRings">
+
+
+
+
+
+                            <div class="cb-ring cb-ring-3"></div>
+
+
+
+
+
+                            <div class="cb-ring cb-ring-2"></div>
+
+
+
+
+
+                            <div class="cb-ring cb-ring-1"></div>
+
+
+
+
+
+                            <div class="cb-voice-avatar">
+
+
+
+
+
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+
+
+
+
+                                    <rect x="3" y="11" width="18" height="10" rx="3"></rect>
+
+
+
+
+
+                                    <circle cx="12" cy="5" r="2"></circle>
+
+
+
+
+
+                                    <path d="M12 7v4"></path>
+
+
+
+
+
+                                    <line x1="8" y1="15" x2="8" y2="15.01" stroke-width="3"></line>
+
+
+
+
+
+                                    <line x1="16" y1="15" x2="16" y2="15.01" stroke-width="3"></line>
+
+
+
+
+
+                                </svg>
+
+
+
+
+
+                            </div>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                        <div class="cb-voice-name">Beenavi AI</div>
+
+
+
+
+
+                        <div class="cb-voice-status" id="cbVoiceStatus">Đang kết nối...</div>
+
+
+
+
+
+
+
+
+
+
+
+                        <!-- Khối hiển thị lỗi ngoại lệ (Microphone, WebSocket) -->
+
+
+
+
+
+                        <div class="cb-voice-error-banner" id="cbVoiceError" style="display:none;"></div>
+
+
+
+
+
+
+
+
+
+
+
+                        <div class="cb-wave-bars" id="cbWaveBars">
+
+
+
+
+
+                            <span class="cb-wave-bar"></span>
+
+
+
+
+
+                            <span class="cb-wave-bar"></span>
+
+
+
+
+
+                            <span class="cb-wave-bar"></span>
+
+
+
+
+
+                            <span class="cb-wave-bar"></span>
+
+
+
+
+
+                            <span class="cb-wave-bar"></span>
+
+
+
+
+
+                            <span class="cb-wave-bar"></span>
+
+
+
+
+
+                            <span class="cb-wave-bar"></span>
+
+
+
+
+
+                            <span class="cb-wave-bar"></span>
+
+
+
+
+
+                            <span class="cb-wave-bar"></span>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                        <div class="cb-voice-transcript" id="cbVoiceTranscript"></div>
+
+
+
+
+
+                    </div>
+
+
+
+
+
+                    <button class="cb-hangup-btn" onclick="cbStopVoiceCall()" title="Kết thúc cuộc gọi">
+
+
+
+
+
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
+
+
+
+
+                            <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 2.59 3.4z"/>
+
+
+
+
+
+                            <line x1="23" y1="1" x2="1" y2="23"/>
+
+
+
+
+
+                        </svg>
+
+
+
+
+
+                    </button>
+
+
+
+
+
+                `;
+
+
+
+
+
+                panel.appendChild(overlay);
+
+
+
+
+
+            }
+
+
+
+
+
+        } else {
+
+
+
+
+
+            // Khi dừng cuộc gọi: hiển thị lại ChatView và unmount CallView
+
+
+
+
+
+            if (chatView) chatView.style.display = "flex";
+
+
+
+
+
+            if (overlay) overlay.remove();
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- HÀNG CHỜ ÂM THANH REALTIME (ChatGPT Mode) ---- */
+
+
+
+
+
+    class RealtimeAudioQueue {
+
+
+
+
+
+        constructor() {
+
+
+
+
+
+            this.queue = [];
+
+
+
+
+
+            this.isPlaying = false;
+
+
+
+
+
+            this.currentAudio = null;
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        enqueue(base64Wav) {
+
+
+
+
+
+            this.queue.push(base64Wav);
+
+
+
+
+
+            if (!this.isPlaying) {
+
+
+
+
+
+                this.playNext();
+
+
+
+
+
+            }
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        playNext() {
+
+
+
+
+
+            if (this.queue.length === 0) {
+
+
+
+
+
+                this.isPlaying = false;
+
+
+
+
+
+                this.currentAudio = null;
+
+
+
+
+
+                return;
+
+
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+            this.isPlaying = true;
+
+
+
+
+
+            const b64 = this.queue.shift();
+
+
+
+
+
+            try {
+
+
+
+
+
+                const binary = atob(b64);
+
+
+
+
+
+                const array = new Uint8Array(binary.length);
+
+
+
+
+
+                for (let i = 0; i < binary.length; i++) {
+
+
+
+
+
+                    array[i] = binary.charCodeAt(i);
+
+
+
+
+
+                }
+
+
+
+
+
+                const blob = new Blob([array], { type: "audio/wav" });
+
+
+
+
+
+                const url = URL.createObjectURL(blob);
+
+
+
+
+
+
+
+
+
+
+
+                const audio = new Audio(url);
+
+
+
+
+
+                this.currentAudio = audio;
+
+
+
+
+
+
+
+
+
+
+
+                audio.onended = () => {
+
+
+
+
+
+                    URL.revokeObjectURL(url);
+
+
+
+
+
+                    this.playNext();
+
+
+
+
+
+                };
+
+
+
+
+
+
+
+
+
+
+
+                audio.onerror = () => {
+
+
+
+
+
+                    URL.revokeObjectURL(url);
+
+
+
+
+
+                    this.playNext();
+
+
+
+
+
+                };
+
+
+
+
+
+
+
+
+
+
+
+                audio.play().catch(err => {
+
+
+
+
+
+                    console.warn("Audio play error:", err);
+
+
+
+
+
+                    this.playNext();
+
+
+
+
+
+                });
+
+
+
+
+
+            } catch (err) {
+
+
+
+
+
+                console.error("Decode audio b64 error:", err);
+
+
+
+
+
+                this.playNext();
+
+
+
+
+
+            }
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        clear() {
+
+
+
+
+
+            this.queue = [];
+
+
+
+
+
+            if (this.currentAudio) {
+
+
+
+
+
+                try { this.currentAudio.pause(); } catch(e){}
+
+
+
+
+
+                this.currentAudio = null;
+
+
+
+
+
+            }
+
+
+
+
+
+            this.isPlaying = false;
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    const cbAudioQueue = new RealtimeAudioQueue();
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- ĐÀM THOẠI — WebSocket /ws ---- */
+
+
+
+
+
+    function cbToggleVoiceCall() {
+
+
+
+
+
+        if (cbVoiceActive) {
+
+
+
+
+
+            cbStopVoiceCall();
+
+
+
+
+
+        } else {
+
+
+
+
+
+            cbStartVoiceCall();
+
+
+
+
+
+        }
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // Trần an toàn tối đa mỗi lượt nói (fallback nếu VAD không phát hiện được im lặng)
+
+
+
+
+
+    let cbVoiceTurnTimer = null;
+
+
+
+
+
+    // Flag: đang xử lý AI (không ghi âm)
+
+
+
+
+
+    let cbVoiceProcessing = false;
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- Voice Activity Detection (VAD) — phát hiện lúc người dùng ngừng nói ----
+
+
+
+
+
+       Trước đây mỗi lượt LUÔN ghi âm đủ 8 giây rồi mới gửi audio_end, bất kể
+
+
+
+
+
+       người dùng nói xong sớm hay không → hội thoại bị "khựng", cảm giác trễ.
+
+
+
+
+
+       Nay dùng AnalyserNode để đo năng lượng âm thanh theo thời gian thực:
+
+
+
+
+
+       hễ phát hiện im lặng liên tục CB_VAD_SILENCE_MS sau khi đã có tiếng nói,
+
+
+
+
+
+       lượt ghi âm kết thúc ngay lập tức. CB_VAD_MAX_TURN_MS chỉ là trần an toàn
+
+
+
+
+
+       (phòng khi trình duyệt không hỗ trợ Web Audio API hoặc micro quá ồn). */
+
+
+
+
+
+    const CB_VAD_SILENCE_MS = 900;
+
+
+
+
+
+    const CB_VAD_THRESHOLD = 0.015;
+
+
+
+
+
+    const CB_VAD_MAX_TURN_MS = 15000;
+
+
+
+
+
+
+
+
+
+
+
+    let cbVadCtx = null;
+
+
+
+
+
+    let cbVadAnalyser = null;
+
+
+
+
+
+    let cbVadSource = null;
+
+
+
+
+
+    let cbVadRafId = null;
+
+
+
+
+
+
+
+
+
+
+
+    function cbVadStop() {
+
+
+
+
+
+        if (cbVadRafId !== null) cancelAnimationFrame(cbVadRafId);
+
+
+
+
+
+        cbVadRafId = null;
+
+
+
+
+
+        if (cbVadSource) {
+
+
+
+
+
+            try { cbVadSource.disconnect(); } catch (e) {}
+
+
+
+
+
+            cbVadSource = null;
+
+
+
+
+
+        }
+
+
+
+
+
+        if (cbVadCtx) {
+
+
+
+
+
+            try { cbVadCtx.close(); } catch (e) {}
+
+
+
+
+
+            cbVadCtx = null;
+
+
+
+
+
+        }
+
+
+
+
+
+        cbVadAnalyser = null;
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function cbVadStart(stream) {
+
+
+
+
+
+        cbVadStop();
+
+
+
+
+
+        try {
+
+
+
+
+
+            cbVadCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+
+
+
+
+            cbVadAnalyser = cbVadCtx.createAnalyser();
+
+
+
+
+
+            cbVadAnalyser.fftSize = 512;
+
+
+
+
+
+            cbVadSource = cbVadCtx.createMediaStreamSource(stream);
+
+
+
+
+
+            cbVadSource.connect(cbVadAnalyser);
+
+
+
+
+
+        } catch (err) {
+
+
+
+
+
+            console.warn("[Chatbot] VAD không khởi tạo được, dùng trần an toàn 15s:", err);
+
+
+
+
+
+            return;
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        const data = new Uint8Array(cbVadAnalyser.fftSize);
+
+
+
+
+
+        let speechDetected = false;
+
+
+
+
+
+        let silenceStartedAt = null;
+
+
+
+
+
+
+
+
+
+
+
+        const tick = () => {
+
+
+
+
+
+            if (!cbVoiceActive || !cbVadAnalyser) return;
+
+
+
+
+
+            cbVadAnalyser.getByteTimeDomainData(data);
+
+
+
+
+
+
+
+
+
+
+
+            let sumSquares = 0;
+
+
+
+
+
+            for (let i = 0; i < data.length; i++) {
+
+
+
+
+
+                const norm = (data[i] - 128) / 128;
+
+
+
+
+
+                sumSquares += norm * norm;
+
+
+
+
+
+            }
+
+
+
+
+
+            const rms = Math.sqrt(sumSquares / data.length);
+
+
+
+
+
+            const now = performance.now();
+
+
+
+
+
+
+
+
+
+
+
+            if (rms > CB_VAD_THRESHOLD) {
+
+
+
+
+
+                speechDetected = true;
+
+
+
+
+
+                silenceStartedAt = null;
+
+
+
+
+
+            } else if (speechDetected) {
+
+
+
+
+
+                if (silenceStartedAt === null) {
+
+
+
+
+
+                    silenceStartedAt = now;
+
+
+
+
+
+                } else if (now - silenceStartedAt > CB_VAD_SILENCE_MS) {
+
+
+
+
+
+                    cbVoiceEndTurn();
+
+
+
+
+
+                    return;
+
+
+
+
+
+                }
+
+
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+            cbVadRafId = requestAnimationFrame(tick);
+
+
+
+
+
+        };
+
+
+
+
+
+
+
+
+
+
+
+        cbVadRafId = requestAnimationFrame(tick);
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* Kết thúc lượt ghi âm hiện tại (do VAD phát hiện im lặng, hoặc do chạm trần an toàn) */
+
+
+
+
+
+    function cbVoiceEndTurn() {
+
+
+
+
+
+        if (!cbVoiceActive || cbVoiceProcessing) return;
+
+
+
+
+
+        clearTimeout(cbVoiceTurnTimer);
+
+
+
+
+
+        cbVadStop();
+
+
+
+
+
+
+
+
+
+
+
+        const ws = cbWs;
+
+
+
+
+
+        const recorder = ws && ws._voiceRecorder;
+
+
+
+
+
+
+
+
+
+
+
+        if (recorder && recorder.state === "recording") {
+
+
+
+
+
+            recorder.stop();
+
+
+
+
+
+        }
+
+
+
+
+
+        if (ws && ws.readyState === WebSocket.OPEN) {
+
+
+
+
+
+            ws.send(JSON.stringify({ type: "audio_end" }));
+
+
+
+
+
+        }
+
+
+
+
+
+        cbVoiceProcessing = true;
+
+
+
+
+
+        cbVoiceSetState("thinking", "");
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* Khởi động 1 lượt ghi âm — kết thúc theo VAD (im lặng), trần an toàn CB_VAD_MAX_TURN_MS */
+
+
+
+
+
+    function cbVoiceStartTurn() {
+
+
+
+
+
+        if (!cbVoiceActive || cbVoiceProcessing) return;
+
+
+
+
+
+        const ws = cbWs;
+
+
+
+
+
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+
+
+
+
+
+
+
+
+
+
+        const recorder = ws._voiceRecorder;
+
+
+
+
+
+        if (!recorder || recorder.state === "recording") return;
+
+
+
+
+
+
+
+
+
+
+
+        ws.send(JSON.stringify({ type: "audio_start" }));
+
+
+
+
+
+        cbVoiceSetState("listening", "");
+
+
+
+
+
+        recorder.start(300);
+
+
+
+
+
+
+
+
+
+
+
+        if (ws._voiceStream) {
+
+
+
+
+
+            cbVadStart(ws._voiceStream);
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        // Trần an toàn — chỉ kích hoạt nếu VAD không phát hiện được im lặng
+
+
+
+
+
+        clearTimeout(cbVoiceTurnTimer);
+
+
+
+
+
+        cbVoiceTurnTimer = setTimeout(() => {
+
+
+
+
+
+            cbVoiceEndTurn();
+
+
+
+
+
+        }, CB_VAD_MAX_TURN_MS);
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /* Đợi TTS audio queue phát hết, sau đó bắt đầu lượt ghi âm mới */
+
+
+
+
+
+    function cbWaitQueueThenListen() {
+
+
+
+
+
+        if (!cbVoiceActive) return;
+
+
+
+
+
+        if (cbAudioQueue.isPlaying || cbAudioQueue.queue.length > 0) {
+
+
+
+
+
+            setTimeout(cbWaitQueueThenListen, 250);
+
+
+
+
+
+            return;
+
+
+
+
+
+        }
+
+
+
+
+
+        // Queue trống → bắt đầu lượt nghe mới
+
+
+
+
+
+        cbVoiceProcessing = false;
+
+
+
+
+
+        cbVoiceStartTurn();
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function cbStartVoiceCall() {
+
+
+
+
+
+        cbAudioQueue.clear();
+
+
+
+
+
+        cbVoiceProcessing = false;
+
+
+
+
+
+        // Hiện overlay ngay
+
+
+
+
+
+        cbVoiceShowOverlay(true);
+
+
+
+
+
+        cbVoiceSetState("connecting", "");
+
+
+
+
+
+
+
+
+
+
+
+        const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+
+
+
+
+
+        const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+
+
+
+
+
+
+
+
+
+
+
+        // Kiểm tra kết nối server trước
+
+
+
+
+
+        let connectionTimeout = setTimeout(() => {
+
+
+
+
+
+            if (cbWs && cbWs.readyState !== WebSocket.OPEN) {
+
+
+
+
+
+                cbVoiceSetState("connecting", "❌ Không kết nối được server!");
+
+
+
+
+
+                cbAddMsg("bot", "❌ Không thể kết nối đến server. Vui lòng kiểm tra server backend đang chạy rồi thử lại!");
+
+
+
+
+
+                setTimeout(() => { cbStopVoiceCall(); }, 3000);
+
+
+
+
+
+            }
+
+
+
+
+
+        }, 5000);
+
+
+
+
+
+
+
+
+
+
+
+        cbWs = new WebSocket(wsUrl);
+
+
+
+
+
+        cbVoiceActive = true;
+
+
+
+
+
+
+
+
+
+
+
+        const btn = document.getElementById("cbCallBtn");
+
+
+
+
+
+        if (btn) btn.classList.add("cb-tool-active");
+
+
+
+
+
+
+
+
+
+
+
+        let voiceStream = null;
+
+
+
+
+
+        let voiceRecorder = null;
+
+
+
+
+
+
+
+
+
+
+
+        cbWs.onopen = async () => {
+
+
+
+
+
+            clearTimeout(connectionTimeout);
+
+
+
+
+
+            cbVoiceSetState("ready", "");
+
+
+
+
+
+            try {
+
+
+
+
+
+                voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+
+
+
+
+
+
+
+
+
+
+                let options = {};
+
+
+
+
+
+                if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported) {
+
+
+
+
+
+                    if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+
+
+
+
+
+                        options = { mimeType: "audio/webm;codecs=opus" };
+
+
+
+
+
+                    } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+
+
+
+
+
+                        options = { mimeType: "audio/webm" };
+
+
+
+
+
+                    }
+
+
+
+
+
+                }
+
+
+
+
+
+                voiceRecorder = new MediaRecorder(voiceStream, options);
+
+
+
+
+
+
+
+
+
+
+
+                voiceRecorder.ondataavailable = (e) => {
+
+
+
+
+
+                    if (e.data.size > 0 && cbWs && cbWs.readyState === WebSocket.OPEN) {
+
+
+
+
+
+                        const reader = new FileReader();
+
+
+
+
+
+                        reader.onload = () => {
+
+
+
+
+
+                            const b64 = reader.result.split(",")[1];
+
+
+
+
+
+                            cbWs.send(JSON.stringify({ type: "audio_chunk", data: b64 }));
+
+
+
+
+
+                        };
+
+
+
+
+
+                        reader.readAsDataURL(e.data);
+
+
+
+
+
+                    }
+
+
+
+
+
+                };
+
+
+
+
+
+
+
+
+
+
+
+                // Gắn recorder và stream vào ws nếu websocket còn mở
+
+
+
+
+
+                if (cbWs) {
+
+
+
+
+
+                    cbWs._voiceStream = voiceStream;
+
+
+
+
+
+                    cbWs._voiceRecorder = voiceRecorder;
+
+
+
+
+
+                }
+
+
+
+
+
+
+
+
+
+
+
+                // Bắt đầu lượt đầu tiên
+
+
+
+
+
+                cbVoiceStartTurn();
+
+
+
+
+
+            } catch (err) {
+
+
+
+
+
+                clearTimeout(connectionTimeout);
+
+
+
+
+
+                console.warn("[Chatbot] getUserMedia error:", err);
+
+
+
+
+
+                cbVoiceShowError("⚠️ Không thể truy cập Microphone. Vui lòng cấp quyền Microphone trên góc thanh địa chỉ trình duyệt và thử lại!");
+
+
+
+
+
+            }
+
+
+
+
+
+        };
+
+
+
+
+
+
+
+
+
+
+
+        cbWs.onmessage = (event) => {
+
+
+
+
+
+            const payload = JSON.parse(event.data);
+
+
+
+
+
+
+
+
+
+
+
+            // LƯU Ý: toàn bộ khối này chỉ chạy trong lúc đang GỌI (voice call),
+
+
+
+
+
+            // vì cbWs chỉ được tạo bởi cbStartVoiceCall(). Trước đây các nhánh
+
+
+
+
+
+            // "greeting"/"transcript"/"answer" gọi cbAddMsg(...) ghi thẳng vào
+
+
+
+
+
+            // #cbBody (ô chat văn bản chính) → gây ra lỗi "sinh text vào ô chat
+
+
+
+
+
+            // lúc gọi". Nay chỉ cập nhật overlay cuộc gọi (cbVoiceSetState),
+
+
+
+
+
+            // KHÔNG đụng vào #cbBody nữa trong suốt cuộc gọi.
+
+
+
+
+
+
+
+
+
+
+
+            if (payload.type === "greeting" && payload.text) {
+
+
+
+
+
+                cbVoiceSetState("speaking", payload.text);
+
+
+
+
+
+
+
+
+
+
+
+            } else if (payload.type === "partial_transcript" && payload.text) {
+
+
+
+
+
+                // Hiện partial transcript trên overlay
+
+
+
+
+
+                cbVoiceSetState("listening", payload.text);
+
+
+
+
+
+
+
+
+
+
+
+            } else if (payload.type === "transcript" && payload.text) {
+
+
+
+
+
+                // Transcript đã nhận xong — ngắt âm thanh cũ, hiện trên overlay
+
+
+
+
+
+                cbAudioQueue.clear();
+
+
+
+
+
+                cbVoiceSetState("thinking", `"${payload.text}"`);
+
+
+
+
+
+                cbVoiceLastUserText = payload.text;
+
+
+
+
+
+
+
+
+
+
+
+            } else if (payload.type === "answer" && payload.text) {
+
+
+
+
+
+                // AI đang stream trả lời — hiện phụ đề trực tiếp trên overlay
+
+
+
+
+
+                // cuộc gọi (giống phụ đề cuộc gọi thoại), không tạo bubble chat.
+
+
+
+
+
+                cbVoiceSetState("speaking", payload.text);
+
+
+
+
+
+                cbVoiceLastAnswerText = payload.text;
+
+
+
+
+
+
+
+
+
+
+
+            } else if (payload.type === "tts_chunk" && payload.audio) {
+
+
+
+
+
+                // Âm thanh VieNeu-TTS theo từng câu -> enqueue và phát mượt.
+
+
+
+
+
+                // Không truyền transcript ở đây để tránh đè lên phụ đề đang
+
+
+
+
+
+                // tăng dần từ sự kiện "answer" (tránh nhấp nháy phụ đề).
+
+
+
+
+
+                cbAudioQueue.enqueue(payload.audio);
+
+
+
+
+
+                cbVoiceSetState("speaking");
+
+
+
+
+
+
+
+
+
+
+
+            } else if (payload.type === "done") {
+
+
+
+
+
+                // Xong 1 lượt hỏi-đáp trong cuộc gọi. Lưu lại vào cbHistory
+
+
+
+
+
+                // (không hiện lên ô chat) để nếu người dùng chuyển sang gõ
+
+
+
+
+
+                // chat sau khi cúp máy, bot vẫn nhớ ngữ cảnh vừa trao đổi.
+
+
+
+
+
+                if (cbVoiceLastUserText) {
+
+
+
+
+
+                    cbHistory.push({ role: "user", content: cbVoiceLastUserText });
+
+
+
+
+
+                    cbHistory.push({ role: "assistant", content: cbVoiceLastAnswerText || "" });
+
+
+
+
+
+                    cbVoiceLastUserText = "";
+
+
+
+
+
+                    cbVoiceLastAnswerText = "";
+
+
+
+
+
+                }
+
+
+
+
+
+                // Khi không có TTS chunk nào → cbAudioQueue rỗng → lắng nghe ngay
+
+
+
+
+
+                cbWaitQueueThenListen();
+
+
+
+
+
+
+
+
+
+
+
+            } else if (payload.type === "listening") {
+
+
+
+
+
+                cbVoiceSetState("listening", "");
+
+
+
+
+
+
+
+
+
+
+
+            } else if (payload.type === "stt_empty") {
+
+
+
+
+
+                cbVoiceSetState("listening", "Không nhận được âm thanh...");
+
+
+
+
+
+                setTimeout(() => cbVoiceSetState("listening", ""), 1800);
+
+
+
+
+
+            }
+
+
+
+
+
+        };
+
+
+
+
+
+
+
+
+
+
+
+        cbWs.onclose = (event) => {
+
+
+
+
+
+            clearTimeout(connectionTimeout);
+
+
+
+
+
+            if (!cbVoiceActive) return;
+
+
+
+
+
+            cbAudioQueue.clear();
+
+
+
+
+
+            if (voiceStream) voiceStream.getTracks().forEach(t => t.stop());
+
+
+
+
+
+            if (voiceRecorder && voiceRecorder.state !== "inactive") voiceRecorder.stop();
+
+
+
+
+
+        };
+
+
+
+
+
+
+
+
+
+
+
+        cbWs.onerror = (err) => {
+
+
+
+
+
+            clearTimeout(connectionTimeout);
+
+
+
+
+
+            console.warn("[Chatbot] WebSocket error:", err);
+
+
+
+
+
+            cbVoiceSetState("connecting", "⚠️ Lỗi kết nối WebSocket!");
+
+
+
+
+
+        };
+
+
+
+
+
+
+
+
+
+
+
+        cbWs._voiceStream = voiceStream;
+
+
+
+
+
+        cbWs._voiceRecorder = voiceRecorder;
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    function cbStopVoiceCall() {
+        const wasActive = cbVoiceActive;
+        clearTimeout(cbVoiceTurnTimer);
+        cbVadStop();
+        cbVoiceProcessing = false;
+        cbVoiceLastUserText = "";
+        cbVoiceLastAnswerText = "";
+        cbAudioQueue.clear();
+
+        if (cbWs) {
+            if (cbWs._voiceRecorder && cbWs._voiceRecorder.state !== "inactive") {
+                try { cbWs._voiceRecorder.stop(); } catch(e) {}
+            }
+            if (cbWs._voiceStream) {
+                try { cbWs._voiceStream.getTracks().forEach(t => t.stop()); } catch(e) {}
+            }
+            if (cbWs.readyState === WebSocket.OPEN) {
+                try {
+                    cbWs.send(JSON.stringify({ type: "audio_end" }));
+                    cbWs.close();
+                } catch(e) {}
+            }
+            cbWs = null;
+        }
+
+        cbVoiceActive = false;
+
+        const btn = document.getElementById("cbCallBtn");
+        if (btn) btn.classList.remove("cb-tool-active");
+        cbVoiceShowOverlay(false);
+
+        if (wasActive) {
+            cbAddMsg("bot", "🎧 Đã kết thúc cuộc đàm thoại.");
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Export functions ra window để inline onclick gọi chắc chắn
+
+
+
+
+
+    window.cbToggle = cbToggle;
+
+
+
+
+
+    window.cbToggleCall = cbToggleCall;
+
+
+
+
+
+    window.cbToggleVoiceCall = cbToggleVoiceCall;
+
+
+
+
+
+    window.cbStopVoiceCall = cbStopVoiceCall;
+
+
+
+
+
+    window.cbSendText = cbSendText;
+
+
+
+
+
+    window.cbToggleMic = cbToggleMic;
+
+
+
+
+
+    window.cbOpenCamera = cbOpenCamera;
+
+
+
+
+
+    window.cbCloseCamera = cbCloseCamera;
+
+
+
+
+
+    window.cbCapturePhoto = cbCapturePhoto;
+
+
+
+
+
+    window.cbHandleImageUpload = cbHandleImageUpload;
+
+
+
+
+
+    window.cbScrollToBottom = cbScrollToBottom;
+
+
+
+
+
+
+
+
+
+
+
+    /* ---- Auto-resize textarea ---- */
+
+
+
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+
+
+
+
+        const inp = document.getElementById("cbInput");
+
+
+
+
+
+        if (inp) {
+
+
+
+
+
+            inp.addEventListener("input", () => {
+
+
+
+
+
+                inp.style.height = "auto";
+
+
+
+
+
+                inp.style.height = Math.min(inp.scrollHeight, 100) + "px";
+
+
+
+
+
+            });
+
+
+
+
+
+        }
+
+
+
+
+
+    });
+
+
+
+
+
+    </script>
+
+
+
+
+
+
+<!-- AI Loading Overlay -->
+<div id="aiLoadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; flex-direction: column; align-items: center; justify-content: center;">
+    <div style="width: 80px; height: 80px; border: 6px solid #f3f3f3; border-top: 6px solid #E8B923; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <h3 style="margin-top: 20px; color: #111111; font-family: 'Be Vietnam Pro', sans-serif;">Ong BeeNavi đang thiết kế lịch trình...</h3>
+    <p style="color: #666; font-family: 'Inter', sans-serif;">Quá trình này có thể mất 15-30 giây tùy theo yêu cầu của bạn.</p>
+</div>
+<style>
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+
+
+    <!-- Destination Info Modal -->
+    <div id="destInfoModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div style="background: #fff; width: 90%; max-width: 600px; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative; animation: slideUp 0.3s ease-out;">
+            <div style="padding: 24px; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="destInfoTitle" style="font-weight: 800; font-size: 22px; color: #111; margin: 0;">Đang tra cứu...</h3>
+                <button onclick="document.getElementById('destInfoModal').style.display='none'" style="background: none; border: none; cursor: pointer; padding: 4px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div id="destInfoBody" style="padding: 24px; max-height: 60vh; overflow-y: auto;">
+                <div id="destInfoLoading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; color: #64748B;">
+                    <div class="trv-spinner" style="margin-bottom: 16px; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <p style="margin: 0; font-size: 15px;">BeeNavi đang thu thập thông tin...</p>
+                </div>
+                
+                <div id="destInfoContent" style="display: none; font-size: 15px; color: #333; line-height: 1.6;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-weight: 700; color: var(--primary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Vibe & Thời tiết</h4>
+                        <p id="destInfoWeather" style="margin: 0;"></p>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-weight: 700; color: #E8B923; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg> Top Trải Nghiệm</h4>
+                        <ul id="destInfoExperience" style="margin: 0; padding-left: 20px; color: #475569;"></ul>
+                    </div>
+                    <div>
+                        <h4 style="font-weight: 700; color: #ef4444; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> Đặc Sản Nên Thử</h4>
+                        <ul id="destInfoFood" style="margin: 0; padding-left: 20px; color: #475569;"></ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="padding: 16px 24px; border-top: 1px solid #E2E8F0; background: #F8FAFC; text-align: center;">
+                <button onclick="createTripFromInfo()" class="trv-orange-btn" style="width: 100%; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 800;">
+                    Lên Lịch Trình Đến Đây Ngay 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ========================================================================= -->
+    <!-- FLOATING BACKPACK WIDGET (BALO HÀNH TRANG & LỘ TRÌNH GÓC TRÁI DƯỚI) -->
+    <!-- ========================================================================= -->
+    <div id="backpackFloatingWidget" class="backpack-widget-container">
+        <!-- Backpack Toggle Button -->
+        <button id="backpackToggleBtn" class="backpack-toggle-btn" onclick="toggleBackpackModal()" title="Balo Hành Trang & Lộ Trình của bạn">
+            <span class="backpack-icon">🎒</span>
+            <span class="backpack-badge" id="backpackBadge">0</span>
+            <span class="backpack-pulse"></span>
+        </button>
+
+        <!-- Floating Backpack Modal / Drawer -->
+        <div id="backpackDrawer" class="backpack-drawer" style="display: none;">
+            <div class="backpack-header">
+                <div class="backpack-title-group">
+                    <span class="backpack-hdr-icon">🎒</span>
+                    <div>
+                        <h3 class="backpack-title">Balo Hành Trang & Lộ Trình</h3>
+                        <p class="backpack-subtitle" id="backpackSubtitle">Lịch trình & Đồ dùng thông minh của bạn</p>
+                    </div>
+                </div>
+                <button class="backpack-close-btn" onclick="toggleBackpackModal()" title="Đóng">✕</button>
+            </div>
+
+            <!-- Tabs Switcher -->
+            <div class="backpack-tabs">
+                <button id="bpTabItinerary" class="bp-tab-btn active" onclick="switchBackpackTab('itinerary')">
+                    🗺️ Lộ Trình (<span id="bpDaysCount">0</span> Ngày)
+                </button>
+                <button id="bpTabChecklist" class="bp-tab-btn" onclick="switchBackpackTab('checklist')">
+                    📋 Hành Trang (<span id="bpChecklistDone">0/0</span>)
+                </button>
+            </div>
+
+            <!-- Tab 1: Itinerary View -->
+            <div id="bpItineraryTabContent" class="bp-tab-content active">
+                <div id="bpItinerarySummary" class="bp-summary-card">
+                    <div class="bp-sum-title" id="bpTripTitle">Chưa có lịch trình</div>
+                    <div class="bp-sum-meta">
+                        <span id="bpTripCost">💰 Dự toán: ~0 đ</span> • 
+                        <span id="bpTripWeather">☀️ Thời tiết: Nắng ráo</span>
+                    </div>
+                </div>
+                <div id="bpItineraryDaysList" class="bp-days-list">
+                    <div class="bp-empty-state">
+                        <p>🎒 Balo của bạn đang trống. Hãy lên lịch trình du lịch hoặc chat với BeeNavi để nạp lộ trình vào đây nhé!</p>
+                    </div>
+                </div>
+                <div class="bp-actions-bar">
+                    <button class="bp-btn-sync" onclick="syncBackpackToMap()">📍 Đồng bộ lên Bản Đồ Live Map</button>
+                </div>
+            </div>
+
+            <!-- Tab 2: Smart Checklist View -->
+            <div id="bpChecklistTabContent" class="bp-tab-content" style="display: none;">
+                <!-- Progress bar -->
+                <div class="bp-progress-container">
+                    <div class="bp-prog-labels">
+                        <span>Tiến độ chuẩn bị:</span>
+                        <b id="bpProgressText">0%</b>
+                    </div>
+                    <div class="bp-prog-track">
+                        <div id="bpProgressBar" class="bp-prog-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- Add custom item -->
+                <div class="bp-add-item-row">
+                    <input type="text" id="bpNewItemInput" placeholder="Thêm đồ dùng cá nhân..." onkeydown="if(event.key==='Enter') addCustomBackpackItem()">
+                    <button onclick="addCustomBackpackItem()" class="bp-btn-add">+</button>
+                </div>
+
+                <!-- Items list -->
+                <div id="bpChecklistItemsList" class="bp-items-list">
+                    <!-- Dynamic items rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(232, 185, 35, 0.6); } 70% { box-shadow: 0 0 0 14px rgba(232, 185, 35, 0); } 100% { box-shadow: 0 0 0 0 rgba(232, 185, 35, 0); } }
+
+        /* Floating Backpack Widget Styles */
+        .backpack-widget-container {
+            position: fixed;
+            bottom: 28px;
+            left: 28px;
+            z-index: 998;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+
+        .backpack-toggle-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            border: 3px solid #FFFFFF;
+            box-shadow: 0 8px 24px rgba(217, 119, 6, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: pulseGlow 2.5s infinite;
+        }
+
+        .backpack-toggle-btn:hover {
+            transform: scale(1.1) translateY(-3px);
+            box-shadow: 0 12px 30px rgba(217, 119, 6, 0.5);
+        }
+
+        .backpack-icon {
+            font-size: 28px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .backpack-toggle-btn:hover .backpack-icon {
+            transform: rotate(-10deg) scale(1.1);
+        }
+
+        .backpack-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #EF4444;
+            color: #FFFFFF;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 12px;
+            border: 2px solid #FFFFFF;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Backpack Drawer Modal */
+        .backpack-drawer {
+            position: absolute;
+            bottom: 74px;
+            left: 0;
+            width: 380px;
+            max-width: calc(100vw - 40px);
+            max-height: 540px;
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+            border: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .backpack-header {
+            background: linear-gradient(135deg, #1E293B, #0F172A);
+            color: #FFFFFF;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .backpack-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .backpack-hdr-icon {
+            font-size: 24px;
+        }
+
+        .backpack-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+            color: #F8FAFC;
+        }
+
+        .backpack-subtitle {
+            margin: 2px 0 0 0;
+            font-size: 12px;
+            color: #94A3B8;
+        }
+
+        .backpack-close-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #94A3B8;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .backpack-close-btn:hover {
+            background: rgba(255,255,255,0.2);
+            color: #FFFFFF;
+        }
+
+        .backpack-tabs {
+            display: flex;
+            background: #F1F5F9;
+            padding: 6px;
+            gap: 6px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .bp-tab-btn {
+            flex: 1;
+            padding: 9px 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748B;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .bp-tab-btn.active {
+            background: #FFFFFF;
+            color: #D97706;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+
+        .bp-tab-content {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bp-summary-card {
+            background: #FFFBEB;
+            border: 1px solid #FDE68A;
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        .bp-sum-title {
+            font-weight: 800;
+            font-size: 14px;
+            color: #92400E;
+            margin-bottom: 4px;
+        }
+
+        .bp-sum-meta {
+            font-size: 12px;
+            color: #B45309;
+            font-weight: 600;
+        }
+
+        .bp-days-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .bp-day-card {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .bp-day-title {
+            font-weight: 700;
+            font-size: 13px;
+            color: #1E293B;
+            margin-bottom: 6px;
+        }
+
+        .bp-act-item {
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 4px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .bp-act-time {
+            font-weight: 700;
+            color: #D97706;
+            min-width: 42px;
+        }
+
+        .bp-empty-state {
+            text-align: center;
+            padding: 30px 16px;
+            color: #94A3B8;
+            font-size: 13px;
+        }
+
+        .bp-actions-bar {
+            padding-top: 8px;
+        }
+
+        .bp-btn-sync {
+            width: 100%;
+            background: #F59E0B;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .bp-btn-sync:hover {
+            background: #D97706;
+        }
+
+        /* Checklist progress */
+        .bp-progress-container {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .bp-prog-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .bp-prog-track {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bp-prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981, #059669);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+
+        .bp-add-item-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .bp-add-item-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .bp-add-item-row input:focus {
+            border-color: #F59E0B;
+        }
+
+        .bp-btn-add {
+            background: #F59E0B;
+            color: white;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .bp-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .bp-chk-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .bp-chk-item:hover {
+            background: #F1F5F9;
+        }
+
+        .bp-chk-item.completed {
+            background: #F0FDF4;
+            border-color: #BBF7D0;
+        }
+
+        .bp-chk-item.completed .bp-chk-name {
+            text-decoration: line-through;
+            color: #94A3B8;
+        }
+
+        .bp-chk-box {
+            width: 18px;
+            height: 18px;
+            accent-color: #10B981;
+            cursor: pointer;
+        }
+
+        .bp-chk-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            flex: 1;
+        }
+
+        .bp-chk-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: #E2E8F0;
+            color: #64748B;
+        }
+    </style>
+
+</body>
+
+
+
+
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

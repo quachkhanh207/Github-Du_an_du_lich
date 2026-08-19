@@ -1,0 +1,52 @@
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Môi trường ảo ────────────────────────────────────────────
+venv/
+venv312/
+.venv/
+env/
+
+# ── Biến môi trường & Secrets ────────────────────────────────
+.env
+
+# ── Models AI (file lớn) ─────────────────────────────────────
+models/*
+models/hub/
+!models/.gitkeep
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.onnx
+
+# ── Django ───────────────────────────────────────────────────
+diary/db.sqlite3
+diary/db.sqlite3-journal
+*.log
+
+# ── File âm thanh tạm ────────────────────────────────────────
+tmp/
+*.wav
+*.mp3
+*.ogg
+*.webm
+
+# ── Build / IDE ───────────────────────────────────────────────
+.idea/
+.vscode/
+*.egg-info/
+dist/
+build/
+node_modules/
+
+# ── Datasets & Temporary Files ────────────────────────────────
+data/md_dataset/
+*.zip
+data/*.zip
+*.db-journal
