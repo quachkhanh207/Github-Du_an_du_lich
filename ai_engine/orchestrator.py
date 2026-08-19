@@ -226,11 +226,15 @@ class AIOrchestrator:
         map_markers = []
         budget_breakdown = None
         smart_checklist = None
+        data_tier = None
+        coverage_note = None
 
         if structured_itinerary:
             map_markers = structured_itinerary.get("map_markers", [])
             budget_breakdown = structured_itinerary.get("budget_breakdown")
             smart_checklist = structured_itinerary.get("smart_checklist")
+            data_tier = structured_itinerary.get("data_tier")
+            coverage_note = structured_itinerary.get("coverage_note")
 
         if not self.brain:
             fallback_ans = f"Xin chào! Tôi đã nhận thông tin về {active_slots.get('destination', 'chuyến đi của bạn')}. Hệ thống đã điều phối các công cụ thành công!"
@@ -251,6 +255,8 @@ class AIOrchestrator:
                 "map_markers": map_markers,
                 "budget_breakdown": budget_breakdown,
                 "smart_checklist": smart_checklist,
+                "data_tier": data_tier,
+                "coverage_note": coverage_note,
                 "session_id": session_id,
                 "tools_called": tool_names
             }
@@ -302,6 +308,8 @@ class AIOrchestrator:
             "map_markers": map_markers,
             "budget_breakdown": budget_breakdown,
             "smart_checklist": smart_checklist,
+            "data_tier": data_tier,
+            "coverage_note": coverage_note,
             "session_id": session_id,
             "tools_called": tool_names
         }

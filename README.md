@@ -4,6 +4,17 @@
 
 ---
 
+## 🚀 Bản Cập Nhật Mới Nhất (Itinerary Engine v2)
+Dự án vừa trải qua một đợt tái cấu trúc lớn (Major Update) để giải quyết các vấn đề về hiệu năng và độ chính xác của hệ thống sinh lịch trình:
+- **Thuật toán sinh lịch trình siêu tốc (0.1s):** Xóa bỏ hoàn toàn việc dùng LLM (mất 2-3 phút) để sinh lịch trình. Thay thế bằng **K-Means Clustering** (Phân cụm địa lý theo ngày) và **Haversine Distance** trực tiếp bằng Python.
+- **Wizard Khởi Tạo 2 Chế Độ:** 
+  - *Chế độ A (Chuyến đi nhiều ngày)*: Tự động gom cụm các địa điểm theo ngày.
+  - *Chế độ B (Khám phá 1 điểm)*: Quét các địa điểm tham quan/ăn uống/giải trí trong bán kính 2km từ 1 điểm neo (Anchor POI) cụ thể.
+- **Nâng cấp Bộ máy Tìm kiếm (RAG Engine):** Khắc phục triệt để lỗi "địa điểm vô danh" bằng thuật toán lọc 3 lớp: `Phrase Match` -> `AND Match` -> `OR Match` kết hợp chấm điểm `ORDER BY rank (BM25)`. Hệ thống giờ đây tìm "Lăng Bác" chuẩn xác 100%.
+- **Giao diện Timeline Mới:** Timeline hiển thị màu sắc theo khung giờ (Sáng/Trưa/Tối) và tự động tính toán, gợi ý phương tiện di chuyển (Đi bộ / Gọi xe) kèm cự ly giữa các điểm đến.
+
+---
+
 ## 📑 Mục Lục
 1. [Kiến Trúc Tổng Thể](#-kiến-trúc-tổng-thể)
 2. [Cấu Trúc Thư Mục Dự Án](#-cấu-trúc-thư-mục-dự-án)

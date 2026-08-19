@@ -429,6 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initChecklistEvents();
     initHeroEvents();
     initChatDrawerEvents();
+    showCoverageBanner("full_data", "BeeNavi hiện có dữ liệu địa điểm thực tế tại Hà Nội. Các điểm đến khác sẽ được gợi ý dựa trên kiến thức chung (cần kiểm chứng thêm).");
 });
 
 
@@ -466,7 +467,7 @@ window.previewPrebuiltTrip = function (destKey) {
 window.clonePrebuiltTrip = function (destKey, tripTitle) {
     if (!window.currentUser) {
         showToast("🔐 Vui lòng đăng nhập để Clone & Lưu trữ lộ trình AI về tài khoản!");
-        window.openAuthModal('login');
+        window.location.href = "/login.html";
         return;
     }
 
@@ -1644,29 +1645,40 @@ window.getAuthHeaders = function() {
 };
 
 window.checkAuthStatus = async function() {
-    const token = window.getAuthToken();
-    if (!token) {
-        window.currentUser = null;
-        window.updateNavbarAuthState();
-        window.renderJournalView();
-        return;
-    }
-    try {
-        const res = await fetch('/api/users/profile', {
-            headers: window.getAuthHeaders()
-        });
-        if (res.ok) {
-            const data = await res.json();
-            window.currentUser = data;
+    if (!window.db_supabase) return;
+    
+    const { data: { session }, error } = await window.db_supabase.auth.getSession();
+    if (session && session.user) {
+        window.currentUser = session.user;
+        
+        let userName = session.user.email.split('@')[0];
+        const { data: profile } = await window.db_supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        
+        if (profile) {
+            if (profile.full_name) userName = profile.full_name;
+            window.currentUser.username = userName;
+            window.currentUser.full_name = profile.full_name;
+            window.currentUser.email = session.user.email;
+            
+            if (profile.role === 'admin') {
+                const adminLink = document.getElementById('adminLink');
+                if (adminLink) adminLink.style.display = 'flex';
+            }
         } else {
-            window.currentUser = null;
-            localStorage.removeItem('beenavi_token');
+            window.currentUser.username = userName;
+            window.currentUser.full_name = userName;
+            window.currentUser.email = session.user.email;
         }
-    } catch (e) {
+    } else {
         window.currentUser = null;
     }
-    window.updateNavbarAuthState();
-    window.renderJournalView();
+    
+    if (typeof window.updateNavbarAuthState === 'function') {
+        window.updateNavbarAuthState();
+    }
+    if (typeof window.renderJournalView === 'function') {
+        window.renderJournalView();
+    }
 };
 
 window.updateNavbarAuthState = function() {
@@ -1919,19 +1931,23 @@ window.handleRegisterSubmit = async function(e) {
     }
 };
 
-window.handleLogout = function() {
+window.handleLogout = async function() {
+    if (window.db_supabase) {
+        await window.db_supabase.auth.signOut();
+    }
     localStorage.removeItem('beenavi_token');
     window.currentUser = null;
     window.updateNavbarAuthState();
     window.renderJournalView();
     window.closeZaloProfileModal();
-    showToast('👋 Bạn đã đăng xuất an toàn.');
+    showToast('Bạn đã đăng xuất an toàn.');
+    window.location.reload();
 };
 
 window.openZaloProfileModal = async function (tabKey = 'journal') {
     if (!window.currentUser) {
         showToast('🔐 Vui lòng đăng nhập để xem Hồ sơ & Nhật ký chuyến đi!');
-        window.openAuthModal('login');
+        window.location.href = "/login.html";
         return;
     }
 
@@ -2543,7 +2559,7 @@ window.toggleReminder = function (inputEl) {
 window.saveCurrentTripToJournal = async function () {
     if (!window.currentUser) {
         showToast("🔐 Vui lòng đăng nhập để lưu chuyến đi vào Nhật Ký Cá Nhân!");
-        window.openAuthModal('login');
+        window.location.href = "/login.html";
         return;
     }
 
@@ -2909,59 +2925,64 @@ async function generateItinerary(event) {
     if (event) event.preventDefault();
 
     if (!window.currentUser) {
-        showToast("🔐 Vui lòng đăng nhập để sử dụng tính năng Tạo Lộ Trình AI!");
-        window.openAuthModal('login');
+        showToast("Vui lòng đăng nhập để sử dụng tính năng Tạo Lịch Trình AI!");
+        window.location.href = '/login.html';
         return;
     }
 
-    // 1. Gather inputs
     const dest = document.getElementById('prefDestinationSelect')?.value || 'Đà Nẵng';
-    const days = document.getElementById('prefDaysSelect')?.value || '3 Ngày 2 Đêm';
+    const days = document.getElementById('prefDaysSelect')?.value || '3';
     const budget = document.getElementById('prefBudgetSelect')?.value || 'Tiết Kiệm';
-    const style = document.getElementById('prefStyleSelect')?.value || 'Sống Ảo';
+    const style = document.getElementById('prefStyleSelect')?.value || 'Sống ảo';
     const extraInput = document.getElementById('heroAiInput')?.value || '';
 
-    const origin = "Hà Nội"; const transport = "Máy bay/Ô tô";
-    const prompt = `Hãy LÊN LỊCH TRÌNH du lịch: Từ ${origin} đi ${dest}, thời gian ${days}, ngân sách ${budget}, phong cách ${style}. Yêu cầu thêm: ${extraInput}.
-
-BẮT BUỘC TRẢ VỀ ĐÚNG CẤU TRÚC MARKDOWN DƯỚI ĐÂY (KHÔNG TRẢ VỀ JSON).
-TUYỆT ĐỐI KHÔNG COPY LẠI PHẦN HƯỚNG DẪN TRONG NGOẶC. BẠN PHẢI CHỌN ĐỊA ĐIỂM TỪ PHẦN "GỢI Ý ĐỊA ĐIỂM" BÊN DƯỚI ĐỂ ĐIỀN VÀO.
-
-[TIÊU ĐỀ] Khám phá tuyệt tác ${dest || 'Điểm đến'}
-[TỔNG CHI PHÍ] ${budget || 'Ngân sách'} VNĐ
-[CHI TIẾT CHI PHÍ] Di chuyển: ... | Khách sạn: ... | Ăn uống & Vé: ...
-[THỜI TIẾT] Mùa này thời tiết (Điền thời tiết)
-
-${buildDynamicDaysTemplate(parseInt(days) || 3)}
-(CHỈ VIẾT ĐÚNG ${days || 3} NGÀY, KHI VIẾT XONG NGÀY ${days || 3} THÌ GHI [KẾT THÚC] VÀ DỪNG LẠI. 100% TIẾNG VIỆT, KHÔNG DÙNG KÝ TỰ TIẾNG TRUNG.)
-`;
-
-    // 2. Show loading overlay
     const overlay = document.getElementById('aiLoadingOverlay');
     if (overlay) overlay.style.display = 'flex';
 
     try {
-        // 3. Call backend API
-        const formData = new FormData();
-        formData.append('message', prompt);
-
-        const response = await fetch('/chat', {
+        const response = await fetch('/api/generate_itinerary', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                destination: dest,
+                num_days: parseInt(days) || 3,
+                budget: budget,
+                style: style,
+                requirements: extraInput
+            })
         });
 
         if (!response.ok) throw new Error('API Error');
 
-        const data = await response.json();
-        const rawAnswer = data.answer || '';
+        const structured = await response.json();
         
-        // 4. Parse JSON (handle markdown code block wrapping)
-        const aiData = parseMarkdownToItineraryJSON(rawAnswer);
+        const aiData = {
+            tieu_de: structured.title || `Lịch Trình Khám Phá ${dest}`,
+            tong_chi_phi: "",
+            chi_tiet_chi_phi: [],
+            chi_tiet_chi_phi_str: "",
+            thoi_tiet: structured.weather ? structured.weather.desc : "Nắng đẹp",
+            lich_trinh: []
+        };
         
-        // 5. Render to UI
-        renderAIItinerary(aiData, dest, data.weather);
-
-        // 6. Switch tab
+        if (structured.days) {
+            aiData.lich_trinh = structured.days.map(d => {
+                return {
+                    ngay: d.title || `Ngày ${d.dayNum}`,
+                    diem_den: d.activities.map(a => ({
+                        thoi_gian: a.time,
+                        ten: a.title,
+                        mo_ta: a.desc,
+                        toa_do: [a.lat, a.lng],
+                        img: a.img,
+                        distance_from_prev: a.distance_from_prev
+                    }))
+                };
+            });
+        }
+        
+        showCoverageBanner(structured.data_tier, structured.coverage_note);
+        renderAIItinerary(aiData, dest, structured.weather);
         switchMainTab('itinerary', event);
     } catch (err) {
         console.error('Lỗi khi sinh lịch trình:', err);
@@ -2971,12 +2992,13 @@ ${buildDynamicDaysTemplate(parseInt(days) || 3)}
     }
 }
 
+
 async function generateItineraryFromTab(event) {
     if (event) event.preventDefault();
 
     if (!window.currentUser) {
         showToast("🔐 Vui lòng đăng nhập để sử dụng tính năng Tạo Lộ Trình AI!");
-        window.openAuthModal('login');
+        window.location.href = "/login.html";
         return;
     }
 
@@ -3204,127 +3226,117 @@ function navigateWizard(direction) {
     }
 }
 
-async function generateItineraryFromWizard(event) {
+async function generateItineraryFromWizard(event, mode = 'A') {
     if (event) event.preventDefault();
 
     if (!window.currentUser) {
         showToast("🔐 Vui lòng đăng nhập để sử dụng tính năng Tạo Lộ Trình AI!");
-        window.openAuthModal('login');
+        window.location.href = "/login.html";
         return;
     }
-
-    // Bước 1
-    const origin = document.getElementById('wizOrigin')?.value || 'Hồ Chí Minh';
-    const dest = document.getElementById('wizDest')?.value || 'Hà Nội';
-    const days = document.getElementById('wizDays')?.value || '3';
-    const budget = document.getElementById('wizBudget')?.value || '5000000';
-    const arrivalTime = document.getElementById('wizArrivalTime')?.value || '08:00';
-    const departureTime = document.getElementById('wizDepartureTime')?.value || '18:00';
-
-    // Bước 2
-    const objective = document.getElementById('wizObjective')?.value || 'Khám phá';
-    const shopping = document.getElementById('wizShopping')?.value || 'Bình thường';
-    const nightlife = document.getElementById('wizNightlife')?.value || 'Cà phê, Chợ đêm';
-    const photo = document.getElementById('wizPhotography')?.value || 'Bình thường';
-
-    // Bước 3
-    const memberCheckboxes = document.querySelectorAll('.wiz-member-chk:checked');
-    const specialMembersArr = Array.from(memberCheckboxes).map(cb => cb.value);
-    const specialMembers = specialMembersArr.join(', ');
-    const diningConstraints = document.getElementById('wizDiningConstraints')?.value || '';
-    const pace = document.getElementById('wizPacing')?.value || 'Cân bằng';
-
-    // Bước 4
-    const mustVisit = document.getElementById('wizMustVisit')?.value || '';
-    const mustAvoid = document.getElementById('wizMustAvoid')?.value || '';
-    const extra = document.getElementById('wizExtra')?.value || '';
-
-    // MỚI: Build trip_data JSON for RuleEngine
-    const tripData = {
-        destination: dest,
-        origin: origin,
-        number_of_days: parseInt(days) || 3,
-        budget_limit: parseInt(budget) || 99999999,
-        trip_objective: objective,
-        must_visit_places: mustVisit.split(',').map(s => s.trim()).filter(s => s),
-        must_avoid_places: mustAvoid.split(',').map(s => s.trim()).filter(s => s),
-        dining_constraints: diningConstraints.split(',').map(s => s.trim()).filter(s => s),
-        special_members: specialMembersArr,
-        photography_preference: photo,
-        nightlife_preference: nightlife,
-        shopping_interest: shopping
-    };
-
-    const prompt = `Hãy LÊN LỊCH TRÌNH du lịch thật chi tiết và hấp dẫn:
-[THÔNG TIN CƠ BẢN]
-- Điểm xuất phát: ${origin}
-- Điểm đến: ${dest}
-- Thời gian: ${days} ngày
-- Ngân sách tổng: ${budget} VNĐ
-- Mục tiêu chính: ${objective}
-
-[RÀNG BUỘC]
-- Giờ đến: ${arrivalTime} | Giờ về: ${departureTime}
-- Bắt buộc đi: ${mustVisit || 'Không'}
-- Tuyệt đối không đi: ${mustAvoid || 'Không'}
-- Dị ứng/Kiêng cữ: ${diningConstraints || 'Không'}
-
-[SỞ THÍCH & NHỊP ĐỘ]
-- Nhịp độ: ${pace}
-- Chụp ảnh: ${photo}
-- Chơi đêm: ${nightlife}
-- Mua sắm: ${shopping}
-
-[SỨC KHỎE & ĐẶC BIỆT]
-- Thành viên đặc biệt: ${specialMembers || 'Không có'}
-- Ghi chú thêm: ${extra}
-
-BẮT BUỘC TRẢ VỀ ĐÚNG CẤU TRÚC MARKDOWN DƯỚI ĐÂY (KHÔNG TRẢ VỀ JSON).
-TUYỆT ĐỐI KHÔNG COPY LẠI PHẦN HƯỚNG DẪN TRONG NGOẶC. BẠN PHẢI CHỌN ĐỊA ĐIỂM TỪ PHẦN "GỢI Ý ĐỊA ĐIỂM" BÊN DƯỚI ĐỂ ĐIỀN VÀO.
-
-[TIÊU ĐỀ] Khám phá tuyệt tác ${dest || 'Điểm đến'}
-[TỔNG CHI PHÍ] ${budget || 'Ngân sách'} VNĐ
-[CHI TIẾT CHI PHÍ] Di chuyển: ... | Khách sạn: ... | Ăn uống & Vé: ...
-[THỜI TIẾT] Mùa này thời tiết (Điền thời tiết)
-
-${buildDynamicDaysTemplate(parseInt(days) || 3)}
-(CHỈ VIẾT ĐÚNG ${days || 3} NGÀY, KHI VIẾT XONG NGÀY ${days || 3} THÌ GHI [KẾT THÚC] VÀ DỪNG LẠI. 100% TIẾNG VIỆT, KHÔNG DÙNG KÝ TỰ TIẾNG TRUNG.)
-`;
 
     const overlay = document.getElementById('aiLoadingOverlay');
     if (overlay) overlay.style.display = 'flex';
 
-    try {
-        const formData = new FormData();
-        formData.append('message', prompt);
-        formData.append('trip_data', JSON.stringify(tripData));
+    let tripData = {};
 
-        const response = await fetch('/chat', {
+    if (mode === 'A') {
+        const origin = document.getElementById('wizOrigin')?.value || 'Hồ Chí Minh';
+        const dest = document.getElementById('wizDest')?.value || 'Hà Nội';
+        const days = document.getElementById('wizDays')?.value || '3';
+        const budget = document.getElementById('wizBudget')?.value || '5000000';
+        const objective = document.getElementById('wizObjective')?.value || 'Khám phá';
+        const shopping = document.getElementById('wizShopping')?.value || 'Bình thường';
+        const nightlife = document.getElementById('wizNightlife')?.value || 'Cà phê, Chợ đêm';
+        const photo = document.getElementById('wizPhotography')?.value || 'Bình thường';
+
+        tripData = {
+            mode: 'A',
+            destination: dest,
+            origin: origin,
+            num_days: parseInt(days) || 3,
+            budget: budget,
+            trip_objective: objective,
+            photography_preference: photo,
+            nightlife_preference: nightlife,
+            shopping_interest: shopping
+        };
+    } else {
+        const dest = document.getElementById('wizPoiName')?.value || 'Lăng Bác';
+        const session = document.getElementById('wizPoiSession')?.value || 'Sáng';
+
+        if (!dest) {
+            alert('Vui lòng nhập tên địa điểm!');
+            if (overlay) overlay.style.display = 'none';
+            return;
+        }
+
+        tripData = {
+            mode: 'B',
+            destination: dest,
+            session: session
+        };
+    }
+
+    try {
+        const response = await fetch('/api/generate_itinerary', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(tripData)
         });
 
         if (!response.ok) throw new Error('API Error');
 
-        const data = await response.json();
-        const rawAnswer = data.answer || data.text || '';
+        const structured = await response.json();
         
-        const aiData = parseMarkdownToItineraryJSON(rawAnswer);
+        // Convert to aiData format expected by renderAIItinerary
+        const aiData = {
+            tieu_de: structured.title || `Lịch Trình Khám Phá`,
+            tong_chi_phi: structured.cost || "",
+            chi_tiet_chi_phi_str: structured.costDetails || "",
+            thoi_tiet: structured.weather ? structured.weather.desc : "Nắng đẹp",
+            lich_trinh: []
+        };
+        
+        if (structured.days) {
+            aiData.lich_trinh = structured.days.map(d => {
+                return {
+                    ngay: d.title || `Ngày ${d.dayNum}`,
+                    diem_den: d.activities.map(a => ({
+                        thoi_gian: a.time,
+                        ten: a.title,
+                        mo_ta: a.desc,
+                        toa_do: [a.lat, a.lng],
+                        img: a.img,
+                        distance_from_prev: a.distance_from_prev
+                    }))
+                };
+            });
+        }
         
         const emptyState = document.getElementById('emptyItineraryState');
         const itContent = document.getElementById('itineraryContent');
         if (emptyState) emptyState.style.display = 'none';
         if (itContent) itContent.style.display = 'block';
         
-        if (data.weather) {
-            updateWeatherUI(data.weather, dest);
-            if (typeof leafletMap !== 'undefined' && leafletMap && data.weather.lat && data.weather.lon) {
-                leafletMap.setView([data.weather.lat, data.weather.lon], 13);
-            }
-        }
+        renderAIItinerary(aiData, tripData.destination, structured.weather);
+        
+        // Xóa save history vì parseMarkdownToItineraryJSON đã bị loại bỏ
+        // Ghi thẳng vào Supabase table ai_itineraries qua API ẩn
+        try {
+            await fetch('/api/analytics/ai_itineraries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: window.currentUser.id,
+                    destination: tripData.destination,
+                    days: tripData.num_days || 1,
+                    style: tripData.mode === 'B' ? 'Khám phá điểm' : tripData.trip_objective,
+                    budget: tripData.budget || 'N/A'
+                })
+            });
+        } catch(e) {}
 
-        renderAIItinerary(aiData, dest, data.weather);
-        saveItineraryToHistory(aiData);
     } catch (err) {
         console.error('Lỗi khi sinh lịch trình:', err);
         showToast('❌ Có lỗi xảy ra, vui lòng thử lại!');
@@ -3377,14 +3389,16 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
     if (aiData.lich_trinh && Array.isArray(aiData.lich_trinh)) {
         aiData.lich_trinh.forEach((day, index) => {
             const isActive = index === 0 ? "active" : "";
+            const activitiesList = day.diem_den || day.hoat_dong || [];
+            
             html += `
             <div class="day-accordion ${isActive}" data-day="${index+1}">
                 <div class="day-header" onclick="toggleAccordion(this)">
                     <div class="day-title-group">
                         <div class="day-badge">${day.ngay || 'Ngày ' + (index+1)}</div>
                         <div class="day-info">
-                            <h3>${day.tieu_de_ngay || 'Khám phá'}</h3>
-                            <p>${day.hoat_dong ? day.hoat_dong.length : 0} địa điểm</p>
+                            <h3>${day.tieu_de_ngay || day.ngay || 'Khám phá'}</h3>
+                            <p>${activitiesList.length} địa điểm</p>
                         </div>
                     </div>
                     <div class="accordion-toggle-icon">
@@ -3395,18 +3409,43 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
                     <div class="activities-list">
             `;
             
-            if (day.hoat_dong && Array.isArray(day.hoat_dong)) {
-                day.hoat_dong.forEach(act => {
-                    const safeTitle = (act.ten_diem || 'Địa điểm').replace(/'/g, "\\'");
-                    const desc = act.chi_tiet || 'Trải nghiệm không gian du lịch văn hóa và thưởng thức phong cảnh đặc trưng tại địa phương.';
-                    html += `
-                        <div class="activity-card" style="cursor: pointer;" onclick="focusMapLocation(21.0285, 105.8542, '${safeTitle}')">
-                            <div class="activity-time"><span class="time-badge">${act.gio || '08:00'}</span></div>
-                            <div class="activity-icon-box">
+            if (activitiesList && Array.isArray(activitiesList)) {
+                activitiesList.forEach(act => {
+                    const safeTitle = (act.ten || act.ten_diem || 'Địa điểm').replace(/'/g, "\\'");
+                    const desc = act.mo_ta || act.chi_tiet || '';
+                    const time = act.thoi_gian || act.gio || '08:00';
+                    const lat = act.toa_do ? act.toa_do[0] : 21.0285;
+                    const lng = act.toa_do ? act.toa_do[1] : 105.8542;
+                    
+                    let distHtml = '';
+                    if (act.distance_from_prev > 0) {
+                        const dist = act.distance_from_prev;
+                        const tool = dist < 1.0 ? '🚶 Đi bộ' : '🚕 Gọi xe';
+                        distHtml = `<div style="margin-left: 55px; margin-bottom: 10px; font-size: 12px; color: #666; font-style: italic; display: flex; align-items: center; gap: 5px;">
+                            <span style="display:inline-block; border-left: 2px dashed #ccc; height: 20px;"></span> 
+                            <span>${tool} ~${dist}km</span>
+                        </div>`;
+                    }
+
+                    // Tô màu theo khung giờ
+                    let timeColor = "var(--trv-primary)";
+                    let timeBg = "rgba(1, 148, 243, 0.1)";
+                    if (time.startsWith("0") || time.startsWith("10") || time.startsWith("11")) {
+                        timeColor = "#e67e22"; timeBg = "rgba(230, 126, 34, 0.1)"; // Sáng vàng cam
+                    } else if (time.startsWith("12") || time.startsWith("13")) {
+                        timeColor = "#e74c3c"; timeBg = "rgba(231, 76, 60, 0.1)"; // Trưa đỏ
+                    } else if (time.startsWith("18") || time.startsWith("19") || time.startsWith("20")) {
+                        timeColor = "#8e44ad"; timeBg = "rgba(142, 68, 173, 0.1)"; // Tối tím
+                    }
+
+                    html += distHtml + `
+                        <div class="activity-card" style="cursor: pointer;" onclick="focusMapLocation(${lat}, ${lng}, '${safeTitle}')">
+                            <div class="activity-time"><span class="time-badge" style="background: ${timeBg}; color: ${timeColor};">${time}</span></div>
+                            <div class="activity-icon-box" style="color: ${timeColor};">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             </div>
                             <div class="activity-content">
-                                <div class="activity-title">${act.ten_diem || 'Địa điểm'} <span class="location-tag">📍 Xem vị trí & Chỉ đường</span></div>
+                                <div class="activity-title">${safeTitle} <span class="location-tag">📍 Xem vị trí & Chỉ đường</span></div>
                                 <p class="activity-desc">${desc}</p>
                             </div>
                         </div>
@@ -3434,13 +3473,55 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
     }, 400);
 }
 
+/* ==========================================================================
+   COVERAGE BANNER — hiển thị phạm vi dữ liệu hỗ trợ theo từng điểm đến
+   ========================================================================== */
+const COVERAGE_BANNER_ID = "coverageBanner";
+
+function showCoverageBanner(dataTier, coverageNote) {
+    let banner = document.getElementById(COVERAGE_BANNER_ID);
+    if (!banner) {
+        banner = document.createElement("div");
+        banner.id = COVERAGE_BANNER_ID;
+        banner.style.cssText = "display:none; margin:12px auto; max-width:1200px; padding:10px 16px; border-radius:10px; font-size:13px; line-height:1.5;";
+        const itSection = document.getElementById("itinerarySection");
+        if (itSection && itSection.firstChild) {
+            itSection.insertBefore(banner, itSection.firstChild);
+        }
+    }
+    if (!dataTier) {
+        banner.style.display = "none";
+        return;
+    }
+    let html = "", bg = "", color = "";
+    if (dataTier === "full_data") {
+        bg = "#e8f5e9"; color = "#1b5e20";
+        html = `✅ ${coverageNote || "BeeNavi có dữ liệu địa điểm thực tế đầy đủ tại điểm đến này."}`;
+    } else if (dataTier === "general_knowledge") {
+        bg = "#fff8e1"; color = "#795548";
+        html = `⚠️ ${coverageNote || "Điểm đến này chưa có dữ liệu địa điểm thực tế trong CSDL. BeeNavi sẽ gợi ý dựa trên kiến thức chung; thông tin có thể không đầy đủ và cần kiểm chứng thêm."}`;
+    } else {
+        banner.style.display = "none";
+        return;
+    }
+    banner.style.background = bg;
+    banner.style.color = color;
+    banner.style.display = "block";
+    banner.textContent = html;
+}
+
+function hideCoverageBanner() {
+    const banner = document.getElementById(COVERAGE_BANNER_ID);
+    if (banner) banner.style.display = "none";
+}
+
 
 async function generateItineraryFromTab(event) {
     if (event) event.preventDefault();
 
     if (!window.currentUser) {
         showToast("🔐 Vui lòng đăng nhập để sử dụng tính năng Tạo Lộ Trình AI!");
-        window.openAuthModal('login');
+        window.location.href = "/login.html";
         return;
     }
 
@@ -3483,17 +3564,18 @@ ${buildDynamicDaysTemplate(parseInt(days) || 3)}
 
         const data = await response.json();
         const rawAnswer = data.answer || '';
-        
+
         const aiData = parseChopJSON(rawAnswer);
-        
+
         const emptyState = document.getElementById('emptyItineraryState');
         const itContent = document.getElementById('itineraryContent');
         if (emptyState) emptyState.style.display = 'none';
         if (itContent) itContent.style.display = 'block';
-        
+
         if (data.weather) {
             updateWeatherUI(data.weather, dest);
         }
+        showCoverageBanner(data.data_tier, data.coverage_note);
         renderAIItinerary(aiData, dest, data.weather);
     } catch (err) {
         console.error('Lỗi khi sinh lịch trình:', err);

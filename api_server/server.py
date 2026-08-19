@@ -4,6 +4,7 @@ import json
 import os
 import re
 import time
+import uuid
 from typing import Optional, List, Dict, Any
 
 import httpx
@@ -174,7 +175,105 @@ def transcribe_audio_bytes(
         cleanup_files(input_path, wav_path)
 
 
+
+@app.get("/login.html")
+async def login_page():
+    return FileResponse(str(frontend_dir / "login.html"))
+
+@app.get("/admin_dashboard.html")
+async def admin_page():
+    return FileResponse(str(frontend_dir / "admin_dashboard.html"))
+
+
+@app.get("/admin")
+async def admin_alias():
+    return FileResponse(str(frontend_dir / "admin_dashboard.html"))
+
+
+import sqlite3
+from typing import Optional
+
+def get_db_connection():
+    import pathlib
+    db_path = pathlib.Path("data/travel_knowledge.db")
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    return conn
+
+@app.get("/api/admin/pois")
+async def get_pois(page: int = 1, limit: int = 50, search: Optional[str] = None):
+    try:
+        conn = get_db_connection()
+        c = conn.cursor()
+        
+        offset = (page - 1) * limit
+        
+        if search:
+            # Dùng FTS5 để search
+            c.execute("""
+                SELECT p.* FROM pois p
+                JOIN pois_fts f ON p.id = f.id
+                WHERE pois_fts MATCH ?
+                LIMIT ? OFFSET ?
+            """, (f"{search}*", limit, offset))
+            rows = c.fetchall()
+            
+            c.execute("SELECT COUNT(*) FROM pois_fts WHERE pois_fts MATCH ?", (f"{search}*",))
+            total = c.fetchone()[0]
+        else:
+            c.execute("SELECT * FROM pois LIMIT ? OFFSET ?", (limit, offset))
+            rows = c.fetchall()
+            
+            c.execute("SELECT COUNT(*) FROM pois")
+            total = c.fetchone()[0]
+            
+        pois = [dict(row) for row in rows]
+        conn.close()
+        
+        return {
+            "data": pois,
+            "total": total,
+            "page": page,
+            "limit": limit
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/admin/pois/{poi_id}")
+async def update_poi(poi_id: str, request: Request):
+    try:
+        data = await request.json()
+        name = data.get("name")
+        lat = data.get("lat")
+        lon = data.get("lon")
+        description = data.get("description")
+        
+        conn = get_db_connection()
+        c = conn.cursor()
+        
+        c.execute("""
+            UPDATE pois 
+            SET name = ?, lat = ?, lon = ?, description = ?
+            WHERE id = ?
+        """, (name, lat, lon, description, poi_id))
+        
+        # Cập nhật FTS
+        c.execute("""
+            UPDATE pois_fts 
+            SET name = ?, description = ?
+            WHERE id = ?
+        """, (name, description, poi_id))
+        
+        conn.commit()
+        conn.close()
+        return {"status": "success"}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/")
+
+
+
 async def index():
     return FileResponse(
         str(frontend_dir / "index.html")
@@ -355,6 +454,8 @@ async def chat(
         "map_markers": map_markers,
         "budget_breakdown": budget_breakdown,
         "smart_checklist": smart_checklist,
+        "data_tier": final_res.get("data_tier"),
+        "coverage_note": final_res.get("coverage_note"),
         "intent": final_res.get("intent"),
         "slots": final_res.get("slots"),
         "session_id": final_res.get("session_id"),
@@ -946,4 +1047,4 @@ if __name__ == "__main__":
         port=PORT,
         reload=False
     )
-
+

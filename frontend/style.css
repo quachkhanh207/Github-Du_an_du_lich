@@ -18384,3 +18384,43 @@ body .user .chat-bubble {
 
 
 
+
+/* Login Button Styles */
+.btn-login-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: white;
+    color: #444;
+    padding: 8px 18px;
+    border-radius: 50px;
+    border: 1px solid #e0e0e0;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 14px;
+    margin-right: 12px;
+    transition: all 0.2s ease;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.btn-login-nav:hover {
+    border-color: #ff6b00;
+    color: #ff6b00;
+    box-shadow: 0 2px 8px rgba(255, 107, 0, 0.15);
+    background-color: #fffaf5;
+}
+.login-icon {
+    font-size: 16px;
+    filter: grayscale(100%);
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+.btn-login-nav:hover .login-icon {
+    filter: grayscale(0%);
+    opacity: 1;
+}
+@media (max-width: 768px) {
+    .btn-login-nav {
+        display: none;
+    }
+}

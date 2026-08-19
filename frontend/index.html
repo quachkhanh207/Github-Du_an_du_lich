@@ -35,10 +35,22 @@
 
 
 
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://aatmisntvctdjkkismze.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Q5mwdNgOoZvOiU-eo-7sgw__uv93cRb';
+        window.db_supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
 </head>
 
 
+
 <body>
+    <div id="globalAnnouncement" style="display:none; background:#e74c3c; color:white; text-align:center; padding:10px; font-weight:bold; position:sticky; top:0; z-index:9999;">
+        <marquee scrollamount="10" id="globalAnnounceText">Đây là thông báo chạy thử!</marquee>
+    </div>
+
 
 
     <header class="navbar navbar-traveloka" id="mainHeader">
@@ -305,7 +317,7 @@
         <div class="nav-right traveloka-right" id="navRightContainer">
             <!-- Nút Đăng nhập / Đăng ký (Hiển thị khi chưa đăng nhập) -->
             <div id="navGuestBox" style="display: flex; align-items: center; gap: 10px;">
-                <button class="btn-nav-auth" onclick="openAuthModal('login')">
+                <button class="btn-nav-auth" onclick="window.location.href='/login.html'">
                     <span>🔐</span> Đăng Nhập / Đăng Ký
                 </button>
             </div>
@@ -344,6 +356,9 @@
 
                     <div class="panel-divider"></div>
 
+                    <a href="/admin_dashboard.html" class="panel-menu-item" id="adminLink" style="display: none;">
+                        <span class="menu-item-icon">&#9881;</span> Quản Trị Admin
+                    </a>
                     <a href="javascript:void(0)" onclick="handleLogout(); closeHamburgerMenu();" class="panel-menu-item" style="color: #EF4444;">
                         <span class="menu-item-icon">🚪</span> Đăng Xuất
                     </a>
@@ -1521,10 +1536,17 @@
 <div id="emptyItineraryState" class="wizard-wrapper">
     <div class="wizard-header">
         <img src="/static/beenavi_logo_nobg.png" alt="BeeNavi">
-        <h3>Khởi Tạo Lộ Trình Độc Bản</h3>
-        <p>BeeNavi AI sẽ thiết kế lịch trình hoàn hảo dựa trên nhu cầu của riêng bạn.</p>
+        <h3>Khởi Tạo Lộ Trình</h3>
         
-        <div class="wizard-progress">
+        <div class="mode-switch-container" style="margin: 15px auto; display: flex; justify-content: center; gap: 10px; background: rgba(0,0,0,0.05); padding: 5px; border-radius: 8px; width: fit-content;">
+            <button type="button" id="btnModeA" class="wiz-mode-btn active" onclick="switchWizardMode('A')" style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--trv-primary); color: white;">🛫 Chuyến Đi Nhiều Ngày</button>
+            <button type="button" id="btnModeB" class="wiz-mode-btn" onclick="switchWizardMode('B')" style="padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: transparent; color: var(--text-dark);">📍 Khám Phá 1 Điểm</button>
+        </div>
+        
+        <p id="wizDescModeA">BeeNavi AI sẽ thiết kế lịch trình hoàn hảo dựa trên nhu cầu của riêng bạn.</p>
+        <p id="wizDescModeB" style="display:none;">Khám phá các điểm tham quan, ăn uống xung quanh địa điểm bạn chọn trong bán kính 2km.</p>
+        
+        <div class="wizard-progress" id="wizProgressWrapper">
             <div class="wizard-progress-bar" id="wizardProgressBar" style="width: 0%;"></div>
             <div class="wizard-step-indicator active" data-step="1">1</div>
             <div class="wizard-step-indicator" data-step="2">2</div>
@@ -1534,6 +1556,30 @@
     </div>
 
     <div class="wizard-body">
+        
+        <!-- Chế độ B: Khám phá 1 Điểm (Mới) -->
+        <div class="wizard-pane" id="wizardPaneModeB" style="display:none;">
+            <div class="wizard-pane-title">📍 Khám Phá Địa Điểm Cụ Thể</div>
+            <div class="wizard-form-grid" style="grid-template-columns: 1fr;">
+                <div class="wizard-form-group">
+                    <label>Tên địa điểm (Ví dụ: Lăng Bác, Hồ Gươm, Bà Nà Hills) *</label>
+                    <input type="text" id="wizPoiName" class="wizard-input" placeholder="VD: Lăng Bác">
+                </div>
+                <div class="wizard-form-group">
+                    <label>Buổi tham quan</label>
+                    <select id="wizPoiSession" class="wizard-input">
+                        <option value="Sáng">Buổi Sáng (Bắt đầu 08:00)</option>
+                        <option value="Chiều">Buổi Chiều (Bắt đầu 14:00)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="wizard-footer" style="justify-content: center; margin-top: 20px;">
+                <button type="button" class="wizard-btn-submit" onclick="generateItineraryFromWizard(event, 'B')">Khám Phá Ngay!</button>
+            </div>
+        </div>
+
+        <!-- Chế độ A: Trình tự cũ -->
+        <div id="wizardPanesModeA">
         <!-- Bước 1: Thông tin cơ bản -->
         <div class="wizard-pane active" id="wizardStep1">
             <div class="wizard-pane-title">🛫 Thông tin cơ bản</div>
@@ -1649,13 +1695,40 @@
                 </div>
             </div>
         </div>
+        
+        </div> <!-- Đóng wizardPanesModeA -->
     </div>
-<div class="wizard-footer">
+<div class="wizard-footer" id="wizFooterModeA">
         <button class="wizard-btn wizard-btn-back" id="wizBtnBack" onclick="navigateWizard(-1)" style="visibility: hidden;">Quay Lại</button>
         <button class="wizard-btn wizard-btn-next" id="wizBtnNext" onclick="navigateWizard(1)">Tiếp Tục ➔</button>
-        <button class="wizard-btn wizard-btn-next" id="wizBtnSubmit" onclick="generateItineraryFromWizard(event)" style="display: none;">Tạo Lộ Trình Ngay ➔</button>
+        <button class="wizard-btn wizard-btn-next" id="wizBtnSubmit" onclick="generateItineraryFromWizard(event, 'A')" style="display: none;">Tạo Lộ Trình Ngay ➔</button>
     </div>
 </div>
+
+<!-- Thêm Script switch mode -->
+<script>
+function switchWizardMode(mode) {
+    document.getElementById('btnModeA').classList.remove('active');
+    document.getElementById('btnModeB').classList.remove('active');
+    document.getElementById('btnMode' + mode).classList.add('active');
+    
+    if (mode === 'A') {
+        document.getElementById('wizardPanesModeA').style.display = 'block';
+        document.getElementById('wizFooterModeA').style.display = 'flex';
+        document.getElementById('wizardPaneModeB').style.display = 'none';
+        document.getElementById('wizDescModeA').style.display = 'block';
+        document.getElementById('wizDescModeB').style.display = 'none';
+        document.getElementById('wizProgressWrapper').style.visibility = 'visible';
+    } else {
+        document.getElementById('wizardPanesModeA').style.display = 'none';
+        document.getElementById('wizFooterModeA').style.display = 'none';
+        document.getElementById('wizardPaneModeB').style.display = 'block';
+        document.getElementById('wizDescModeA').style.display = 'none';
+        document.getElementById('wizDescModeB').style.display = 'block';
+        document.getElementById('wizProgressWrapper').style.visibility = 'hidden';
+    }
+}
+</script>
 <div id="itineraryContent" style="display: none;">
 
 
@@ -3056,7 +3129,7 @@
                     <p class="journal-guest-desc">Đăng nhập tài khoản BeeNavi để tự động lưu trữ tất cả các lịch trình AI đã tạo, ghi lại kỷ niệm chuyến đi, quản lý checklist hành trang và tối ưu hóa sở thích du lịch cá nhân.</p>
                     
                     <div class="journal-guest-actions">
-                        <button class="btn-primary-large" onclick="openAuthModal('login')">
+                        <button class="btn-primary-large" onclick="window.location.href='/login.html'">
                             <span>🔐</span> Đăng Nhập / Đăng Ký Ngay
                         </button>
                         <button class="btn-secondary-large" onclick="switchMainTab('itinerary', event)">
