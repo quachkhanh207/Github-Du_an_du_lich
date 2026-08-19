@@ -1,7 +1,7 @@
 """
 ai_engine/orchestrator.py
-Bộ điều phối trung tâm (AI Orchestrator) cho hệ thống BeeNavi.
-Phân tích Ý định -> Thực thi Tool song song -> Ghép ngữ cảnh -> Gọi LLM Qwen3-4B Streaming -> Lưu trữ State.
+Bộ điều phối trung tâm (AI Orchestrator) cho Chatbot Tư vấn Du lịch BeeNavi.
+Phân tích Ý định -> Thực thi Tool chuyên biệt song song -> Ghép ngữ cảnh -> Gọi LLM Qwen3-4B Streaming -> Lưu trữ State độc lập.
 """
 import asyncio
 import uuid
@@ -11,16 +11,18 @@ from ai_engine.brain import Brain
 from ai_engine.context_merger import ContextMerger
 from ai_engine.conversation_state import ConversationStateManager
 from ai_engine.intent_router import IntentRouter
-from ai_engine.tools.diary_tool import DiaryTool
-from ai_engine.tools.planner_tool import PlannerTool
+from ai_engine.tools.budget_tool import BudgetTool
+from ai_engine.tools.checklist_tool import ChecklistTool
+from ai_engine.tools.map_tool import MapTool
 from ai_engine.tools.profile_tool import ProfileTool
 from ai_engine.tools.rag_tool import RagTool
 from ai_engine.tools.weather_tool import WeatherTool
 from planner.rag_engine import RagEngine
+from api_server.config import LLM_MAX_TOKENS_VOICE
 
 
 class AIOrchestrator:
-    """Lớp điều phối trung tâm cho toàn bộ luồng AI và Tools của BeeNavi."""
+    """Lớp điều phối trung tâm cho Chatbot Tư vấn Du lịch BeeNavi AI."""
 
     def __init__(
         self,
@@ -32,12 +34,13 @@ class AIOrchestrator:
         self.rag_engine = rag_engine
         self.state_manager = state_manager or ConversationStateManager()
 
-        # Khởi tạo các Tool
+        # Khởi tạo bộ 6 Tool chuyên biệt cho Chatbot tư vấn
         self.profile_tool = ProfileTool()
         self.rag_tool = RagTool(rag_engine=self.rag_engine)
         self.weather_tool = WeatherTool()
-        self.planner_tool = PlannerTool(rag_engine=self.rag_engine)
-        self.diary_tool = DiaryTool()
+        self.map_tool = MapTool()
+        self.budget_tool = BudgetTool()
+        self.checklist_tool = ChecklistTool()
 
     async def _dispatch_tools(
         self,
@@ -47,43 +50,59 @@ class AIOrchestrator:
         user_id: Optional[str] = None
     ) -> Tuple[Dict[str, Dict[str, Any]], List[str]]:
         """
-        Thực thi các tool song song bất đồng bộ tùy theo Intent và Slots.
+        Thực thi các tool song song bất đồng bộ tùy theo Intent và Slots tư vấn.
         """
         tasks = {}
         tool_names = []
 
-        # 1. Luôn truy xuất hồ sơ cá nhân hóa (nếu có user_id)
+        # 1. Luôn truy xuất hồ sơ cá nhân hóa (nếu user đã đăng nhập)
         if user_id:
             tasks["user_profile"] = self.profile_tool.execute(action="get", user_id=user_id)
             tool_names.append("user_profile")
 
         destination = slots.get("destination")
-        num_days = slots.get("num_days", 3)
+        origin = slots.get("origin")
+        num_days = slots.get("num_days", 1)
         budget = slots.get("budget", "Tiêu chuẩn")
         trip_type = slots.get("trip_type", "Khám phá")
+        transport = slots.get("transport", "Xe máy")
 
-        # 2. Xử lý theo từng Intent
-        if intent == "PLAN_ITINERARY":
+        # 2. Phân phối Tool theo từng Intent tư vấn
+        if intent == "CHECK_WEATHER":
+            dest_for_weather = destination or "Hà Nội"
+            tasks["get_weather"] = self.weather_tool.execute(destination=dest_for_weather)
+            tool_names.append("get_weather")
+
+        elif intent == "ASK_DISTANCE_TRANSPORT":
+            if origin and destination:
+                tasks["map_service"] = self.map_tool.execute(origin=origin, destination=destination)
+                tool_names.append("map_service")
+            elif destination:
+                tasks["map_service"] = self.map_tool.execute(destination=destination)
+                tasks["query_rag"] = self.rag_tool.execute(query=user_text, limit=4)
+                tool_names.extend(["map_service", "query_rag"])
+
+        elif intent == "ASK_BUDGET_COST":
+            tasks["budget_tool"] = self.budget_tool.execute(
+                budget_tier=budget,
+                num_days=num_days,
+                destination=destination,
+                num_people=slots.get("num_people", 1)
+            )
+            tasks["query_rag"] = self.rag_tool.execute(query=user_text, limit=4)
+            tool_names.extend(["budget_tool", "query_rag"])
+
+        elif intent == "ASK_CHECKLIST_PACKING":
             if destination:
                 tasks["get_weather"] = self.weather_tool.execute(destination=destination)
                 tool_names.append("get_weather")
-
-                # Lấy trước weather nếu cần hoặc chạy cùng lúc
-                trip_payload = {
-                    "destination": destination,
-                    "number_of_days": num_days,
-                    "num_days": num_days,
-                    "budget": budget,
-                    "trip_type": trip_type
-                }
-                tasks["query_rag"] = self.rag_tool.execute(trip_data=trip_payload)
-                tasks["plan_itinerary"] = self.planner_tool.execute(
-                    destination=destination,
-                    number_of_days=num_days,
-                    budget=budget,
-                    trip_type=trip_type
-                )
-                tool_names.extend(["query_rag", "plan_itinerary"])
+            tasks["checklist_tool"] = self.checklist_tool.execute(
+                weather_tag=slots.get("weather_tag"),
+                trip_type=trip_type,
+                transport=transport,
+                destination=destination
+            )
+            tool_names.append("checklist_tool")
 
         elif intent == "EXPLORE_LOCATION":
             if destination:
@@ -92,17 +111,7 @@ class AIOrchestrator:
             tasks["query_rag"] = self.rag_tool.execute(query=user_text, limit=6)
             tool_names.append("query_rag")
 
-        elif intent == "CHECK_WEATHER":
-            dest_for_weather = destination or "Hà Nội"
-            tasks["get_weather"] = self.weather_tool.execute(destination=dest_for_weather)
-            tool_names.append("get_weather")
-
-        elif intent == "MANAGE_DIARY":
-            tasks["diary_service"] = self.diary_tool.execute(action="get_trips", user_id=user_id)
-            tool_names.append("diary_service")
-
         elif intent == "USER_PREFERENCE_UPDATE":
-            # Cập nhật trực tiếp sở thích nếu có
             if user_id and slots.get("dietary_restrictions"):
                 tasks["user_profile_update"] = self.profile_tool.execute(
                     action="update",
@@ -111,9 +120,12 @@ class AIOrchestrator:
                 )
                 tool_names.append("user_profile_update")
 
-        elif intent == "GENERAL_CHAT":
-            # Tự động kích hoạt RAG Agent nếu người dùng hỏi về điểm đến, ẩm thực, vui chơi
-            if destination or any(kw in user_text.lower() for kw in ["ở đâu", "quán", "chơi", "ăn", "đi đâu", "đẹp", "du lịch", "khách sạn", "địa điểm", "chùa", "bãi", "biển"]):
+        elif intent == "GENERAL_TRAVEL_CHAT":
+            # Tự động kích hoạt RAG nếu người dùng hỏi về điểm đến, ẩm thực, vui chơi, khách sạn
+            if destination or any(kw in user_text.lower() for kw in [
+                "ở đâu", "quán", "chơi", "ăn", "đi đâu", "đẹp", "du lịch", "khách sạn",
+                "địa điểm", "chùa", "bãi", "biển", "vé", "đặc sản", "kinh nghiệm", "review"
+            ]):
                 tasks["query_rag"] = self.rag_tool.execute(query=user_text, limit=4)
                 tool_names.append("query_rag")
 
@@ -138,18 +150,18 @@ class AIOrchestrator:
         user_text: str,
         session_id: Optional[str] = None,
         user_id: Optional[str] = None,
-        explicit_trip_data: Optional[Dict[str, Any]] = None
+        explicit_trip_data: Optional[Dict[str, Any]] = None,
+        is_voice_mode: bool = False
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
-        Xử lý toàn bộ chu trình hội thoại và sinh token streaming kèm Live Map Sync, Checklist và Budget Breakdown.
+        Xử lý chu trình trò chuyện tư vấn và sinh token streaming.
         Yields:
-            Dict chứa: {"type": "token"|"clarification"|"final", "text": str, ...}
+            Dict chứa: {"type": "token"|"metadata"|"answer", "text": str, ...}
         """
         session_id = session_id or str(uuid.uuid4())
         session = self.state_manager.get_or_create_session(session_id, user_id)
         current_slots = session.get("slots", {})
 
-        # Nếu có dữ liệu trip_data tường minh từ form client truyền vào
         if explicit_trip_data:
             current_slots.update(explicit_trip_data)
 
@@ -163,34 +175,7 @@ class AIOrchestrator:
         )
         active_slots = updated_session.get("slots", {})
 
-        # 2. Xử lý Slot Clarification (Hỏi lại nếu thiếu thông tin bắt buộc)
-        if intent == "PLAN_ITINERARY" and not active_slots.get("destination"):
-            clarification_msg = "Bạn muốn lên lịch trình khám phá tỉnh thành hoặc địa điểm nào tại Việt Nam? (Ví dụ: Đà Nẵng, Sa Pa, Đà Lạt, Phú Quốc...)"
-            self.state_manager.save_message(
-                session_id=session_id,
-                role="user",
-                content=user_text,
-                intent=intent,
-                user_id=user_id
-            )
-            self.state_manager.save_message(
-                session_id=session_id,
-                role="assistant",
-                content=clarification_msg,
-                intent=intent,
-                user_id=user_id
-            )
-            self.state_manager.update_session_slots(session_id, {}, pending_action="AWAITING_DESTINATION")
-            yield {
-                "type": "answer",
-                "text": clarification_msg,
-                "intent": intent,
-                "slots": active_slots,
-                "session_id": session_id
-            }
-            return
-
-        # 3. Kích hoạt Tool Dispatcher song song
+        # 2. Kích hoạt Tool Dispatcher song song
         tool_results, tool_names = await self._dispatch_tools(
             intent=intent,
             user_text=user_text,
@@ -198,18 +183,19 @@ class AIOrchestrator:
             user_id=user_id
         )
 
-        # 4. Gộp ngữ cảnh vào Dynamic System Prompt
+        # 3. Gộp ngữ cảnh vào Dynamic System Prompt
         dynamic_prompt = ContextMerger.build_dynamic_prompt(
             user_message=user_text,
             tool_results=tool_results,
             slots=active_slots,
-            intent=intent
+            intent=intent,
+            is_voice_mode=is_voice_mode
         )
 
-        # Lấy lịch sử hội thoại gần nhất
+        # Lấy lịch sử hội thoại gần nhất để duy trì mạch nói chuyện
         history = self.state_manager.get_recent_history(session_id=session_id, limit=6)
 
-        # Lưu tin nhắn người dùng vào CSDL
+        # Lưu tin nhắn người dùng vào CSDL hội thoại
         self.state_manager.save_message(
             session_id=session_id,
             role="user",
@@ -219,21 +205,34 @@ class AIOrchestrator:
             user_id=user_id
         )
 
-        # 5. Trích xuất Metadata Tối Ưu Hóa (Live Map, Budget, Checklist)
+        # 4. Trích xuất Metadata trả kèm cho Client (Weather, Map, Budget, Checklist)
         weather_data = tool_results.get("get_weather", {}).get("data")
-        structured_itinerary = tool_results.get("plan_itinerary", {}).get("data")
+        map_data = tool_results.get("map_service", {}).get("data")
+        budget_data = tool_results.get("budget_tool", {}).get("data")
+        checklist_data = tool_results.get("checklist_tool", {}).get("data")
+        rag_data = tool_results.get("query_rag", {}).get("data")
 
-        map_markers = []
-        budget_breakdown = None
-        smart_checklist = None
+        # Gửi sự kiện mở đầu kèm metadata nếu có
+        yield {
+            "type": "start",
+            "intent": intent,
+            "session_id": session_id,
+            "tools_called": tool_names,
+            "metadata": {
+                "weather": weather_data,
+                "map": map_data,
+                "budget": budget_data,
+                "checklist": checklist_data,
+                "rag_pois": rag_data if isinstance(rag_data, list) else None
+            }
+        }
 
-        if structured_itinerary:
-            map_markers = structured_itinerary.get("map_markers", [])
-            budget_breakdown = structured_itinerary.get("budget_breakdown")
-            smart_checklist = structured_itinerary.get("smart_checklist")
-
+        # 5. Sinh phản hồi qua LLM Brain (Streaming)
         if not self.brain:
-            fallback_ans = f"Xin chào! Tôi đã nhận thông tin về {active_slots.get('destination', 'chuyến đi của bạn')}. Hệ thống đã điều phối các công cụ thành công!"
+            fallback_ans = (
+                f"Tôi đã ghi nhận câu hỏi của bạn về "
+                f"'{active_slots.get('destination', user_text)}' và sẵn sàng giải đáp thêm các thông tin về địa điểm, ăn uống, thời tiết, chi phí và đồ đạc cần mang theo!"
+            )
             self.state_manager.save_message(
                 session_id=session_id,
                 role="assistant",
@@ -246,62 +245,52 @@ class AIOrchestrator:
                 "text": fallback_ans,
                 "intent": intent,
                 "slots": active_slots,
-                "weather": weather_data,
-                "structured_itinerary": structured_itinerary,
-                "map_markers": map_markers,
-                "budget_breakdown": budget_breakdown,
-                "smart_checklist": smart_checklist,
-                "session_id": session_id,
-                "tools_called": tool_names
+                "session_id": session_id
             }
             return
 
-        full_answer = ""
-        loop = asyncio.get_event_loop()
-
-        def run_sync_stream():
-            return list(self.brain.stream(
-                user_text=user_text,
+        full_response_text = []
+        try:
+            max_toks = LLM_MAX_TOKENS_VOICE if is_voice_mode else None
+            async for token in self.brain.generate_stream(
+                prompt=user_text,
+                system_prompt=dynamic_prompt,
                 history=history,
-                custom_system_prompt=dynamic_prompt
-            ))
-
-        stream_chunks = await loop.run_in_executor(None, run_sync_stream)
-
-        for chunk in stream_chunks:
-            if chunk and chunk.strip():
-                full_answer = chunk.strip()
+                max_tokens=max_toks
+            ):
+                full_response_text.append(token)
                 yield {
-                    "type": "partial_answer",
-                    "text": full_answer,
+                    "type": "token",
+                    "text": token,
                     "intent": intent,
                     "session_id": session_id
                 }
 
-        if not full_answer:
-            full_answer = f"Chào bạn! Tôi là BeeNavi AI. Tôi có thể hỗ trợ bạn tìm kiếm địa điểm, lên lịch trình và kiểm tra thời tiết tại {active_slots.get('destination', 'Việt Nam')}."
+            complete_text = "".join(full_response_text).strip()
 
-        # Lưu câu trả lời của AI vào CSDL
-        self.state_manager.save_message(
-            session_id=session_id,
-            role="assistant",
-            content=full_answer,
-            intent=intent,
-            tools_called=tool_names,
-            user_id=user_id
-        )
+            # Lưu câu trả lời của AI vào CSDL
+            self.state_manager.save_message(
+                session_id=session_id,
+                role="assistant",
+                content=complete_text,
+                intent=intent,
+                tools_called=tool_names,
+                user_id=user_id
+            )
 
-        # Trả về kết quả hoàn chỉnh cuối cùng
-        yield {
-            "type": "answer",
-            "text": full_answer,
-            "intent": intent,
-            "slots": active_slots,
-            "weather": weather_data,
-            "structured_itinerary": structured_itinerary,
-            "map_markers": map_markers,
-            "budget_breakdown": budget_breakdown,
-            "smart_checklist": smart_checklist,
-            "session_id": session_id,
-            "tools_called": tool_names
-        }
+            # Gửi gói kết thúc
+            yield {
+                "type": "final",
+                "text": complete_text,
+                "intent": intent,
+                "slots": active_slots,
+                "session_id": session_id
+            }
+
+        except Exception as e:
+            err_msg = f"Đã xảy ra lỗi khi tạo phản hồi tư vấn: {e}"
+            yield {
+                "type": "error",
+                "text": err_msg,
+                "session_id": session_id
+            }

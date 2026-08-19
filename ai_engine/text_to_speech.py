@@ -8,6 +8,7 @@ Hỗ trợ 2 chế độ (Dual-Engine):
 
 import base64
 import io
+import contextlib
 import logging
 import os
 import re
@@ -244,3 +245,71 @@ class TTSManager:
         if raw_bytes:
             return base64.b64encode(raw_bytes).decode("utf-8")
         return None
+
+    def synthesize_stream_base64(
+        self,
+        text: str,
+        voice: Optional[str] = None
+    ):
+        """Tổng hợp giọng nói streaming, trả về generator các chunk Base64 (WAV)."""
+        if not self.enabled or not text or not text.strip():
+            return
+
+        clean_text = text.strip()
+        selected_voice = None  # Force vi_default
+
+        if self.engine == "remote_api":
+            b64 = self.synthesize_sentence_base64(clean_text, selected_voice)
+            if b64:
+                yield b64
+            return
+
+        try:
+            tts = self._get_model()
+            sample_rate = getattr(tts, "sample_rate", 24000) or 24000
+            
+            buffer_samples = []
+            min_chunk_size = int(0.625 * sample_rate)
+
+            with self._infer_lock:
+                import torch
+                ctx = torch.inference_mode() if torch.cuda.is_available() else contextlib.nullcontext()
+                with ctx:
+                    if hasattr(tts, "infer_stream"):
+                        amp_ctx = torch.amp.autocast("cuda", dtype=torch.float16) if torch.cuda.is_available() else contextlib.nullcontext()
+                        with amp_ctx:
+                            iterator = tts.infer_stream(text=clean_text, voice=selected_voice) if selected_voice else tts.infer_stream(text=clean_text)
+                            for audio_raw in iterator:
+                                if hasattr(audio_raw, "detach"):
+                                    data_float = audio_raw.detach().cpu().numpy().squeeze().astype(np.float32)
+                                elif isinstance(audio_raw, np.ndarray):
+                                    data_float = audio_raw.squeeze().astype(np.float32)
+                                else:
+                                    continue
+                                    
+                                if len(data_float) > 0:
+                                    buffer_samples.append(data_float)
+                                    
+                                current_len = sum(len(x) for x in buffer_samples)
+                                if current_len >= min_chunk_size:
+                                    combined = np.concatenate(buffer_samples)
+                                    buffer_samples = []
+                                    yield self._raw_to_b64_wav(combined, sample_rate)
+                                    
+                            if buffer_samples:
+                                combined = np.concatenate(buffer_samples)
+                                yield self._raw_to_b64_wav(combined, sample_rate)
+                    else:
+                        b64 = self.synthesize_sentence_base64(clean_text, selected_voice)
+                        if b64:
+                            yield b64
+
+        except Exception as e:
+            logger.exception("Lỗi stream VieNeu local: %s", e)
+
+    def _raw_to_b64_wav(self, data_float: np.ndarray, sample_rate: int) -> str:
+        data_float = np.clip(data_float, -1.0, 1.0)
+        final_int16 = np.int16(data_float * 32767)
+        buf = io.BytesIO()
+        wavfile.write(buf, sample_rate, final_int16)
+        return base64.b64encode(buf.getvalue()).decode("utf-8")

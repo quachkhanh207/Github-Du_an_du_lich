@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - BeeNavi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            background-color: #f7f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 420px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header img {
+            width: 50px;
+            margin-bottom: 10px;
+        }
+        .header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+        }
+        .header p {
+            color: #777;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            border-color: #ff6b00;
+            outline: none;
+        }
+        .btn-primary {
+            background-color: #ff6b00;
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        .btn-primary:hover {
+            background-color: #e55e00;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+            color: #999;
+            font-size: 13px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #eee;
+        }
+        .divider:not(:empty)::before {
+            margin-right: 15px;
+        }
+        .divider:not(:empty)::after {
+            margin-left: 15px;
+        }
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: background 0.3s;
+        }
+        .social-btn:hover {
+            background: #f9f9f9;
+        }
+        .social-btn img {
+            width: 20px;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .footer-links a {
+            color: #ff6b00;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        .error-msg {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="header">
+            <img src="https://cdn-icons-png.flaticon.com/512/826/826070.png" alt="BeeNavi">
+            <h2>Chào mừng trở lại</h2>
+            <p>Đăng nhập để lưu và tuỳ chỉnh lịch trình AI</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Nhập email của bạn" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        
+        <button class="btn-primary" onclick="handleEmailAuth()" id="loginBtn">Đăng Nhập</button>
+        <div id="errorMsg" class="error-msg"></div>
+
+        <div class="footer-links">
+            <a href="#" onclick="alert('Tính năng Quên mật khẩu đang phát triển')">Quên mật khẩu?</a>
+            <a href="javascript:void(0)" id="toggleAuthMode" onclick="toggleMode()">Chưa có tài khoản? Đăng ký ngay</a>
+        </div>
+
+        <div class="divider">HOẶC</div>
+
+        <button class="social-btn" onclick="loginWithGoogle()">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+            Tiếp tục với Google
+        </button>
+        <button class="social-btn" onclick="loginWithFacebook()">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" alt="Facebook">
+            Tiếp tục với Facebook
+        </button>
+    </div>
+
+    <!-- Cấu hình Supabase -->
+    <script>
+        const SUPABASE_URL = 'https://aatmisntvctdjkkismze.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Q5mwdNgOoZvOiU-eo-7sgw__uv93cRb';
+        window.db_supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
+    <script>
+        // Kiểm tra Session hiện tại
+        async function checkSession() {
+            const { data, error } = await window.db_supabase.auth.getSession();
+            if (data.session) {
+                redirectBasedOnRole(data.session.user);
+            }
+        }
+        checkSession();
+
+        async function redirectBasedOnRole(user) {
+            try {
+                if (!user) {
+                    window.location.href = "/";
+                    return;
+                }
+                const { data, error } = await window.db_supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (data && data.role === 'admin') {
+                    window.location.href = "/";
+                } else {
+                    window.location.href = "/";
+                }
+            } catch (err) {
+                console.error(err);
+                window.location.href = "/";
+            }
+        }
+
+        let isLoginMode = true;
+
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            const btn = document.getElementById("loginBtn");
+            const toggleLink = document.getElementById("toggleAuthMode");
+            const errorMsg = document.getElementById("errorMsg");
+            
+            errorMsg.textContent = "";
+            errorMsg.style.color = "#e74c3c";
+
+            if (isLoginMode) {
+                document.querySelector(".header h2").textContent = "Chào mừng trở lại";
+                document.querySelector(".header p").textContent = "Đăng nhập để lưu và tuỳ chỉnh lịch trình AI";
+                btn.textContent = "Đăng Nhập";
+                toggleLink.textContent = "Chưa có tài khoản? Đăng ký ngay";
+            } else {
+                document.querySelector(".header h2").textContent = "Tạo tài khoản mới";
+                document.querySelector(".header p").textContent = "Đăng ký để trải nghiệm đầy đủ tính năng";
+                btn.textContent = "Đăng Ký";
+                toggleLink.textContent = "Đã có tài khoản? Đăng nhập";
+            }
+        }
+
+        async function handleEmailAuth() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const errorMsg = document.getElementById("errorMsg");
+            const btn = document.getElementById("loginBtn");
+
+            if (!email || !password) {
+                errorMsg.textContent = "Vui lòng nhập đầy đủ thông tin!";
+                return;
+            }
+            if (password.length < 6) {
+                errorMsg.textContent = "Mật khẩu phải dài ít nhất 6 ký tự!";
+                return;
+            }
+
+            btn.textContent = "Đang xử lý...";
+            errorMsg.textContent = "";
+
+            try {
+                if (isLoginMode) {
+                    // Xử lý Đăng Nhập
+                    const { data, error } = await window.db_supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+
+                    if (error) {
+                        errorMsg.textContent = "Sai tài khoản hoặc mật khẩu! (" + error.message + ")";
+                        btn.textContent = "Đăng Nhập";
+                    } else {
+                        errorMsg.style.color = "green";
+                        errorMsg.textContent = "Đăng nhập thành công!";
+                        redirectBasedOnRole(data.user);
+                    }
+                } else {
+                    // Xử lý Đăng Ký
+                    const { data, error } = await window.db_supabase.auth.signUp({
+                        email: email,
+                        password: password,
+                    });
+
+                    if (error) {
+                        errorMsg.textContent = "Lỗi đăng ký: " + error.message;
+                        btn.textContent = "Đăng Ký";
+                    } else {
+                        errorMsg.style.color = "green";
+                        if (!data.user) {
+                            errorMsg.textContent = "Lỗi không xác định từ máy chủ Supabase.";
+                            errorMsg.style.color = "#e74c3c";
+                            btn.textContent = "Đăng Ký";
+                        } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+                            errorMsg.textContent = "Email này đã được đăng ký!";
+                            errorMsg.style.color = "#e74c3c";
+                            btn.textContent = "Đăng Ký";
+                        } else if (!data.session) {
+                            errorMsg.textContent = "Tạo thành công! Vui lòng kiểm tra Hộp thư Email để xác thực.";
+                            errorMsg.style.color = "#ff6b00";
+                            btn.textContent = "Đăng Ký";
+                        } else {
+                            errorMsg.textContent = "Đăng ký thành công! Đang tự động đăng nhập...";
+                            setTimeout(() => { redirectBasedOnRole(data.user); }, 1500);
+                        }
+                    }
+                }
+            } catch (err) {
+                errorMsg.textContent = "Lỗi hệ thống: " + err.message;
+                btn.textContent = isLoginMode ? "Đăng Nhập" : "Đăng Ký";
+            }
+        }
+        
+        async function loginWithGoogle() {
+            await window.db_supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin + '/' }
+            });
+        }
+
+        async function loginWithFacebook() {
+            await window.db_supabase.auth.signInWithOAuth({
+                provider: 'facebook',
+                options: { redirectTo: window.location.origin + '/' }
+            });
+        }
+        
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") handleEmailAuth();
+        });
+    </script>
+</body>
+</html>

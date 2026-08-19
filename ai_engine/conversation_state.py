@@ -67,8 +67,19 @@ class ConversationStateManager:
         conn.commit()
         conn.close()
 
-    def get_or_create_session(self, session_id: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+    def get_or_create_session(self, session_id: Any, user_id: Optional[Any] = None) -> Dict[str, Any]:
         """Lấy session hiện tại hoặc tạo mới nếu chưa tồn tại."""
+        # Sanitize session_id và user_id để tránh truyền object Form của FastAPI
+        if session_id is None or hasattr(session_id, "default") or not isinstance(session_id, (str, int)):
+            session_id = str(uuid.uuid4())
+        else:
+            session_id = str(session_id).strip() or str(uuid.uuid4())
+
+        if user_id is not None and not hasattr(user_id, "default") and isinstance(user_id, (str, int)):
+            user_id = str(user_id).strip() or None
+        else:
+            user_id = None
+
         conn = self._get_connection()
         c = conn.cursor()
 
@@ -78,7 +89,7 @@ class ConversationStateManager:
             c.execute("""
                 INSERT INTO chat_sessions (session_id, user_id, current_intent, slots_json, updated_at)
                 VALUES (?, ?, ?, ?, ?)
-            """, (session_id, user_id, "GENERAL_CHAT", "{}", now_str))
+            """, (session_id, user_id, "GENERAL_TRAVEL_CHAT", "{}", now_str))
             conn.commit()
             conn.close()
             return {
@@ -101,14 +112,15 @@ class ConversationStateManager:
 
     def update_session_slots(
         self,
-        session_id: str,
+        session_id: Any,
         new_slots: Dict[str, Any],
         intent: Optional[str] = None,
         pending_action: Optional[str] = None,
-        user_id: Optional[str] = None
+        user_id: Optional[Any] = None
     ) -> Dict[str, Any]:
         """Cập nhật các slot tích lũy trong phiên hội thoại."""
         current = self.get_or_create_session(session_id, user_id)
+        session_id = current["session_id"]
         merged_slots = current.get("slots", {})
         
         # Chỉ ghi đè slot nếu có giá trị mới hợp lệ
@@ -116,7 +128,7 @@ class ConversationStateManager:
             if v is not None and v != "":
                 merged_slots[k] = v
 
-        current_intent = intent or current.get("current_intent", "GENERAL_CHAT")
+        current_intent = intent or current.get("current_intent", "GENERAL_TRAVEL_CHAT")
         now_str = time.strftime("%Y-%m-%d %H:%M:%S")
 
         conn = self._get_connection()
@@ -138,24 +150,29 @@ class ConversationStateManager:
             "pending_action": pending_action
         }
 
-    def clear_session_slots(self, session_id: str):
+    def clear_session_slots(self, session_id: Any):
         """Xóa trắng các slots khi người dùng bắt đầu một yêu cầu hoàn toàn mới."""
+        s_id = str(session_id) if session_id and not hasattr(session_id, "default") else ""
+        if not s_id:
+            return
         conn = self._get_connection()
         c = conn.cursor()
-        c.execute("UPDATE chat_sessions SET slots_json = '{}', pending_action = NULL WHERE session_id = ?", (session_id,))
+        c.execute("UPDATE chat_sessions SET slots_json = '{}', pending_action = NULL WHERE session_id = ?", (s_id,))
         conn.commit()
         conn.close()
 
     def save_message(
         self,
-        session_id: str,
+        session_id: Any,
         role: str,
         content: str,
         intent: Optional[str] = None,
         tools_called: Optional[List[str]] = None,
-        user_id: Optional[str] = None
+        user_id: Optional[Any] = None
     ):
         """Lưu tin nhắn vào lịch sử hội thoại."""
+        s_id = str(session_id) if session_id and not hasattr(session_id, "default") else str(uuid.uuid4())
+        u_id = str(user_id) if user_id and not hasattr(user_id, "default") else None
         msg_id = str(uuid.uuid4())
         tools_json = json.dumps(tools_called or [], ensure_ascii=False)
 
@@ -164,12 +181,15 @@ class ConversationStateManager:
         c.execute("""
             INSERT INTO chat_messages (id, user_id, session_id, role, content, intent, tools_called_json)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (msg_id, user_id, session_id, role, content, intent, tools_json))
+        """, (msg_id, u_id, s_id, str(role), str(content), intent, tools_json))
         conn.commit()
         conn.close()
 
-    def get_recent_history(self, session_id: str, limit: int = 6) -> List[Dict[str, str]]:
+    def get_recent_history(self, session_id: Any, limit: int = 6) -> List[Dict[str, str]]:
         """Lấy danh sách tin nhắn gần nhất để đưa vào ngữ cảnh LLM."""
+        s_id = str(session_id) if session_id and not hasattr(session_id, "default") else ""
+        if not s_id:
+            return []
         conn = self._get_connection()
         c = conn.cursor()
         rows = c.execute("""
@@ -178,7 +198,7 @@ class ConversationStateManager:
             WHERE session_id = ?
             ORDER BY created_at DESC
             LIMIT ?
-        """, (session_id, limit)).fetchall()
+        """, (s_id, limit)).fetchall()
         conn.close()
 
         history = [{"role": r["role"], "content": r["content"]} for r in reversed(rows)]

@@ -77,7 +77,7 @@ class PlannerTool(BaseTool):
             days = structured.get("days", [])
             map_markers = []
             for day in days:
-                d_num = day.get("day", 1)
+                d_num = day.get("dayNum", day.get("day", 1))
                 for act in day.get("activities", []):
                     lat = act.get("lat", 0.0)
                     lng = act.get("lng", 0.0)

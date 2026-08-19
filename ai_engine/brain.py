@@ -126,58 +126,108 @@ class Brain:
 
         return messages
 
-    def stream(
+    async def generate_stream(
         self,
-        user_text: str,
+        prompt: str,
+        system_prompt: str | None = None,
         history: list | None = None,
-        custom_system_prompt: str | None = None
+        max_tokens: int | None = None
     ):
+        """Async generator sinh token cho AI Orchestrator."""
         messages = self.build_messages(
-            user_text,
+            prompt,
             history,
-            custom_system_prompt=custom_system_prompt
+            custom_system_prompt=system_prompt
         )
 
+        import asyncio
+
+        def _sync_generator():
+            with self.lock:
+                try:
+                    response = self.model.create_chat_completion(
+                        messages=messages,
+                        temperature=0.3,
+                        top_p=0.85,
+                        max_tokens=max_tokens or LLM_MAX_TOKENS,
+                        presence_penalty=0.5,
+                        frequency_penalty=0.5,
+                        repeat_penalty=1.15,
+                        stream=True,
+                        stop=["<|im_end|>", "[KẾT THÚC]", "[END]", "###"]
+                    )
+                    in_thinking = False
+                    for chunk in response:
+                        choices = chunk.get("choices", [])
+                        if not choices:
+                            continue
+                        delta = choices[0].get("delta", {})
+                        token = delta.get("content", "")
+                        if not token:
+                            continue
+
+                        # Lọc thẻ <think> nếu có
+                        if "<think>" in token:
+                            in_thinking = True
+                            continue
+                        if "</think>" in token:
+                            in_thinking = False
+                            continue
+                        if in_thinking:
+                            continue
+
+                        yield token
+
+                except Exception as e:
+                    print(f"[Brain] Lỗi inference: {e}", flush=True)
+                    yield f"\n[Lỗi kết nối AI: {e}]"
+
+        # Chuyển đổi sync generator sang async an toàn với executor
+        loop = asyncio.get_event_loop()
+        gen = _sync_generator()
+        sentinel = object()
+
+        def _fetch_next():
+            return next(gen, sentinel)
+
+        while True:
+            try:
+                tok = await loop.run_in_executor(None, _fetch_next)
+                if tok is sentinel:
+                    break
+                yield tok
+            except Exception as ex:
+                print(f"[Brain] Stream token error: {ex}", flush=True)
+                break
+
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: str | None = None,
+        history: list | None = None,
+        max_tokens: int | None = None
+    ) -> str:
+        """Sinh toàn bộ câu trả lời dạng chuỗi (Synchronous)."""
+        messages = self.build_messages(
+            prompt,
+            history,
+            custom_system_prompt=system_prompt
+        )
         with self.lock:
             try:
                 response = self.model.create_chat_completion(
                     messages=messages,
-                    temperature=0.2,
+                    temperature=0.3,
                     top_p=0.85,
-                    max_tokens=LLM_MAX_TOKENS,
-                    presence_penalty=0.6,
-                    frequency_penalty=0.6,
+                    max_tokens=max_tokens or LLM_MAX_TOKENS,
+                    presence_penalty=0.5,
+                    frequency_penalty=0.5,
                     repeat_penalty=1.15,
-                    stream=True,
+                    stream=False,
                     stop=["<|im_end|>", "[KẾT THÚC]", "[END]", "###"]
                 )
-
-                raw_text = ""
-                for chunk in response:
-                    choices = chunk.get("choices", [])
-                    if not choices:
-                        continue
-
-                    delta = choices[0].get("delta", {})
-                    token = delta.get("content", "")
-                    if not token:
-                        continue
-
-                    raw_text += token
-                    answer = self.clean_thinking(raw_text)
-                    if answer:
-                        yield answer
-
-                final_answer = self.clean_thinking(raw_text)
-                if not final_answer and raw_text.strip():
-                    final_answer = re.sub(r"</?think>", "", raw_text).strip()
-                if final_answer:
-                    yield final_answer
-
+                raw_text = response["choices"][0]["message"]["content"]
+                return self.clean_thinking(raw_text)
             except Exception as e:
-                err_msg = str(e)
-                print(f"[Brain] Lỗi trong stream(): {err_msg}", flush=True)
-                if "context" in err_msg.lower() or "kv" in err_msg.lower():
-                    yield "Xin lỗi, lịch sử hội thoại quá dài. Vui lòng làm mới cuộc trò chuyện."
-                else:
-                    yield f"Tôi đang gặp sự cố khi xử lý câu hỏi này. Bạn vui lòng thử lại nhé! (Chi tiết: {err_msg})"
+                print(f"[Brain] Lỗi generate: {e}", flush=True)
+                return "Xin lỗi bạn, tôi đang gặp gián đoạn tạm thời. Bạn vui lòng thử lại nhé!"

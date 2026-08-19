@@ -1,0 +1,20 @@
+# ============================================================
+# BeeNavi AI — requirements_ai.txt
+# Dành cho FastAPI server (ai_engine, planner, geo_services)
+# ============================================================
+# QUAN TRỌNG: torch và llama-cpp-python cài RIÊNG theo GPU/CPU.
+# Xem README.md phần "Cài đặt" để cài đúng thứ tự.
+# ============================================================
+
+fastapi
+uvicorn[standard]
+websockets
+python-multipart
+faster-whisper
+huggingface-hub
+numpy
+soundfile
+python-dotenv
+httpx
+requests
+chromadb

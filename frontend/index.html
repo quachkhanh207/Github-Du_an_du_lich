@@ -32,13 +32,475 @@
 
 
     <link rel="stylesheet" href="/static/style.css?v=chat_fix_2026">
+    <style>
+        @keyframes pulseRing {
+            0% { transform: scale(0.8); opacity: 0.95; }
+            100% { transform: scale(1.85); opacity: 0; }
+        }
+        .hotel-permanent-tooltip {
+            background: #3730A3 !important;
+            color: #FFFFFF !important;
+            border: 1.5px solid #6366F1 !important;
+            border-radius: 8px !important;
+            padding: 4px 10px !important;
+            font-size: 11.5px !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 12px rgba(55, 48, 163, 0.45) !important;
+            white-space: nowrap !important;
+        }
+        .hotel-permanent-tooltip::before {
+            border-top-color: #3730A3 !important;
+        }
+
+        /* Typography & Gold Stars Overhaul */
+        .star-gold {
+            color: #F59E0B !important;
+            font-weight: 800 !important;
+            display: inline-block;
+            margin: 0 1px;
+        }
+        .builder-card-header h4 {
+            font-size: 17.5px !important;
+            font-weight: 800 !important;
+            color: #0F172A !important;
+        }
+        .form-group-item label {
+            font-size: 14.5px !important;
+            font-weight: 700 !important;
+            color: #1E293B !important;
+            margin-bottom: 7px !important;
+        }
+        .builder-input {
+            font-size: 14.5px !important;
+            padding: 11px 15px !important;
+            border-radius: 10px !important;
+        }
+        .form-chip {
+            font-size: 13.5px !important;
+            font-weight: 600 !important;
+            padding: 8px 16px !important;
+            border-radius: 10px !important;
+        }
+        .preview-dest-title {
+            font-size: 23px !important;
+            font-weight: 800 !important;
+        }
+        .preview-badge-item strong {
+            font-size: 14px !important;
+        }
+        .preview-badge-item small {
+            font-size: 12px !important;
+        }
+        .cost-box-amount {
+            font-size: 21px !important;
+            font-weight: 800 !important;
+        }
+        .btn-mega-generate span {
+            font-size: 16.5px !important;
+            font-weight: 800 !important;
+        }
+        /* Map Fullscreen Modal CSS */
+        .map-card.map-fullscreen-mode {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999999 !important;
+            border-radius: 0 !important;
+            background: #FFFFFF !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .map-card.map-fullscreen-mode .map-header {
+            padding: 12px 20px !important;
+            background: #FFFFFF !important;
+            border-bottom: 2px solid #CBD5E1 !important;
+            flex-shrink: 0 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
+        }
+        .map-card.map-fullscreen-mode .map-container,
+        .map-card.map-fullscreen-mode #leafletMap {
+            flex: 1 1 auto !important;
+            width: 100% !important;
+            height: calc(100vh - 60px) !important;
+            min-height: calc(100vh - 60px) !important;
+            border-radius: 0 !important;
+        }
+
+        /* ==========================================================================
+           FACEBOOK PROFILE UI OVERHAUL (GIAO DIỆN HỒ SƠ FACEBOOK CHUẨN TOÀN MÀN HÌNH)
+           ========================================================================== */
+        .fb-profile-modal-card {
+            background: #F0F2F5 !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            max-width: 100vw !important;
+            width: 100vw !important;
+            min-height: 100vh !important;
+            max-height: 100vh !important;
+            overflow-y: auto !important;
+            box-shadow: none !important;
+            position: relative !important;
+            font-family: 'Be Vietnam Pro', 'Inter', sans-serif !important;
+        }
+        .fb-cover-container-wrap {
+            background: #FFFFFF !important;
+            border-bottom: 1px solid #E4E6EB !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+        }
+        .fb-cover-inner {
+            max-width: 1120px !important;
+            margin: 0 auto !important;
+            position: relative !important;
+        }
+        .fb-cover-banner {
+            height: 330px !important;
+            width: 100% !important;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.65) 100%),
+                        url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat !important;
+            position: relative !important;
+            border-bottom-left-radius: 12px !important;
+            border-bottom-right-radius: 12px !important;
+        }
+        .fb-cover-edit-btn {
+            position: absolute !important;
+            bottom: 18px !important;
+            right: 20px !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: none !important;
+            padding: 9px 18px !important;
+            border-radius: 8px !important;
+            font-size: 13.5px !important;
+            font-weight: 700 !important;
+            color: #050505 !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.25) !important;
+            transition: all 0.2s !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+        .fb-cover-edit-btn:hover {
+            background: #FFFFFF !important;
+            transform: translateY(-1px) !important;
+        }
+        .fb-profile-header-wrap {
+            max-width: 1120px !important;
+            margin: 0 auto !important;
+            padding: 0 24px !important;
+        }
+        .fb-profile-top-row {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: flex-end !important;
+            flex-wrap: wrap !important;
+            gap: 20px !important;
+            padding-bottom: 20px !important;
+        }
+        .fb-profile-user-group {
+            display: flex !important;
+            align-items: flex-end !important;
+            gap: 24px !important;
+            margin-top: -55px !important;
+        }
+        .fb-avatar-box {
+            position: relative !important;
+            flex-shrink: 0 !important;
+            cursor: pointer !important;
+        }
+        .fb-avatar-img {
+            width: 155px !important;
+            height: 155px !important;
+            border-radius: 50% !important;
+            border: 5px solid #FFFFFF !important;
+            background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+            color: #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 48px !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.18) !important;
+            transition: all 0.2s !important;
+        }
+        .fb-avatar-box:hover .fb-avatar-img {
+            filter: brightness(0.92) !important;
+        }
+        .fb-avatar-camera-btn {
+            position: absolute !important;
+            bottom: 8px !important;
+            right: 8px !important;
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 50% !important;
+            background: #E4E6EB !important;
+            border: 3px solid #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 16px !important;
+            color: #050505 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+            transition: all 0.2s !important;
+        }
+        .fb-avatar-camera-btn:hover {
+            background: #D8DADF !important;
+            transform: scale(1.08) !important;
+        }
+        .fb-online-badge {
+            position: absolute !important;
+            bottom: 10px !important;
+            right: 8px !important;
+            width: 20px !important;
+            height: 20px !important;
+            border-radius: 50% !important;
+            background: #10B981 !important;
+            border: 3px solid #FFFFFF !important;
+        }
+        .fb-user-details {
+            margin-bottom: 6px !important;
+        }
+        .fb-user-name {
+            font-size: 26px !important;
+            font-weight: 800 !important;
+            color: #050505 !important;
+            margin: 0 0 2px 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        .fb-verify-badge {
+            color: #1877F2 !important;
+            font-size: 18px !important;
+        }
+        .fb-user-handle {
+            font-size: 13.5px !important;
+            color: #65676B !important;
+            font-weight: 600 !important;
+            margin-bottom: 6px !important;
+        }
+        .fb-user-bio {
+            font-size: 13px !important;
+            color: #4B5563 !important;
+            background: #F3F4F6 !important;
+            padding: 5px 12px !important;
+            border-radius: 20px !important;
+            display: inline-block !important;
+        }
+        .fb-header-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            margin-bottom: 8px !important;
+        }
+        .fb-btn-primary {
+            background: #1877F2 !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            padding: 9px 18px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            box-shadow: 0 2px 6px rgba(24, 119, 242, 0.3) !important;
+            transition: all 0.2s !important;
+        }
+        .fb-btn-primary:hover {
+            background: #166FE5 !important;
+        }
+        .fb-btn-secondary {
+            background: #E4E6EB !important;
+            color: #050505 !important;
+            border: none !important;
+            padding: 9px 16px !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            transition: all 0.2s !important;
+        }
+        .fb-btn-secondary:hover {
+            background: #D8DADF !important;
+        }
+        .fb-btn-icon {
+            background: #E4E6EB !important;
+            color: #050505 !important;
+            border: none !important;
+            padding: 9px 14px !important;
+            border-radius: 8px !important;
+            font-weight: 800 !important;
+            font-size: 15px !important;
+            cursor: pointer !important;
+        }
+        .fb-nav-tabs-bar {
+            border-top: 1px solid #E4E6EB !important;
+            padding-top: 4px !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        .fb-nav-tabs-left {
+            display: flex !important;
+            gap: 4px !important;
+            overflow-x: auto !important;
+        }
+        .fb-tab-item {
+            padding: 14px 16px !important;
+            font-size: 14px !important;
+            font-weight: 700 !important;
+            color: #65676B !important;
+            background: none !important;
+            border: none !important;
+            border-bottom: 3px solid transparent !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            white-space: nowrap !important;
+        }
+        .fb-tab-item:hover {
+            background: #F2F2F2 !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+        .fb-tab-item.active {
+            color: #1877F2 !important;
+            border-bottom: 3px solid #1877F2 !important;
+        }
+        .fb-profile-body-grid {
+            display: grid !important;
+            grid-template-columns: 320px 1fr !important;
+            gap: 16px !important;
+            padding: 16px 24px 28px !important;
+        }
+        @media (max-width: 820px) {
+            .fb-profile-body-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        .fb-side-card {
+            background: #FFFFFF !important;
+            border-radius: 12px !important;
+            padding: 16px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+            border: 1px solid #E4E6EB !important;
+            margin-bottom: 16px !important;
+        }
+        .fb-side-title {
+            font-size: 16px !important;
+            font-weight: 800 !important;
+            color: #050505 !important;
+            margin: 0 0 14px 0 !important;
+        }
+        .fb-intro-stats-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+        }
+        .fb-stat-box {
+            background: #F0F2F5 !important;
+            border-radius: 8px !important;
+            padding: 10px 12px !important;
+            text-align: center !important;
+        }
+        .fb-stat-num {
+            display: block !important;
+            font-size: 18px !important;
+            font-weight: 800 !important;
+            color: #1877F2 !important;
+        }
+        .fb-stat-lbl {
+            font-size: 11.5px !important;
+            color: #65676B !important;
+            font-weight: 600 !important;
+        }
+        .fb-post-creator-card {
+            background: #FFFFFF !important;
+            border-radius: 12px !important;
+            padding: 14px 16px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+            border: 1px solid #E4E6EB !important;
+            margin-bottom: 16px !important;
+        }
+        .fb-creator-top {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding-bottom: 12px !important;
+            border-bottom: 1px solid #E4E6EB !important;
+        }
+        .fb-creator-avatar {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 50% !important;
+            background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+            color: #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: 800 !important;
+            font-size: 16px !important;
+        }
+        .fb-creator-input {
+            flex: 1 !important;
+            background: #F0F2F5 !important;
+            border: none !important;
+            padding: 10px 16px !important;
+            border-radius: 20px !important;
+            font-size: 14px !important;
+            color: #65676B !important;
+            cursor: pointer !important;
+            outline: none !important;
+        }
+        .fb-creator-input:hover {
+            background: #E4E6EB !important;
+        }
+        .fb-creator-bottom {
+            display: flex !important;
+            justify-content: space-around !important;
+            padding-top: 10px !important;
+        }
+        .fb-creator-btn {
+            background: none !important;
+            border: none !important;
+            padding: 8px 12px !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            color: #65676B !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+        }
+        .fb-creator-btn:hover {
+            background: #F2F2F2 !important;
+        }
+    </style>
 
 
 
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://aatmisntvctdjkkismze.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Q5mwdNgOoZvOiU-eo-7sgw__uv93cRb';
+        window.db_supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
 </head>
 
 
+
 <body>
+    <div id="globalAnnouncement" style="display:none; background:#e74c3c; color:white; text-align:center; padding:10px; font-weight:bold; position:sticky; top:0; z-index:9999;">
+        <marquee scrollamount="10" id="globalAnnounceText">Đây là thông báo chạy thử!</marquee>
+    </div>
+
 
 
     <header class="navbar navbar-traveloka" id="mainHeader">
@@ -164,18 +626,8 @@
 
 
 
-                        <a href="#itinerarySection" onclick="switchMainTab('service', event)" class="dropdown-item">
-
-
-
-
-
+                        <a href="javascript:void(0)" onclick="switchMainTab('hotels', event)" class="dropdown-item">
                             <span class="item-icon">🏨</span> Khách sạn
-
-
-
-
-
                         </a>
 
 
@@ -305,7 +757,7 @@
         <div class="nav-right traveloka-right" id="navRightContainer">
             <!-- Nút Đăng nhập / Đăng ký (Hiển thị khi chưa đăng nhập) -->
             <div id="navGuestBox" style="display: flex; align-items: center; gap: 10px;">
-                <button class="btn-nav-auth" onclick="openAuthModal('login')">
+                <button class="btn-nav-auth" onclick="window.location.href='/login.html'">
                     <span>🔐</span> Đăng Nhập / Đăng Ký
                 </button>
             </div>
@@ -344,6 +796,9 @@
 
                     <div class="panel-divider"></div>
 
+                    <a href="/admin_dashboard.html" class="panel-menu-item" id="adminLink" style="display: none;">
+                        <span class="menu-item-icon">&#9881;</span> Quản Trị Admin
+                    </a>
                     <a href="javascript:void(0)" onclick="handleLogout(); closeHamburgerMenu();" class="panel-menu-item" style="color: #EF4444;">
                         <span class="menu-item-icon">🚪</span> Đăng Xuất
                     </a>
@@ -1501,9 +1956,6 @@
         <section id="itinerarySection">
 
         <!-- Bắt đầu: Lịch sử Modal -->
-        <div style="text-align: right; margin-bottom: 15px; padding-right: 20px; max-width: 1200px; margin-left: auto; margin-right: auto; padding-top: 15px;">
-            <button class="history-btn-trigger" onclick="showHistoryModal()">🕒 Xem Lịch Sử Tự Tạo</button>
-        </div>
 
         <div class="history-modal-overlay" id="historyModal" onclick="if(event.target===this) hideHistoryModal()">
             <div class="history-modal-content">
@@ -1518,181 +1970,407 @@
         </div>
         <!-- Kết thúc: Lịch sử Modal -->
 
-<div id="emptyItineraryState" class="wizard-wrapper">
-    <div class="wizard-header">
-        <img src="/static/beenavi_logo_nobg.png" alt="BeeNavi">
-        <h3>Khởi Tạo Lộ Trình Độc Bản</h3>
-        <p>BeeNavi AI sẽ thiết kế lịch trình hoàn hảo dựa trên nhu cầu của riêng bạn.</p>
-        
-        <div class="wizard-progress">
-            <div class="wizard-progress-bar" id="wizardProgressBar" style="width: 0%;"></div>
-            <div class="wizard-step-indicator active" data-step="1">1</div>
-            <div class="wizard-step-indicator" data-step="2">2</div>
-            <div class="wizard-step-indicator" data-step="3">3</div>
-            <div class="wizard-step-indicator" data-step="4">4</div>
+<!-- ============================================================
+     BẢNG KHỞI TẠO LỘ TRÌNH TOÀN CẢNH (SPLIT-SCREEN 2 CỘT KÈM LIVE PREVIEW)
+     ============================================================ -->
+<div id="emptyItineraryState" class="split-builder-wrapper">
+    <div class="builder-top-header">
+        <div class="builder-title-row">
+            <img src="/static/beenavi_logo_nobg.png" alt="BeeNavi" class="builder-logo-img">
+            <div>
+                <h2 class="builder-main-title">Thiết Kế Chuyến Đi Cùng BeeNavi AI</h2>
+                <p class="builder-sub-title">Tùy chỉnh thông số & xem bản tóm tắt chi phí thay đổi theo thời gian thực</p>
+            </div>
+        </div>
+        <div class="mode-switch-container" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button type="button" id="btnModeA" class="wiz-mode-btn active" onclick="switchWizardMode('A')">🛫 Chuyến Đi Nhiều Ngày</button>
+            <button type="button" id="btnModeB" class="wiz-mode-btn" onclick="switchWizardMode('B')">📍 Khám Phá 1 Điểm Cụ Thể</button>
+            <button type="button" class="wiz-mode-btn" onclick="showHistoryModal()" style="background: linear-gradient(135deg, #2563EB, #1D4ED8); color: #FFFFFF; border: none; font-weight: 800; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);">
+                📜 Lịch Sử Đã Tạo
+            </button>
         </div>
     </div>
 
-    <div class="wizard-body">
-        <!-- Bước 1: Thông tin cơ bản -->
-        <div class="wizard-pane active" id="wizardStep1">
-            <div class="wizard-pane-title">🛫 Thông tin cơ bản</div>
-            <div class="wizard-form-grid">
-                <div class="wizard-form-group">
-                    <label>Điểm xuất phát *</label>
-                    <input type="text" id="wizOrigin" class="wizard-input" placeholder="VD: Hồ Chí Minh" value="Hồ Chí Minh">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Điểm đến *</label>
-                    <input type="text" id="wizDest" class="wizard-input" placeholder="VD: Hà Nội" value="Hà Nội">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Số ngày đi *</label>
-                    <input type="number" id="wizDays" class="wizard-input" value="3" min="1" max="5" oninput="if(this.value>5){this.value=5; alert('Do giới hạn bộ nhớ của AI Local, bạn chỉ nên tạo tối đa 5 ngày trong 1 lần để lịch trình không bị ngắt quãng. Sau khi tạo xong, bạn có thể yêu cầu Chatbot bổ sung thêm ngày!');}">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Ngân sách tổng (VNĐ)</label>
-                    <input type="number" id="wizBudget" class="wizard-input" value="5000000">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Giờ đến nơi (Dự kiến)</label>
-                    <input type="time" id="wizArrivalTime" class="wizard-input" value="08:00">
-                </div>
-                <div class="wizard-form-group">
-                    <label>Giờ kết thúc / bay về</label>
-                    <input type="time" id="wizDepartureTime" class="wizard-input" value="18:00">
-                </div>
+    <!-- CHẾ ĐỘ B: KHÁM PHÁ 1 ĐIỂM CỤ THỂ (Bán kính 2.5km) -->
+    <div id="wizardPaneModeB" class="mode-b-card" style="display:none; background: #FFFFFF; padding: 24px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 24px;">
+        <div class="builder-card-header" style="display: flex; align-items: center; gap: 10px;">
+            <span class="card-icon" style="font-size: 22px;">📍</span>
+            <h4 style="font-size: 16px; font-weight: 800; color: #1E293B; margin: 0;">Khám Phá Địa Điểm Cụ Thể (Tự Động Đề Xuất Điểm Đẹp Bán Kính 2.5km)</h4>
+        </div>
+        <p style="font-size: 13px; color: #64748B; margin: 8px 0 18px 0;">Nhập 1 địa điểm cụ thể bạn muốn ghé thăm (VD: Lăng Bác, Bà Nà Hills, Hồ Gươm, Chợ Bến Thành), AI sẽ lập tức gợi ý lịch trình chi tiết bán kính 2.5km quanh điểm đó!</p>
+        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group-item">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Tên địa điểm cụ thể *</label>
+                <input type="text" id="wizPoiName" class="builder-input" placeholder="VD: Lăng Bác, Bà Nà Hills..." value="Lăng Bác" oninput="updateLiveTripPreview()">
+            </div>
+            <div class="form-group-item">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Buổi tham quan mong muốn</label>
+                <select id="wizPoiSession" class="builder-input" onchange="updateLiveTripPreview()">
+                    <option value="Sáng">Buổi Sáng (Bắt đầu từ 08:00)</option>
+                    <option value="Chiều">Buổi Chiều (Bắt đầu từ 14:00)</option>
+                    <option value="Tối">Buổi Tối & Đêm (Bắt đầu từ 18:00)</option>
+                </select>
             </div>
         </div>
-
-        <!-- Bước 2: Sở thích -->
-        <div class="wizard-pane" id="wizardStep2">
-            <div class="wizard-pane-title">🎨 Sở thích cá nhân</div>
-            <div class="wizard-form-grid">
-                <div class="wizard-form-group full-width">
-                    <label>Mục tiêu chuyến đi *</label>
-                    <select id="wizObjective" class="wizard-input">
-                        <option value="Khám phá">🎒 Khám phá & Trải nghiệm</option>
-                        <option value="Nghỉ dưỡng">🌴 Nghỉ dưỡng & Thư giãn</option>
-                        <option value="Chụp ảnh sống ảo">📸 Chụp ảnh sống ảo</option>
-                        <option value="Ẩm thực">🍜 Food tour Ẩm thực</option>
-                    </select>
-                </div>
-                <div class="wizard-form-group">
-                    <label>Sở thích mua sắm</label>
-                    <select id="wizShopping" class="wizard-input">
-                        <option value="Bình thường">Bình thường</option>
-                        <option value="Mua sắm TTTM">Trung tâm thương mại</option>
-                        <option value="Mua quà đặc sản">Chợ đặc sản/Lưu niệm</option>
-                    </select>
-                </div>
-                <div class="wizard-form-group">
-                    <label>Sở thích Về Đêm (Nightlife)</label>
-                    <select id="wizNightlife" class="wizard-input">
-                        <option value="Cà phê, Chợ đêm">Cà phê, Chợ đêm</option>
-                        <option value="Bar, Pub, Vũ trường">Bar, Pub, Club</option>
-                        <option value="Nghỉ ngơi sớm">Nghỉ ngơi sớm</option>
-                    </select>
-                </div>
-                <div class="wizard-form-group">
-                    <label>Thích chụp ảnh</label>
-                    <select id="wizPhotography" class="wizard-input">
-                        <option value="Bình thường">Bình thường</option>
-                        <option value="Đam mê sống ảo">Đam mê sống ảo (Tìm view đẹp)</option>
-                    </select>
-                </div>
-            </div>
+        <div style="text-align: center; margin-top: 24px;">
+            <button type="button" class="btn-mega-generate" style="max-width: 340px; margin: 0 auto; background: linear-gradient(135deg, #F59E0B, #D97706); color: #FFFFFF; border: none; padding: 12px 28px; border-radius: 10px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);" onclick="generateItineraryFromWizard(event, 'B')">
+                🚀 Khám Phá Địa Điểm Cụ Thể Ngay!
+            </button>
         </div>
+    </div>
 
-        <!-- Bước 3: Sức khỏe & Nhịp độ -->
-        <div class="wizard-pane" id="wizardStep3">
-            <div class="wizard-pane-title">❤️ Sức khỏe & Nhịp độ</div>
-            <div class="wizard-form-grid">
-                <div class="wizard-form-group full-width">
-                    <label>Đoàn có thành viên đặc biệt? (Sẽ né các điểm leo núi, đi bộ xa)</label>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
-                        <label><input type="checkbox" class="wiz-member-chk" value="Người già"> Người cao tuổi</label>
-                        <label><input type="checkbox" class="wiz-member-chk" value="Trẻ nhỏ"> Trẻ nhỏ</label>
-                        <label><input type="checkbox" class="wiz-member-chk" value="Phụ nữ mang thai"> Phụ nữ mang thai</label>
+    <!-- CHẾ ĐỘ A: GIAO DIỆN 2 CỘT TOÀN CẢNH -->
+    <div id="wizardPanesModeA" class="split-builder-layout">
+        
+        <!-- CỘT TRÁI: FORM ĐIỀU KHIỂN CHI TIẾT (62%) -->
+        <div class="builder-left-col">
+            
+            <!-- KHỐI 1: HÀNH TRÌNH & THỜI GIAN -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>1. Điểm Đi, Điểm Đến & Thời Gian</h4>
+                </div>
+                <div class="builder-card-body">
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-item">
+                            <label>Điểm xuất phát *</label>
+                            <input type="text" id="wizOrigin" class="builder-input" placeholder="VD: Hồ Chí Minh" value="Hồ Chí Minh" oninput="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Điểm đến mong muốn *</label>
+                            <input type="text" id="wizDest" class="builder-input" placeholder="VD: Hà Nội" value="Hà Nội" oninput="updateLiveTripPreview()">
+                        </div>
+                    </div>
+
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                        <div class="form-group-item">
+                            <label>Ngày bắt đầu khởi hành (tùy chọn):</label>
+                            <input type="date" id="wizStartDate" class="builder-input" onchange="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Số ngày chuyến đi (Tối thiểu 2 ngày):</label>
+                            <input type="number" id="wizDaysCustom" class="builder-input" min="2" max="30" value="3" placeholder="Nhập số ngày (VD: 2, 3, 5...)" oninput="handleCustomDaysInput(this)">
+                        </div>
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 12px;">
+                        <label>Chọn nhanh số ngày:</label>
+                        <div class="chip-group" id="daysChipGroup">
+                            <button type="button" class="form-chip" onclick="selectFormChip('days', '2', this)">2N1Đ</button>
+                            <button type="button" class="form-chip active" onclick="selectFormChip('days', '3', this)">3N2Đ (Phổ biến)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('days', '4', this)">4N3Đ</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('days', '5', this)">5N4Đ</button>
+                        </div>
+                        <input type="hidden" id="wizDays" value="3">
                     </div>
                 </div>
-                <div class="wizard-form-group">
-                    <label>Món ăn dị ứng / Cần tránh</label>
-                    <input type="text" id="wizDiningConstraints" class="wizard-input" placeholder="VD: Hải sản, Đậu phộng...">
+            </div>
+
+            <!-- KHỐI 2: ĐỒNG HÀNH, DI CHUYỂN & LƯU TRÚ -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>2. Đồng Hành, Di Chuyển & Nơi Lưu Trú</h4>
                 </div>
-                <div class="wizard-form-group">
-                    <label>Nhịp độ chuyến đi</label>
-                    <select id="wizPacing" class="wizard-input">
-                        <option value="Cân bằng">Cân bằng (3-4 điểm/ngày)</option>
-                        <option value="Thư giãn">Thư giãn (Chỉ 2 điểm/ngày)</option>
-                        <option value="Khám phá tối đa">Dày đặc (5+ điểm/ngày)</option>
-                    </select>
+                <div class="builder-card-body">
+                    <div class="form-group-item">
+                        <label>Đối tượng chuyến đi:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('companion', 'Cặp đôi', this)">Cặp đôi</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Một mình', this)">Đi một mình (Solo)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Nhóm bạn', this)">Nhóm bạn</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Gia đình', this)">Gia đình</button>
+                        </div>
+                        <input type="hidden" id="wizCompanion" value="Cặp đôi">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Số lượng người trong đoàn:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', '1 người', this)">1 Người</button>
+                            <button type="button" class="form-chip active" onclick="selectFormChip('groupSize', '2 người', this)">2 Người</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', '3-5 người', this)">3 - 5 Người</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', 'Đoàn đông (>6)', this)">Đoàn đông (>6 người)</button>
+                        </div>
+                        <input type="hidden" id="wizGroupSize" value="2 người">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Phương tiện di chuyển chính:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('vehicle', 'Xe máy', this)">Thuê xe máy</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Taxi', this)">Taxi / Grab</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Ô tô', this)">Ô tô tự lái</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Đi bộ', this)">Đi bộ & Xe bus</button>
+                        </div>
+                        <input type="hidden" id="wizVehicle" value="Xe máy">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Loại hình nơi lưu trú:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Chưa chọn', this)">Chưa chọn / Đi trong ngày</button>
+                            <button type="button" class="form-chip active" onclick="selectFormChip('accommodation', 'Khách sạn 3-4 sao', this)">Khách sạn 3-4 sao</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Homestay', this)">Homestay / Hostel</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Resort 4-5 sao', this)">Resort 4-5 sao</button>
+                        </div>
+                        <input type="hidden" id="wizAccommodation" value="Khách sạn 3-4 sao">
+                    </div>
+
+                    <div id="wizHotelChipsWrapper" style="transition: all 0.3s ease;">
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Gợi ý chọn nhanh khách sạn nổi tiếng (AI tối ưu vị trí xuất phát & trở về):</label>
+                            <div id="wizHotelChipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 6px;">
+                                <!-- Rendered dynamically by app.js -->
+                            </div>
+                        </div>
+
+                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px;">
+                            <div class="form-group-item">
+                                <label>Tên khách sạn bạn đã đặt (hoặc chọn ở trên):</label>
+                                <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Chọn ở trên hoặc gõ tên khách sạn..." oninput="updateLiveTripPreview()">
+                                <datalist id="wizHotelsDatalist">
+                                    <!-- Dynamic datalist -->
+                                </datalist>
+                                <small id="wizHotelNote" style="color: #059669; font-size: 11.5px; font-weight: 600; margin-top: 4px; display: block;">AI sẽ xếp đường đi xuất phát và về lại khách sạn này mỗi ngày</small>
+                            </div>
+                            <div class="form-group-item">
+                                <label>Ngân sách dự kiến (VNĐ):</label>
+                                <input type="number" id="wizBudget" class="builder-input" value="5000000" step="500000" oninput="updateLiveTripPreview()">
+                                <small style="color: #64748b; font-size: 11px;">Để trống hoặc chỉnh theo khả năng chi trả của bạn</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- KHỐI 3: PHONG CÁCH & NHỊP ĐỘ -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>3. Phong Cách, Ẩm Thực & Nhịp Độ</h4>
+                </div>
+                <div class="builder-card-body">
+                    <div class="form-group-item">
+                        <label>Mục tiêu trải nghiệm chính:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('objective', 'Khám phá', this)">Khám phá & Di sản</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Chụp ảnh sống ảo', this)">Check-in & Sống ảo</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Ẩm thực', this)">Foodtour Ẩm thực</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Nghỉ dưỡng', this)">Nghỉ dưỡng & Thư giãn</button>
+                        </div>
+                        <input type="hidden" id="wizObjective" value="Khám phá">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 10px;">
+                        <input type="text" id="wizCustomObjective" class="builder-input" placeholder="Hoặc nhập mục tiêu riêng (VD: Đi tour tâm linh, chụp ảnh kỷ yếu...)" oninput="updateLiveTripPreview()">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Gu ẩm thực yêu thích:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('diningStyle', 'Bình thường', this)">Hài hòa / Đặc sản địa phương</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Vỉa hè', this)">Ẩm thực đường phố / Vỉa hè</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Sang trọng', this)">Nhà hàng sang trọng / View đẹp</button>
+                        </div>
+                        <input type="hidden" id="wizDiningStyle" value="Bình thường">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Mức độ vận động / Thể lực:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('activityLevel', 'Bình thường', this)">Vừa phải / Linh hoạt</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Nhẹ nhàng', this)">Nhẹ nhàng / Dạo mát</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Vận động nhiều', this)">Nhiều / Leo dốc & Đi bộ</button>
+                        </div>
+                        <input type="hidden" id="wizActivityLevel" value="Bình thường">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Nhịp độ di chuyển:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('pacing', 'Cân bằng', this)">Cân bằng (4-5 điểm/ngày)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Thư giãn', this)">Thư giãn (2-3 điểm/ngày)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Khám phá tối đa', this)">Khám phá tối đa (6+ điểm)</button>
+                        </div>
+                        <input type="hidden" id="wizPacing" value="Cân bằng">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Hoạt động buổi tối (Nightlife):</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('nightlife', 'Bình thường', this)">Tự do / Thư giãn</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Cà phê, Chợ đêm', this)">Cà phê & Chợ đêm</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Bar, Pub, Vũ trường', this)">Bar & Pub sôi động</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Nghỉ ngơi sớm', this)">Nghỉ ngơi sớm</button>
+                        </div>
+                        <input type="hidden" id="wizNightlife" value="Bình thường">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Nhu cầu mua sắm:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('shopping', 'Bình thường', this)">Không bắt buộc</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua quà đặc sản', this)">Đặc sản & Quà lưu niệm</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua sắm TTTM', this)">Trung tâm thương mại</button>
+                        </div>
+                        <input type="hidden" id="wizShopping" value="Bình thường">
+                    </div>
+                </div>
+            </div>
+
+            <!-- KHỐI 4: RÀNG BUỘC & ĐIỂM GHIM -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>4. Ràng Buộc & Yêu Cầu Riêng</h4>
+                </div>
+                <div class="builder-card-body">
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-item">
+                            <label>Điểm BẮT BUỘC ĐI (Ghim ưu tiên):</label>
+                            <input type="text" id="wizMustVisit" class="builder-input" placeholder="VD: Lăng Bác, Hồ Gươm, Bà Nà Hills..." oninput="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Điểm CẤM ĐI (Bỏ qua khỏi lịch trình):</label>
+                            <input type="text" id="wizMustAvoid" class="builder-input" placeholder="VD: Bát Tràng, điểm đã đi rồi..." oninput="updateLiveTripPreview()">
+                        </div>
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Đoàn có thành viên đặc biệt (Tự động né dốc cao, leo núi):</label>
+                        <div class="checkbox-member-row">
+                            <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Người già" onchange="updateLiveTripPreview()"> Người cao tuổi</label>
+                            <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Trẻ nhỏ" onchange="updateLiveTripPreview()"> Trẻ nhỏ</label>
+                            <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Phụ nữ mang thai" onchange="updateLiveTripPreview()"> Phụ nữ mang thai</label>
+                        </div>
+                    </div>
+
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                        <div class="form-group-item">
+                            <label>Món ăn dị ứng / Cần tránh:</label>
+                            <input type="text" id="wizDiningConstraints" class="builder-input" placeholder="VD: Hải sản, Đậu phộng..." oninput="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Ghi chú riêng thêm cho AI:</label>
+                            <input type="text" id="wizExtra" class="builder-input" placeholder="VD: Sắp xếp cho tôi đi cafe ngắm hoàng hôn...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Bước 4: Yêu cầu đặc biệt -->
-        <div class="wizard-pane" id="wizardStep4">
-            <div class="wizard-pane-title">⭐ Điểm Bắt Buộc & Tránh Xa</div>
-            <div class="wizard-form-grid">
-                <div class="wizard-form-group full-width">
-                    <label>Điểm BẮT BUỘC PHẢI ĐI (Mỗi điểm cách nhau dấu phẩy)</label>
-                    <input type="text" id="wizMustVisit" class="wizard-input" placeholder="VD: Lăng Bác, Chợ Đồng Xuân">
+        <!-- CỘT PHẢI: LIVE TRIP PREVIEW STICKY (38%) -->
+        <div class="builder-right-col">
+            <div class="live-preview-card" id="livePreviewCard">
+                <div class="preview-hero-img-wrap">
+                    <img id="previewDestImg" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80" alt="Destination" class="preview-hero-img">
+                    <div class="preview-img-overlay">
+                        <span class="preview-tag-live">TỔNG QUAN CHUYẾN ĐI</span>
+                        <h3 class="preview-dest-title" id="previewDestTitle">Hà Nội (3N2Đ)</h3>
+                        <p class="preview-dest-origin" id="previewOriginSubtitle">Xuất phát từ Hồ Chí Minh</p>
+                    </div>
                 </div>
-                <div class="wizard-form-group full-width">
-                    <label>Điểm TUYỆT ĐỐI KHÔNG ĐI (Đã đi rồi hoặc không thích)</label>
-                    <input type="text" id="wizMustAvoid" class="wizard-input" placeholder="VD: Hồ Hoàn Kiếm">
-                </div>
-                <div class="wizard-form-group full-width">
-                    <label>Ghi chú thêm cho AI</label>
-                    <textarea id="wizExtra" class="wizard-input" style="height: 60px;" placeholder="VD: Sắp xếp cho tôi đi quán cafe view hoàng hôn vào chiều ngày 2..."></textarea>
+
+                <div class="preview-content-body">
+                    <!-- Badges Row -->
+                    <div class="preview-badges-grid">
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Đồng hành</small>
+                                <strong id="previewBadgeCompanion">Cặp đôi</strong>
+                            </div>
+                        </div>
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Phương tiện</small>
+                                <strong id="previewBadgeVehicle">Xe máy</strong>
+                            </div>
+                        </div>
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Lưu trú</small>
+                                <strong id="previewBadgeAcc">Khách sạn 3-4★</strong>
+                            </div>
+                        </div>
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Phong cách</small>
+                                <strong id="previewBadgeObjective">Khám phá</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cost Estimate Box -->
+                    <div class="preview-cost-box">
+                        <div class="cost-box-header">
+                            <span>Dự toán chi phí tham khảo:</span>
+                            <span class="cost-badge-tag">Tự động tính</span>
+                        </div>
+                        <div class="cost-box-amount" id="previewCostAmount">~4.350.000 VNĐ / người</div>
+                        <div class="cost-box-breakdown" id="previewCostBreakdown">
+                            Khách sạn (2 đêm): 1.500k • Ẩm thực (3N): 1.350k • Vé & Xe: 750k
+                        </div>
+                    </div>
+
+                    <!-- Highlights & Requirements preview -->
+                    <div class="preview-notes-list" id="previewNotesList">
+                        <div class="preview-note-item" id="previewNoteMustVisit" style="display:none;">
+                            Ghim: <span id="previewMustVisitText"></span>
+                        </div>
+                        <div class="preview-note-item" id="previewNoteAvoid" style="display:none; color: #e74c3c;">
+                            Tránh: <span id="previewMustAvoidText"></span>
+                        </div>
+                        <div class="preview-note-item" id="previewNoteSpecial" style="display:none; color: #e67e22;">
+                            Bảo vệ: <span id="previewSpecialText"></span>
+                        </div>
+                    </div>
+
+                    <div class="preview-action-wrap">
+                        <button type="button" class="btn-mega-generate" onclick="generateItineraryFromWizard(event, 'A')">
+                            <span>Tạo Lộ Trình AI</span>
+                        </button>
+                        <button type="button" onclick="showHistoryModal()" style="width: 100%; margin-top: 10px; padding: 10px 14px; background: #FFFFFF; color: #2563EB; border: 2px solid #2563EB; border-radius: 10px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);">
+                            📜 Xem Lại Lịch Sử Lộ Trình Đã Tạo
+                        </button>
+                        <div class="preview-guarantee-text">
+                            Thuật toán AI tự động tối ưu tuyến đường theo tiêu chí đã chọn
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-<div class="wizard-footer">
-        <button class="wizard-btn wizard-btn-back" id="wizBtnBack" onclick="navigateWizard(-1)" style="visibility: hidden;">Quay Lại</button>
-        <button class="wizard-btn wizard-btn-next" id="wizBtnNext" onclick="navigateWizard(1)">Tiếp Tục ➔</button>
-        <button class="wizard-btn wizard-btn-next" id="wizBtnSubmit" onclick="generateItineraryFromWizard(event)" style="display: none;">Tạo Lộ Trình Ngay ➔</button>
     </div>
 </div>
+
+<!-- Thêm Script switch mode -->
+<script>
+function switchWizardMode(mode) {
+    document.getElementById('btnModeA').classList.remove('active');
+    document.getElementById('btnModeB').classList.remove('active');
+    document.getElementById('btnMode' + mode).classList.add('active');
+    
+    if (mode === 'A') {
+        document.getElementById('wizardPanesModeA').style.display = 'block';
+        document.getElementById('wizFooterModeA').style.display = 'flex';
+        document.getElementById('wizardPaneModeB').style.display = 'none';
+        document.getElementById('wizDescModeA').style.display = 'block';
+        document.getElementById('wizDescModeB').style.display = 'none';
+        document.getElementById('wizProgressWrapper').style.visibility = 'visible';
+    } else {
+        document.getElementById('wizardPanesModeA').style.display = 'none';
+        document.getElementById('wizFooterModeA').style.display = 'none';
+        document.getElementById('wizardPaneModeB').style.display = 'block';
+        document.getElementById('wizDescModeA').style.display = 'none';
+        document.getElementById('wizDescModeB').style.display = 'block';
+        document.getElementById('wizProgressWrapper').style.visibility = 'hidden';
+    }
+}
+</script>
 <div id="itineraryContent" style="display: none;">
-
-
-
-
-
-
             <div class="section-header">
-
-
-
-
-
                 <div>
-
-
-
-
-
                     <h2 class="section-title">
-
-
-
-
-
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-
-
-
-
                             <path d="M14.5 2H6a2 2 0 0 1-2 2v16a2 2 0 0 1 2 2h12a2 2 0 0 1 2-2V7.5L14.5 2z"></path>
-
-
-
-
-
                             <polyline points="14 2 14 8 20 8"></polyline>
 
 
@@ -1747,23 +2425,16 @@
 
 
 
-                <div style="display: flex; gap: 10px;">
-
-
-
-
-
-                    <button class="pref-select" style="padding: 8px 16px;" onclick="prepareItineraryAdjustment()">
-                        💬 Yêu cầu AI điều chỉnh
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button class="pref-select" style="padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border-radius: 8px; background: #fff; border: 1px solid #CBD5E1; color: #334155; cursor: pointer;" onclick="showHistoryModal()">
+                        📜 Lịch sử tạo
                     </button>
-                    <button class="pref-select" style="padding: 8px 16px;" onclick="resetToWizard()">
-                        ➕ Tạo lịch trình mới
+                    <button class="pref-select" style="padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border-radius: 8px; background: #fff; border: 1px solid #CBD5E1; color: #334155; cursor: pointer;" onclick="exportItineraryPDF()">
+                        📄 In / Xuất PDF
                     </button>
-
-
-
-
-
+                    <button class="pref-select" style="padding: 8px 16px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border-radius: 8px; background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);" onclick="resetToWizard()">
+                        ➕ Tạo lộ trình mới
+                    </button>
                 </div>
 
 
@@ -1783,36 +2454,10 @@
 
 
             <div class="itinerary-grid">
-
-
-
-
-
                 <!-- Timeline Accordions Left Column -->
-
-
-
-
-
                 <div class="timeline-container" id="timelineAccordionContainer">
-    
-    <!-- Dynamic Accordions Rendered via app.js -->
-
-
-
-
-
+                    <!-- Dynamic Accordions Rendered via app.js -->
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <!-- Sticky Mini-Map Sidebar Right Column -->
 
@@ -1886,7 +2531,7 @@
 
 
 
-                            <span style="font-size: 12px; color: var(--primary); font-weight: 700;" id="activeMapDayLabel">Ngày 1</span>
+                            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 12px; background: rgba(232, 185, 35, 0.2); color: #B45309; padding: 3px 10px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(232, 185, 35, 0.4);" id="activeMapDayLabel">Ngày 1</span><a id="btnGoogleMapsRoute" target="_blank" href="#" style="display: none; font-size: 11px; background: #2563EB; color: #fff; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-weight: 600; align-items: center; gap: 4px; box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);">🚗 Google Maps</a></div>
 
 
 
@@ -1904,7 +2549,9 @@
 
 
 
-                        <div class="map-container" id="leafletMap"></div>
+                        <div id="originalMapParent">
+                            <div class="map-container" id="leafletMap"></div>
+                        </div>
 
 
 
@@ -1953,17 +2600,8 @@
 
 
                                 </div>
-
-
-
-
-
                             </div>
-
-
-
-
-
+                            <button type="button" id="btnMapFullscreenOverlay" onclick="window.toggleMapFullscreen()" style="font-size: 12.5px; background: linear-gradient(135deg, #4338CA, #3730A3); color: #FFFFFF; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(67, 56, 202, 0.35); pointer-events: auto; position: relative; z-index: 10; margin-left: auto;">⛶ Phóng To Bản Đồ</button>
                         </div>
 
 
@@ -2068,6 +2706,37 @@
 
                     </div>
 
+                    <!-- CARD ĐÁNH GIÁ 5 SAO CHO LỊCH TRÌNH AI (ĐỒNG BỘ SUPABASE) -->
+                    <div class="feedback-card" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.05); margin-top: 20px; text-align: center;">
+                        <h4 style="margin: 0 0 6px 0; color: #2c3e50; font-size: 16px; font-weight: 700;">⭐ Bạn thấy lịch trình này thế nào?</h4>
+                        <p style="font-size: 13px; color: #7f8c8d; margin: 0 0 12px 0;">Đánh giá của bạn giúp BeeNavi AI tối ưu hoá lộ trình tốt hơn!</p>
+                        
+                        <div class="star-rating" id="starRatingContainer" style="display: flex; justify-content: center; gap: 8px; font-size: 30px; cursor: pointer; color: #dcdde1; user-select: none;">
+                            <span class="star-item" data-value="1" onclick="selectRating(1)" onmouseover="hoverRating(1)" onmouseout="resetHoverRating()">★</span>
+                            <span class="star-item" data-value="2" onclick="selectRating(2)" onmouseover="hoverRating(2)" onmouseout="resetHoverRating()">★</span>
+                            <span class="star-item" data-value="3" onclick="selectRating(3)" onmouseover="hoverRating(3)" onmouseout="resetHoverRating()">★</span>
+                            <span class="star-item" data-value="4" onclick="selectRating(4)" onmouseover="hoverRating(4)" onmouseout="resetHoverRating()">★</span>
+                            <span class="star-item" data-value="5" onclick="selectRating(5)" onmouseover="hoverRating(5)" onmouseout="resetHoverRating()">★</span>
+                        </div>
+                        
+                        <div id="feedbackFormCollapse" style="display: none; margin-top: 15px; text-align: left;">
+                            <label style="font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; display: block;">Chủ đề đánh giá:</label>
+                            <select id="feedbackCategorySelect" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #dcdde1; margin-bottom: 10px; font-size: 13px; outline: none;">
+                                <option value="Lịch trình AI">Lịch trình AI & Cung đường</option>
+                                <option value="Tốc độ sinh">Tốc độ sinh & Phản hồi</option>
+                                <option value="Dữ liệu địa điểm">Độ chính xác địa điểm</option>
+                                <option value="Giao diện">Giao diện & Tiện ích</option>
+                            </select>
+                            <label style="font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; display: block;">Ý kiến đóng góp (tùy chọn):</label>
+                            <textarea id="feedbackCommentText" placeholder="VD: Lịch trình rất hay và hợp lý, thời gian di chuyển chuẩn xác..." style="width: 100%; height: 65px; padding: 10px; border-radius: 8px; border: 1px solid #dcdde1; font-size: 13px; resize: none; margin-bottom: 12px; box-sizing: border-box; outline: none;"></textarea>
+                            <button type="button" id="btnSubmitFeedback" onclick="submitUserFeedback()" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);">Gửi Đánh Giá</button>
+                        </div>
+                        <div id="feedbackSuccessMsg" style="display:none; color: #27ae60; font-weight: bold; font-size: 14px; margin-top: 12px;">
+                            🎉 Cảm ơn bạn đã đóng góp ý kiến cho BeeNavi!
+                        </div>
+                    </div>
+
+
 
 
 
@@ -2105,264 +2774,19 @@
 
 
         <section class="checklist-section" id="checklistSection" style="display: none;">
-
-
-
-
-
-            <div class="section-header">
-
-
-
-
-
-                <div>
-
-
-
-
-
-                    <h2 class="section-title">
-
-
-
-
-
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-
-
-
-
-                            <path d="M9 11l3 3L22 4"></path>
-
-
-
-
-
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-
-
-
-
-
-                        </svg>
-
-
-
-
-
-                        Checklist Hành Trang Du Lịch AI
-
-
-
-
-
-                    </h2>
-
-
-
-
-
-                    <p class="section-subtitle" id="checklistSubtitle">Tự động gợi ý danh sách chuẩn bị dựa trên thời tiết và phương tiện di chuyển.</p>
-
-
-
-
-
-                </div>
-
-
-
-
-
+            <div class="section-header" style="display: block; margin-bottom: 16px;">
+                <h2 class="section-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    Checklist Hành Trang Du Lịch AI
+                </h2>
+                <p class="section-subtitle" id="checklistSubtitle">Tự động gợi ý danh sách chuẩn bị dựa trên thời tiết và phương tiện di chuyển.</p>
             </div>
-
-
-
-
-
-
-
-
-
-
-
-            <!-- Rule Engine Mapping Filters -->
-
-
-
-
-
-            <div class="checklist-filter-bar">
-
-
-
-
-
-                <div class="filter-group">
-
-
-
-
-
-                    <label>☀️ Thời tiết mapping:</label>
-
-
-
-
-
-                    <select class="pref-select" id="checklistWeatherSelect" onchange="updateChecklistMapping()">
-
-
-
-
-
-                        <option value="sunny">Nắng ấm & Biển</option>
-
-
-
-
-
-                        <option value="cold">Lạnh & Sương mù (Núi)</option>
-
-
-
-
-
-                        <option value="rain">Mưa nhẹ & Thất thường</option>
-
-
-
-
-
-                    </select>
-
-
-
-
-
-                </div>
-
-
-
-
-
-
-
-
-
-
-
-                <div class="filter-group">
-
-
-
-
-
-                    <label>✈️ Phương tiện mapping:</label>
-
-
-
-
-
-                    <select class="pref-select" id="checklistTransportSelect" onchange="updateChecklistMapping()">
-
-
-
-
-
-                        <option value="plane">Máy bay (Vé & Hộ chiếu/CCCD)</option>
-
-
-
-
-
-                        <option value="motorbike">Xe máy phượt (Bằng lái & Áo mưa)</option>
-
-
-
-
-
-                        <option value="car">Ô ô / Xe khách (Gối cổ & Thuốc say xe)</option>
-
-
-
-
-
-                    </select>
-
-
-
-
-
-                </div>
-
-
-
-
-
-
-
-
-
-
-
-                <div class="filter-group" style="margin-left: auto;">
-
-
-
-
-
-                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-
-
-
-
-
-                        <input type="checkbox" id="reminderToggle" checked onchange="toggleReminder(this)">
-
-
-
-
-
-                        <span>🔔 Nhắc nhở trước 24h</span>
-
-
-
-
-
-                    </label>
-
-
-
-
-
-                </div>
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-
-
-
 
             <div class="progress-container">
-
-
-
-
-
-                <div class="progress-info">
+<div class="progress-info">
 
 
 
@@ -3056,7 +3480,7 @@
                     <p class="journal-guest-desc">Đăng nhập tài khoản BeeNavi để tự động lưu trữ tất cả các lịch trình AI đã tạo, ghi lại kỷ niệm chuyến đi, quản lý checklist hành trang và tối ưu hóa sở thích du lịch cá nhân.</p>
                     
                     <div class="journal-guest-actions">
-                        <button class="btn-primary-large" onclick="openAuthModal('login')">
+                        <button class="btn-primary-large" onclick="window.location.href='/login.html'">
                             <span>🔐</span> Đăng Nhập / Đăng Ký Ngay
                         </button>
                         <button class="btn-secondary-large" onclick="switchMainTab('itinerary', event)">
@@ -3202,91 +3626,155 @@
         </div>
     </div>
 
+    <!-- Hidden File Inputs for Cover & Avatar Upload -->
+    <input type="file" id="inputCoverPhotoUpload" accept="image/*" style="display: none;" onchange="window.handleCoverPhotoUpload(event)">
+    <input type="file" id="inputAvatarUpload" accept="image/*" style="display: none;" onchange="window.handleAvatarUpload(event)">
+
     <!-- ========================================================
-         MODAL 2: HỒ SƠ CÁ NHÂN, NHẬT KÝ & SỞ THÍCH AI
+         MODAL 2: HỒ SƠ CÁ NHÂN KIEU FACEBOOK TOÀN MÀN HÌNH (FB PROFILE UI FULLSCREEN)
          ======================================================== -->
-    <div class="modal-overlay" id="zaloProfileModal" style="display: none; z-index: 999998;">
-        <div class="zalo-profile-modal-card">
-            <!-- Cover Photo & Avatar Header -->
-            <div class="zalo-cover-banner">
-                <button class="zalo-close-btn" onclick="closeZaloProfileModal()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
+    <div class="modal-overlay" id="zaloProfileModal" style="display: none; z-index: 999998; padding: 0;">
+        <div class="fb-profile-modal-card">
+            <!-- Cover & Profile Header Widescreen Container -->
+            <div class="fb-cover-container-wrap">
+                <div class="fb-cover-inner">
+                    <!-- Cover Photo Banner -->
+                    <div class="fb-cover-banner">
+                        <button class="fb-cover-edit-btn" onclick="window.triggerCoverFileUpload()">
+                            <span>📷 Chỉnh sửa ảnh bìa</span>
+                        </button>
+                        <button class="zalo-close-btn" onclick="closeZaloProfileModal()" title="Trở về ứng dụng">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+
+                    <!-- Profile Header Top Area -->
+                    <div class="fb-profile-header-wrap">
+                        <div class="fb-profile-top-row">
+                            <!-- Left: Avatar & User Info -->
+                            <div class="fb-profile-user-group">
+                                <div class="fb-avatar-box" onclick="window.triggerAvatarFileUpload()" title="Nhấp để tải ảnh đại diện mới từ máy tính">
+                                    <div class="fb-avatar-img" id="profileAvatarBox">A</div>
+                                    <div class="fb-avatar-camera-btn" title="Đổi ảnh đại diện">📷</div>
+                                    <div class="fb-online-badge" title="Đang hoạt động"></div>
+                                </div>
+                                <div class="fb-user-details">
+                                    <h2 class="fb-user-name" id="profileUserName">admin1 <span class="fb-verify-badge">✓</span></h2>
+                                    <div class="fb-user-handle" id="profileUserHandle">@admin1 • Thành Viên Beenavi Smart 🇻🇳</div>
+                                    <div class="fb-user-bio" id="profileUserBio">
+                                        💬 "🚀 Đam mê du lịch & khám phá Việt Nam cùng trợ lý AI Beenavi ✨"
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Facebook Action Buttons -->
+                            <div class="fb-header-actions">
+                                <button type="button" class="fb-btn-primary" onclick="resetToWizard(); closeZaloProfileModal();">
+                                    <span>➕ Tạo Chuyến Đi</span>
+                                </button>
+                                <button type="button" class="fb-btn-secondary" onclick="promptAddPhotoToCheckin()">
+                                    <span>📷 + Thêm Ảnh Check-in</span>
+                                </button>
+                                <button type="button" class="fb-btn-icon" title="Tùy chọn khác">
+                                    <span>•••</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Facebook Profile Navigation Tabs Bar -->
+                        <div class="fb-nav-tabs-bar">
+                            <div class="fb-nav-tabs-left">
+                                <button class="fb-tab-item active" id="profileTabJournal" onclick="switchProfileTab('journal')">📖 Tất Cả & Nhật Ký</button>
+                                <button class="fb-tab-item" id="profileTabTrips" onclick="switchProfileTab('trips')">🗺️ Chuyến Đi Đã Lưu</button>
+                                <button class="fb-tab-item" id="profileTabPref" onclick="switchProfileTab('pref')">⚙️ Sở Thích Cá Nhân (AI)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="zalo-profile-header-content">
-                <div class="zalo-avatar-row">
-                    <div class="zalo-avatar-box">
-                        <div class="zalo-avatar-img" id="profileAvatarBox" style="background: linear-gradient(135deg, #F5C842, #E8B923); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #111827; font-size: 24px;">U</div>
-                        <div class="zalo-online-dot"></div>
+            <!-- Profile Body Main Grid (2-Column Facebook Split Layout) -->
+            <div class="fb-profile-body-grid">
+                <!-- Left Sidebar Column (Intro & Stats - 35%) -->
+                <div class="fb-body-left-col">
+                    <!-- Card 1: Giới thiệu & Thống kê du lịch -->
+                    <div class="fb-side-card">
+                        <h4 class="fb-side-title">Giới thiệu du lịch</h4>
+                        <div class="fb-intro-stats-grid">
+                            <div class="fb-stat-box">
+                                <span class="fb-stat-num" id="profileStatTrips">0</span>
+                                <span class="fb-stat-lbl">Chuyến đi</span>
+                            </div>
+                            <div class="fb-stat-box">
+                                <span class="fb-stat-num" id="profileStatPhotos">0</span>
+                                <span class="fb-stat-lbl">Ảnh kỷ niệm</span>
+                            </div>
+                            <div class="fb-stat-box">
+                                <span class="fb-stat-num" id="profileStatDests">0</span>
+                                <span class="fb-stat-lbl">Điểm đến</span>
+                            </div>
+                            <div class="fb-stat-box">
+                                <span class="fb-stat-num" id="profileStatSpent">0 đ</span>
+                                <span class="fb-stat-lbl">Chi tiêu</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="zalo-user-name" id="profileUserName">Người Dùng <span style="color: var(--primary); font-size: 16px;">✓</span></div>
-                <div class="zalo-user-handle" id="profileUserHandle">@user • Thành Viên Beenavi Smart 🇻🇳</div>
-                <div class="zalo-bio-text" id="profileUserBio">
-                    💬 "🚀 Đam mê du lịch & khám phá Việt Nam cùng trợ lý AI Beenavi ✨"
-                </div>
+                <!-- Right Main Column (Feed Content - 65%) -->
+                <div class="fb-body-right-col">
+                    <!-- Tab 1: Nhật Ký & Ảnh Feed -->
+                    <div id="profileContentJournal" style="display: block;">
+                        <!-- Feed Post Creator Box -->
+                        <div class="fb-post-creator-card">
+                            <div class="fb-creator-top">
+                                <div class="fb-creator-avatar">A</div>
+                                <input type="text" class="fb-creator-input" placeholder="Bạn đang nghĩ gì về chuyến đi sắp tới?" onclick="promptAddPhotoToCheckin()">
+                            </div>
+                            <div class="fb-creator-bottom">
+                                <button type="button" class="fb-creator-btn" onclick="promptAddPhotoToCheckin()">
+                                    <span>🖼️ Ảnh/video kỷ niệm</span>
+                                </button>
+                                <button type="button" class="fb-creator-btn" onclick="resetToWizard(); closeZaloProfileModal();">
+                                    <span>📍 Check-in điểm đến mới</span>
+                                </button>
+                            </div>
+                        </div>
 
-                <!-- Profile Stats Bar -->
-                <div class="zalo-stats-row">
-                    <div class="zalo-stat-item">
-                        <span class="zalo-stat-num" id="profileStatTrips">0</span>
-                        <span class="zalo-stat-label">Chuyến đi</span>
+                        <div id="journalFeedContainer">
+                            <!-- Feed posts rendered dynamically by JS -->
+                        </div>
                     </div>
-                    <div class="zalo-stat-item">
-                        <span class="zalo-stat-num" id="profileStatPhotos">0</span>
-                        <span class="zalo-stat-label">Ảnh kỷ niệm</span>
-                    </div>
-                    <div class="zalo-stat-item">
-                        <span class="zalo-stat-num" id="profileStatDests">0</span>
-                        <span class="zalo-stat-label">Điểm đến</span>
-                    </div>
-                    <div class="zalo-stat-item">
-                        <span class="zalo-stat-num" id="profileStatSpent">0 đ</span>
-                        <span class="zalo-stat-label">Chi tiêu</span>
-                    </div>
-                </div>
 
-                <!-- Profile Navigation Tabs -->
-                <div class="zalo-profile-tabs">
-                    <button class="zalo-tab-btn active" id="profileTabJournal" onclick="switchProfileTab('journal')">📖 Nhật Ký & Ảnh</button>
-                    <button class="zalo-tab-btn" id="profileTabTrips" onclick="switchProfileTab('trips')">🗺️ Chuyến Đi Đã Lưu</button>
-                    <button class="zalo-tab-btn" id="profileTabPref" onclick="switchProfileTab('pref')">⚙️ Sở Thích Cá Nhân (AI)</button>
-                </div>
-
-                <!-- Tab 1: Nhật Ký & Ảnh Check-in Thật -->
-                <div id="profileContentJournal" style="display: block;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                        <h4 style="font-size: 14.5px; font-weight: 700; color: #1E293B; margin: 0;">Bộ Sưu Tập Ảnh & Check-in</h4>
-                        <button class="add-item-btn" style="padding: 6px 12px; font-size: 12px;" onclick="promptAddPhotoToCheckin()">📷 + Thêm Ảnh Check-in</button>
+                    <!-- Tab 2: Chuyến Đi Đã Lưu -->
+                    <div id="profileContentTrips" style="display: none;">
+                        <div id="savedTripsListContainer">
+                            <!-- Loaded from DB -->
+                        </div>
                     </div>
-                    <div id="journalFeedContainer">
-                        <!-- Nạp động từ CSDL -->
-                    </div>
-                </div>
 
-                <!-- Tab 2: Lịch Sử Chuyến Đi Đã Lưu Thật -->
-                <div id="profileContentTrips" style="display: none;">
-                    <div id="savedTripsListContainer">
-                        <!-- Nạp động từ CSDL -->
-                    </div>
-                </div>
-
-                <!-- Tab 3: AI Preferences Settings -->
-                <div id="profileContentPref" style="display: none;">
-                    <div style="background: var(--bg-page); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                        <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">⚙️ Tùy Chỉnh Sở Thích Du Lịch Cá Nhân</h4>
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 10px; cursor: pointer;">
-                            <input type="checkbox" class="user-pref-style" value="Ẩm thực đặc sản" checked> <span>Ưu tiên đề xuất món ăn đặc sản địa phương (Local Cuisine)</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 10px; cursor: pointer;">
-                            <input type="checkbox" class="user-pref-style" value="Nghỉ dưỡng nhẹ nhàng" checked> <span>Giới hạn thời gian di chuyển giữa các điểm < 40 phút</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; margin-bottom: 14px; cursor: pointer;">
-                            <input type="checkbox" class="user-pref-style" value="Check-in sống ảo" checked> <span>Tự động cập nhật thời tiết điểm đến khi mở ứng dụng</span>
-                        </label>
-                        <button class="add-item-btn" onclick="saveUserProfilePreferences()">Lưu Thiết Lập Hồ Sơ</button>
+                    <!-- Tab 3: AI Preferences -->
+                    <div id="profileContentPref" style="display: none;">
+                        <div class="fb-side-card">
+                            <h4 class="fb-side-title">⚙️ Tùy Chỉnh Sở Thích Du Lịch Cá Nhân (AI)</h4>
+                            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; color: #334155; font-weight: 600;">
+                                    <input type="checkbox" class="user-pref-style" value="Ẩm thực đặc sản" checked style="width: 18px; height: 18px; accent-color: #1877F2;">
+                                    <span>Ưu tiên đề xuất món ăn đặc sản địa phương (Local Cuisine)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; color: #334155; font-weight: 600;">
+                                    <input type="checkbox" class="user-pref-style" value="Nghỉ dưỡng nhẹ nhàng" checked style="width: 18px; height: 18px; accent-color: #1877F2;">
+                                    <span>Giới hạn thời gian di chuyển giữa các điểm < 40 phút</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer; color: #334155; font-weight: 600;">
+                                    <input type="checkbox" class="user-pref-style" value="Check-in sống ảo" checked style="width: 18px; height: 18px; accent-color: #1877F2;">
+                                    <span>Tự động cập nhật thời tiết điểm đến khi mở ứng dụng</span>
+                                </label>
+                                <button class="fb-btn-primary" style="margin-top: 10px; justify-content: center;" onclick="saveUserProfilePreferences()">
+                                    Lưu Thiết Lập Hồ Sơ
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3301,6 +3789,50 @@
 
 
 
+
+
+    
+    <!-- ============================================================
+         TRANG TOÀN CẢNH DỊCH VỤ KHÁCH SẠN & NƠI LƯU TRÚ (VIEW HOTELS)
+         ============================================================ -->
+    <div id="viewHotels" class="page-view-container" style="display: none; max-width: 1200px; margin: 0 auto; padding: 24px 20px 80px;">
+        <!-- Banner Header -->
+        <div style="background: linear-gradient(135deg, #0F172A, #1E293B); border-radius: 20px; padding: 32px 28px; color: #FFFFFF; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15); position: relative; overflow: hidden;">
+            <div style="position: relative; z-index: 2; max-width: 800px;">
+                <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.2); color: #FBBF24; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(245, 158, 11, 0.4);">
+                    🏨 TRAVELOKA & AGODA STYLE EXPERIENCES
+                </div>
+                <h1 style="margin: 0 0 10px; font-size: 26px; font-weight: 800; line-height: 1.3;">Dịch Vụ Khách Sạn & Nơi Lưu Trú Toàn Quốc</h1>
+                <p style="margin: 0; font-size: 14px; color: #94A3B8; line-height: 1.5;">Khám phá các khách sạn, homestay & resort cao cấp có vị trí đắc địa nhất, tối ưu thời gian di chuyển và trải nghiệm trọn vẹn chuyến đi.</p>
+            </div>
+            <div style="position: absolute; right: 20px; bottom: -10px; font-size: 120px; opacity: 0.08; user-select: none;">
+                🏨
+            </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div style="background: #FFFFFF; border-radius: 16px; border: 1px solid #E2E8F0; padding: 16px 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="viewHotelCityTabs">
+                <button class="hotel-page-tab active" onclick="switchHotelPageCity('Hà Nội', this)" style="padding: 8px 18px; border-radius: 24px; border: 1px solid #0F172A; background: #0F172A; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🏛️ Hà Nội</button>
+                <button class="hotel-page-tab" onclick="switchHotelPageCity('Đà Nẵng', this)" style="padding: 8px 18px; border-radius: 24px; border: 1px solid #CBD5E1; background: #fff; color: #475569; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🌊 Đà Nẵng</button>
+                <button class="hotel-page-tab" onclick="switchHotelPageCity('Sa Pa', this)" style="padding: 8px 18px; border-radius: 24px; border: 1px solid #CBD5E1; background: #fff; color: #475569; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🏔️ Sa Pa</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-size: 12px; background: #FEF3C7; color: #92400E; padding: 6px 12px; border-radius: 8px; font-weight: 600;">
+                    ℹ️ Dữ liệu phòng & giá mang tính chất tham khảo
+                </span>
+                <button onclick="switchMainTab('itinerary', event)" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #CBD5E1; background: #F8FAFC; color: #334155; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    🗺️ Về Lộ Trình AI
+                </button>
+            </div>
+        </div>
+
+        <!-- Hotels Cards Grid -->
+        <div id="hotelPageCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+            <!-- Rendered dynamically by app.js -->
+        </div>
+    </div>
 
 
     <!-- Notifications Drawer Side Panel -->
@@ -3753,13 +4285,8 @@
 
 
 
-                        <p>Xin chào bạn! Mình là <strong>Beenavi AI</strong> — Trợ lý du lịch thông minh của bạn.</p>
-
-
-
-
-
-                        <p>• Hỏi tôi bất kỳ về lộ trình hoàn hảo, mẹo du lịch và gợi ý quán ngon trên toàn quốc.</p>
+                        <p>Xin chào bạn! Mình là <strong>Beenavi AI</strong>, trợ lý du lịch thông minh của bạn.</p>
+                        <p>Bạn có thể hỏi tôi về lịch trình du lịch, thời tiết, kinh nghiệm tham quan, hoặc gợi ý ẩm thực đặc sản nhé.</p>
 
 
 
@@ -3945,186 +4472,43 @@
 
 
 
-            <div class="cb-footer">
-
-
-
-
-
+                        <div class="cb-footer">
                 <div class="cb-toolbar">
-
-
-
-
-
                     <!-- Chụp ảnh -->
-
-
-
-
-
                     <button class="cb-tool-btn" id="cbCameraBtn" onclick="cbOpenCamera()" title="Chụp ảnh">
-
-
-
-
-
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-
-
-
-
-
                         <span>Chụp ảnh</span>
-
-
-
-
-
                     </button>
-
-
-
-
 
                     <!-- Đăng ảnh -->
-
-
-
-
-
                     <button class="cb-tool-btn" id="cbUploadBtn" onclick="document.getElementById('cbFileInput').click()" title="Tải ảnh">
-
-
-
-
-
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-
-
-
-
-
                         <span>Tải ảnh</span>
-
-
-
-
-
                     </button>
-
-
-
-
-
                     <input type="file" id="cbFileInput" accept="image/*" style="display:none;" onchange="cbHandleImageUpload(event)">
 
-
-
-
-
-                    <!-- Cuộc gọi (Micro + Đàm thoại gộp lại) -->
-
-
-
-
-
-                    <button class="cb-tool-btn" id="cbCallBtn" onclick="cbToggleCall()" title="Cuộc gọi">
-
-
-
-
-
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-
-
-
-
-
-                        <span>Cuộc gọi</span>
-
-
-
-
-
+                    <!-- Bật/Tắt Giọng đọc AI -->
+                    <button class="cb-tool-btn cb-tool-active" id="cbTtsToggleBtn" onclick="cbToggleTts()" title="Bật/Tắt giọng đọc AI">
+                        <span id="cbTtsIcon" style="display:inline-flex;align-items:center;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        </span>
+                        <span id="cbTtsToggleText">Giọng đọc</span>
                     </button>
-
-
-
-
-
                 </div>
 
-
-
-
-
-
-
-
-
-
-
-                <!-- Input text -->
-
-
-
-
-
+                <!-- Input text & Mic Push-to-Talk -->
                 <div class="cb-input-row">
-
-
-
-
-
-                    <textarea class="cb-input" id="cbInput" placeholder="Hỏi về lịch trình, địa điểm, món ăn..." rows="1"
-
-
-
-
-
-                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();cbSendText();}"></textarea>
-
-
-
-
-
-                    <button class="cb-send-btn" id="cbSendBtn" onclick="cbSendText()" title="Gửi">
-
-
-
-
-
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-
-
-
-
-
+                    <button class="cb-mic-btn" id="cbMicBtn" onclick="cbToggleRecord()" title="Nhấn để nói (Voice Chat)" style="background: transparent; border: none; cursor: pointer; padding: 8px; border-radius: 50%; color: #475569; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                     </button>
-
-
-
-
-
+                    <textarea class="cb-input" id="cbInput" placeholder="Nhập tin nhắn..." rows="1"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();cbSendText();}"></textarea>
+                    <button class="cb-send-btn" id="cbSendBtn" onclick="cbSendText()" title="Gửi">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    </button>
                 </div>
-
-
-
-
-
             </div>
-
-
-
-
-
         </div>
-
-
-
-
-
     </div>
 
 
@@ -4161,7 +4545,7 @@
 
 
 
-    <script src="/static/app.js?v=33"></script>
+    <script src="/static/app.js?v=39_history_button_added"></script>
 
 
 
@@ -4174,155 +4558,29 @@
 
 
     <!-- Beenavi AI Chatbot Backend Integration -->
-
-
-
-
-
     <script>
-
-
-
-
-
     /* =======================================================
-
-
-
-
-
-       BEENAVI AI CHATBOT — Backend Integration
-
-
-
-
-
-       Endpoints:
-
-
-
-
-
-         POST /chat          — text chat (form: message, history)
-
-
-
-
-
-         POST /transcribe    — audio STT (form: audio file)
-
-
-
-
-
-         WS   /ws            — realtime voice WebSocket
-
-
-
-
-
+       BEENAVI AI CHATBOT — Multimodal Voice & Text Integration
        ======================================================= */
-
-
-
-
-
-
-
-
-
-
-
-    const CB_API = window.location.origin; // Tự động lấy hostname & port từ trình duyệt
-
-
-
-
-
-
-
-
-
-
+    const CB_API = window.location.origin;
 
     // State
-
-
-
-
-
     let cbOpen = false;
-
-
-
-
-
-    let cbHistory = [];      // [{role, content}]
-
-
-
-
-
-    let cbWs = null;         // WebSocket cho đàm thoại
-
-
-
-
-
+    let cbHistory = [];
+    let cbTtsEnabled = true;
+    let cbWs = null;
+    let cbAudioQueue = null;
     let cbMediaRecorder = null;
-
-
-
-
-
-    let cbAudioChunks = [];
-
-
-
-
-
-    let cbMicActive = false;
-
-
-
-
-
-    let cbVoiceActive = false;
-
-
-
-
-
+    let cbAudioStream = null;
+    let cbIsRecording = false;
+    let cbCurrentBotWrap = null;
+    let cbCurrentBotBubble = null;
+    let cbCurrentBotText = "";
+    let cbCurrentBotAudios = [];
+    let cbTempUserWrap = null;
     let cbCameraStream = null;
 
-
-
-
-
-    let cbVoiceLastUserText = "";   // transcript của lượt nói hiện tại trong cuộc gọi
-
-
-
-
-
-    let cbVoiceLastAnswerText = ""; // câu trả lời tương ứng (để đồng bộ vào cbHistory)
-
-
-
-
-
-
-
-
-
-
-
     /* ---- Toggle panel ---- */
-
-
-
-
-
     function cbToggle() {
         cbOpen = !cbOpen;
         const panel = document.getElementById("cbPanel");
@@ -4342,6 +4600,7 @@
                 fab.style.opacity = "0";
                 fab.style.pointerEvents = "none";
             }
+            cbEnsureWs();
             setTimeout(() => cbScrollToBottom(), 80);
         } else {
             panel.classList.remove("cb-open");
@@ -4354,387 +4613,527 @@
                 fab.style.opacity = "1";
                 fab.style.pointerEvents = "auto";
             }
-            cbStopVoiceCall();
+            if (cbIsRecording) cbStopRecord();
+            if (cbAudioQueue) cbAudioQueue.clear();
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- Nút gọi gộp ---- */
-
-
-
-
-
-    function cbToggleCall() {
-
-
-
-
-
-        if (cbVoiceActive) {
-
-
-
-
-
-            cbStopVoiceCall();
-
-
-
-
-
-        } else {
-
-
-
-
-
-            cbStartVoiceCall();
-
-
-
-
-
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- Tự động mở chatbot khi trang tải ---- */
-
-
-
-
-
-    window.addEventListener('load', function() {
-
-
-
-
-
-        setTimeout(() => {
-
-
-
-
-
-            if (!cbOpen) cbToggle();
-
-
-
-
-
-        }, 600);
-
-
-
-
-
-    });
-
-
-
-
-
-
-
-
-
-
 
     function cbScrollToBottom() {
-
-
-
-
-
         const body = document.getElementById("cbBody");
-
-
-
-
-
-        if (!body) return;
-
-
-
-
-
-        body.scrollTop = body.scrollHeight;
-
-
-
-
-
-        setTimeout(() => {
-
-
-
-
-
-            if (body) {
-
-
-
-
-
-                body.scrollTo({ top: body.scrollHeight + 9999, behavior: "smooth" });
-
-
-
-
-
-            }
-
-
-
-
-
-        }, 15);
-
-
-
-
-
+        if (body) {
+            body.scrollTop = body.scrollHeight;
+        }
     }
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- Add message bubble ---- */
-
-
-
-
 
     function cbAddMsg(role, html, isHtml = false) {
-
-
-
-
-
         const body = document.getElementById("cbBody");
-
-
-
-
-
         if (!body) return;
 
-
-
-
-
-
-
-
-
-
-
         const wrap = document.createElement("div");
-
-
-
-
-
         wrap.className = `cb-msg ${role}`;
 
-
-
-
-
-
-
-
-
-
-
         const bubble = document.createElement("div");
-
-
-
-
-
         bubble.className = "cb-bubble";
 
-
-
-
-
-
-
-
-
-
-
         if (isHtml) {
-
-
-
-
-
             bubble.innerHTML = html;
-
-
-
-
-
         } else {
-
-
-
-
-
-            // Convert newlines and markdown-like formatting
-
-
-
-
-
-            const safe = html
-
-
-
-
-
-                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-
-
-
-
-
-                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-
-
-
-
-
-                .replace(/\n/g, "<br>");
-
-
-
-
-
-            bubble.innerHTML = safe;
-
-
-
-
-
+            bubble.innerHTML = cbFormatMarkdown(html);
         }
 
-
-
-
-
-
-
-
-
-
-
         wrap.appendChild(bubble);
-
-
-
-
-
         body.appendChild(wrap);
-
-
-
-
-
         cbScrollToBottom();
-
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
 
     function cbShowTyping(show) {
+        const body = document.getElementById("cbBody");
+        if (!body) return;
 
-
-
-
-
-        const t = document.getElementById("cbTyping");
-
-
-
-
-
-        if (t) t.style.display = show ? "flex" : "none";
-
-
-
-
-
-        if (show) cbScrollToBottom();
-
-
-
-
-
+        let typing = document.getElementById("cbTypingIndicator");
+        if (show && !typing) {
+            typing = document.createElement("div");
+            typing.id = "cbTypingIndicator";
+            typing.className = "cb-msg bot";
+            typing.innerHTML = `<div class="cb-bubble" style="display:flex;gap:4px;align-items:center;padding:10px 14px;"><span style="width:6px;height:6px;background:#94A3B8;border-radius:50%;animation:cbDot 1s infinite alternate;"></span><span style="width:6px;height:6px;background:#94A3B8;border-radius:50%;animation:cbDot 1s infinite alternate 0.2s;"></span><span style="width:6px;height:6px;background:#94A3B8;border-radius:50%;animation:cbDot 1s infinite alternate 0.4s;"></span></div>`;
+            body.appendChild(typing);
+            cbScrollToBottom();
+        } else if (!show && typing) {
+            typing.remove();
+        }
     }
 
+    /* ---- Realtime Audio Queue ---- */
+    class RealtimeAudioQueue {
+        constructor() {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            this.audioCtx = new AudioContextClass();
+            this.nextStartTime = 0;
+            this.activeSources = [];
+            this.isPlaying = false;
+        }
+        
+        async enqueue(b64) {
+            if (this.audioCtx.state === 'suspended') {
+                await this.audioCtx.resume();
+            }
+            
+            try {
+                const binary = atob(b64);
+                const array = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
+                
+                const audioBuffer = await this.audioCtx.decodeAudioData(array.buffer);
+                
+                const source = this.audioCtx.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(this.audioCtx.destination);
+                
+                const currentTime = this.audioCtx.currentTime;
+                // Add a small buffer delay (e.g. 0.05s) if queue is starting from empty to ensure smooth start
+                if (this.nextStartTime < currentTime) {
+                    this.nextStartTime = currentTime + 0.05;
+                }
+                
+                source.start(this.nextStartTime);
+                this.nextStartTime += audioBuffer.duration;
+                
+                this.activeSources.push(source);
+                this.isPlaying = true;
+                
+                source.onended = () => {
+                    const idx = this.activeSources.indexOf(source);
+                    if (idx > -1) {
+                        this.activeSources.splice(idx, 1);
+                    }
+                    if (this.activeSources.length === 0) {
+                        this.isPlaying = false;
+                    }
+                };
+            } catch(e) {
+                console.error("Audio queue error:", e);
+            }
+        }
+        
+        clear() {
+            for (const source of this.activeSources) {
+                try { source.stop(); } catch(e) {}
+            }
+            this.activeSources = [];
+            this.nextStartTime = 0;
+            this.isPlaying = false;
+        }
+    }
 
+    cbAudioQueue = new RealtimeAudioQueue();
 
+    let cbCurrentPlayingBtn = null;
+    let cbCheckEndInterval = null;
 
+    window.cbReplayMessageAudio = function(audioChunks, btnEl) {
+        if (!audioChunks || audioChunks.length === 0) return;
+        
+        // Nếu click lại chính nút đang phát -> Dừng
+        if (cbCurrentPlayingBtn === btnEl && cbAudioQueue.isPlaying) {
+            cbAudioQueue.clear();
+            if (btnEl) btnEl.innerHTML = "🔊";
+            cbCurrentPlayingBtn = null;
+            if (cbCheckEndInterval) clearInterval(cbCheckEndInterval);
+            return;
+        }
 
+        // Dừng các âm thanh khác đang phát
+        cbAudioQueue.clear();
+        if (cbCurrentPlayingBtn) {
+            cbCurrentPlayingBtn.innerHTML = "🔊";
+        }
+        if (cbCheckEndInterval) clearInterval(cbCheckEndInterval);
 
+        cbCurrentPlayingBtn = btnEl;
+        if (btnEl) btnEl.innerHTML = "⏹️";
 
+        audioChunks.forEach(chunk => cbAudioQueue.enqueue(chunk));
+        
+        cbCheckEndInterval = setInterval(() => {
+            if (!cbAudioQueue.isPlaying && cbAudioQueue.queue.length === 0) {
+                clearInterval(cbCheckEndInterval);
+                if (btnEl) btnEl.innerHTML = "🔊";
+                cbCurrentPlayingBtn = null;
+            }
+        }, 300);
+    };
 
+    function cbToggleTts() {
+        cbTtsEnabled = !cbTtsEnabled;
+        const btn = document.getElementById("cbTtsToggleBtn");
+        const txt = document.getElementById("cbTtsToggleText");
+        const icon = document.getElementById("cbTtsIcon");
+        if (cbTtsEnabled) {
+            if (btn) {
+                btn.classList.add("cb-tool-active");
+                btn.classList.remove("cb-tool-muted");
+            }
+            if (txt) txt.textContent = "Giọng đọc";
+            if (icon) icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+        } else {
+            if (btn) {
+                btn.classList.remove("cb-tool-active");
+                btn.classList.add("cb-tool-muted");
+            }
+            if (txt) txt.textContent = "Tắt tiếng";
+            if (icon) icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="1" x2="1" y2="23" stroke="#EF4444" stroke-width="2.5"></line></svg>`;
+            cbAudioQueue.clear();
+        }
+    }
 
+    function cbFormatMarkdown(text) {
+        if (!text) return "";
+        return text
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+            .replace(/\*(.*?)\*/g, "<em>$1</em>")
+            .replace(/^### (.*$)/gim, '<h4 style="margin:8px 0 4px 0;color:#0F172A;font-weight:700;">$1</h4>')
+            .replace(/^## (.*$)/gim, '<h3 style="margin:10px 0 4px 0;color:#0F172A;font-weight:800;">$1</h3>')
+            .replace(/\n/g, "<br>");
+    }
 
+    let cbWsCallbacks = [];
+    function cbEnsureWs(callback) {
+        if (callback) cbWsCallbacks.push(callback);
 
-    /* ---- TEXT CHAT via POST /chat ---- */
+        if (cbWs && cbWs.readyState === WebSocket.OPEN) {
+            while (cbWsCallbacks.length > 0) {
+                const cb = cbWsCallbacks.shift();
+                try { cb(); } catch(e) {}
+            }
+            return;
+        }
 
+        if (cbWs && cbWs.readyState === WebSocket.CONNECTING) {
+            return; // Đang kết nối, callback đã lưu vào cbWsCallbacks
+        }
 
+        const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
+        cbWs = new WebSocket(wsUrl);
 
+        cbWs.onopen = () => {
+            console.log("[Chatbot] WebSocket connected");
+            while (cbWsCallbacks.length > 0) {
+                const cb = cbWsCallbacks.shift();
+                try { cb(); } catch(e) {}
+            }
+        };
 
+        cbWs.onmessage = (event) => {
+            try {
+                const payload = JSON.parse(event.data);
+                handleWsMessage(payload);
+            } catch(e) {
+                console.error("WS message parse error:", e);
+            }
+        };
 
+        cbWs.onclose = () => {
+            cbWs = null;
+        };
+
+        cbWs.onerror = (err) => {
+            console.warn("[Chatbot] WebSocket error:", err);
+            cbWs = null;
+        };
+    }
+
+    let cbTextBuffer = "";
+    let cbTextInterval = null;
+    let cbCurrentSpeakBtn = null;
+
+    function cbStartBotStreaming(initialText = "") {
+        cbShowTyping(false);
+        const body = document.getElementById("cbBody");
+        if (!body) return;
+
+        if (cbCurrentBotBubble) {
+            if (initialText && !cbCurrentBotText) {
+                cbCurrentBotBubble.innerHTML = `<span style="color:#64748B;font-style:italic;">💬 ${initialText}</span><br><span class="cb-cursor" style="color:#0284C7;animation:cbBlink 0.8s infinite;">▍</span>`;
+            }
+            return;
+        }
+
+        const wrap = document.createElement("div");
+        wrap.className = "cb-msg bot";
+
+        const bubble = document.createElement("div");
+        bubble.className = "cb-bubble";
+        if (initialText) {
+            bubble.innerHTML = `<span style="color:#64748B;font-style:italic;">💬 ${initialText}</span><br><span class="cb-cursor" style="color:#0284C7;animation:cbBlink 0.8s infinite;">▍</span>`;
+        } else {
+            bubble.innerHTML = `<span class="cb-cursor" style="color:#0284C7;animation:cbBlink 0.8s infinite;">▍</span>`;
+        }
+
+        const speakBtn = document.createElement("button");
+        speakBtn.className = "cb-inline-speak-btn";
+        speakBtn.innerHTML = "🔊";
+        speakBtn.style.display = "none";
+        speakBtn.style.width = "32px";
+        speakBtn.style.height = "32px";
+        speakBtn.style.borderRadius = "50%";
+        speakBtn.style.border = "1px solid #E2E8F0";
+        speakBtn.style.background = "#FFFFFF";
+        speakBtn.style.cursor = "pointer";
+        speakBtn.style.flexShrink = "0";
+        speakBtn.style.alignSelf = "center";
+        speakBtn.style.fontSize = "16px";
+        speakBtn.style.color = "#0F172A";
+        speakBtn.style.padding = "0";
+        speakBtn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.05)";
+
+        wrap.appendChild(bubble);
+        wrap.appendChild(speakBtn);
+        body.appendChild(wrap);
+
+        cbCurrentBotWrap = wrap;
+        cbCurrentBotBubble = bubble;
+        cbCurrentSpeakBtn = speakBtn;
+        cbCurrentBotText = "";
+        cbTextBuffer = "";
+        
+        if (cbTextInterval) clearInterval(cbTextInterval);
+        cbTextInterval = setInterval(() => {
+            if (cbTextBuffer.length > 0) {
+                // Nếu đang bật giọng đọc, gõ chữ chậm lại (khoảng 2-3 ký tự/30ms) để khớp với audio.
+                // Nếu tắt giọng đọc, gõ chữ nhanh hơn (10 ký tự/30ms).
+                const charsToTake = cbTtsEnabled ? 2 : 10;
+                const chunk = cbTextBuffer.substring(0, charsToTake);
+                cbTextBuffer = cbTextBuffer.substring(charsToTake);
+                cbCurrentBotText += chunk;
+                if (cbCurrentBotBubble) {
+                    cbUpdateBotBubble(cbCurrentBotBubble, cbCurrentBotText);
+                }
+            }
+        }, 30);
+
+        cbCurrentBotAudios = [];
+        cbScrollToBottom();
+    }
+
+    function cbUpdateBotBubble(bubble, text) {
+        bubble.innerHTML = cbFormatMarkdown(text) + `<span class="cb-cursor" style="color:#0284C7;animation:cbBlink 0.8s infinite;">▍</span>`;
+        cbScrollToBottom();
+    }
+
+    function cbFinalizeBotBubble(wrap, bubble, text, audios) {
+        bubble.innerHTML = cbFormatMarkdown(text);
+        cbScrollToBottom();
+    }
+
+    function handleWsMessage(payload) {
+        if (payload.type === "filler") {
+            if (payload.text) {
+                cbStartBotStreaming(payload.text);
+            }
+            if (cbTtsEnabled && payload.audio) {
+                cbAudioQueue.enqueue(payload.audio);
+            }
+        }
+        else if (payload.type === "transcript" && payload.text) {
+            if (cbTempUserWrap) {
+                const bubble = cbTempUserWrap.querySelector(".cb-bubble");
+                if (bubble) {
+                    bubble.style.opacity = "1";
+                    bubble.style.fontStyle = "normal";
+                    bubble.innerHTML = `🎙️ ${payload.text}`;
+                } else {
+                    cbTempUserWrap.innerHTML = `<div class="cb-bubble">🎙️ ${payload.text}</div>`;
+                }
+                cbTempUserWrap = null;
+            } else {
+                cbAddMsg("user", `🎙️ ${payload.text}`);
+            }
+            cbHistory.push({ role: "user", content: payload.text });
+            if (!cbCurrentBotBubble) {
+                cbStartBotStreaming();
+            }
+        }
+        else if (payload.type === "stt_empty") {
+            if (cbTempUserWrap) {
+                cbTempUserWrap.remove();
+                cbTempUserWrap = null;
+            }
+            cbShowTyping(false);
+            if (cbCurrentBotBubble) {
+                cbCurrentBotBubble.innerHTML = "🎙️ Không nhận diện được giọng nói. Bạn hãy thử lại hoặc gõ tin nhắn nhé!";
+                cbCurrentBotWrap = null;
+                cbCurrentBotBubble = null;
+                cbCurrentBotText = "";
+            } else {
+                cbAddMsg("bot", "🎙️ Không nhận diện được giọng nói. Bạn hãy thử lại hoặc gõ tin nhắn nhé!");
+            }
+        }
+        else if (payload.type === "token" && payload.text) {
+            if (!cbCurrentBotBubble) {
+                cbStartBotStreaming();
+            }
+            cbTextBuffer += payload.text;
+        }
+        else if ((payload.type === "tts_full" || payload.type === "tts_chunk") && payload.audio) {
+            cbCurrentBotAudios.push(payload.audio);
+            if (cbTtsEnabled) {
+                cbAudioQueue.enqueue(payload.audio);
+            }
+            if (cbCurrentSpeakBtn) {
+                cbCurrentSpeakBtn.style.display = "flex";
+                cbCurrentSpeakBtn.style.alignItems = "center";
+                cbCurrentSpeakBtn.style.justifyContent = "center";
+                cbCurrentSpeakBtn.onclick = null;
+                const audioCopy = [...cbCurrentBotAudios];
+                cbCurrentSpeakBtn.onclick = function() {
+                    cbReplayMessageAudio(audioCopy, this);
+                };
+            }
+        }
+        else if (payload.type === "done" || payload.type === "answer") {
+            cbShowTyping(false);
+            if (cbTextInterval) clearInterval(cbTextInterval);
+            
+            // Xả hết phần text còn lại trong buffer
+            if (cbTextBuffer.length > 0) {
+                cbCurrentBotText += cbTextBuffer;
+                cbTextBuffer = "";
+                if (cbCurrentBotBubble) {
+                    cbUpdateBotBubble(cbCurrentBotBubble, cbCurrentBotText);
+                }
+            }
+
+            if (cbCurrentBotBubble && cbCurrentBotText) {
+                cbFinalizeBotBubble(cbCurrentBotWrap, cbCurrentBotBubble, cbCurrentBotText, cbCurrentBotAudios);
+                cbHistory.push({ role: "assistant", content: cbCurrentBotText });
+            }
+            cbCurrentBotWrap = null;
+            cbCurrentBotBubble = null;
+            cbCurrentBotText = "";
+            cbCurrentBotAudios = [];
+            cbCurrentSpeakBtn = null;
+        }
+        else if (payload.type === "error") {
+            cbShowTyping(false);
+            if (cbCurrentBotBubble) {
+                cbCurrentBotBubble.innerHTML += `<br><span style="color:#EF4444;">⚠️ Lỗi: ${payload.message || "Không thể xử lý"}</span>`;
+            } else {
+                cbAddMsg("bot", `⚠️ Có lỗi xảy ra: ${payload.message}`);
+            }
+        }
+    }
+
+    /* ---- Push-to-Talk Mic handler ---- */
+    async function cbToggleRecord() {
+        if (cbIsRecording) {
+            cbStopRecord();
+        } else {
+            await cbStartRecord();
+        }
+    }
+
+    async function cbStartRecord() {
+        try {
+            cbAudioQueue.clear();
+            cbEnsureWs(async () => {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: { ideal: true },
+                        noiseSuppression: { ideal: true },
+                        autoGainControl: { ideal: true },
+                        channelCount: { ideal: 1 },
+                        sampleRate: { ideal: 16000 }
+                    }
+                });
+                cbAudioStream = stream;
+
+                let cbRecordedBlobs = [];
+                let cbRecorderMimeType = "audio/webm";
+                if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported) {
+                    if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+                        cbRecorderMimeType = "audio/webm;codecs=opus";
+                    } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+                        cbRecorderMimeType = "audio/webm";
+                    }
+                }
+                cbMediaRecorder = new MediaRecorder(stream, { mimeType: cbRecorderMimeType });
+
+                cbMediaRecorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) {
+                        cbRecordedBlobs.push(e.data);
+                    }
+                };
+
+                cbMediaRecorder.onstop = () => {
+                    if (cbAudioStream) {
+                        try { cbAudioStream.getTracks().forEach(t => t.stop()); } catch(e) {}
+                        cbAudioStream = null;
+                    }
+                    if (cbRecordedBlobs.length > 0) {
+                        const audioBlob = new Blob(cbRecordedBlobs, { type: cbRecorderMimeType });
+                        cbRecordedBlobs = [];
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            const b64 = reader.result.split(",")[1];
+                            if (cbWs && cbWs.readyState === WebSocket.OPEN) {
+                                cbWs.send(JSON.stringify({
+                                    type: "audio",
+                                    data: b64,
+                                    enable_tts: cbTtsEnabled
+                                }));
+                            }
+                        };
+                        reader.readAsDataURL(audioBlob);
+                    } else {
+                        if (cbWs && cbWs.readyState === WebSocket.OPEN) {
+                            cbWs.send(JSON.stringify({ type: "audio_end", enable_tts: cbTtsEnabled }));
+                        }
+                    }
+                };
+
+                cbMediaRecorder.start(100);
+                cbIsRecording = true;
+
+                const btn = document.getElementById("cbMicBtn");
+                if (btn) btn.style.color = "#EF4444";
+
+                const inp = document.getElementById("cbInput");
+                if (inp) inp.placeholder = "🎙️ Đang nghe bạn nói...";
+            });
+        } catch(err) {
+            console.error("Microphone access error:", err);
+            cbAddMsg("bot", "⚠️ Không thể truy cập micro. Bạn vui lòng cấp quyền truy cập microphone trên trình duyệt và thử lại nhé!");
+        }
+    }
+
+    function cbStopRecord() {
+        cbIsRecording = false;
+
+        const btn = document.getElementById("cbMicBtn");
+        if (btn) btn.style.color = "#475569";
+
+        const inp = document.getElementById("cbInput");
+        if (inp) inp.placeholder = "Nhập tin nhắn...";
+
+        const body = document.getElementById("cbBody");
+        if (body) {
+            const wrap = document.createElement("div");
+            wrap.className = "cb-msg user";
+            wrap.innerHTML = `<div class="cb-bubble" style="opacity:0.75;font-style:italic;">🎙️ Đang nhận diện giọng nói...</div>`;
+            body.appendChild(wrap);
+            cbTempUserWrap = wrap;
+            cbScrollToBottom();
+        }
+        cbShowTyping(true);
+
+        if (cbMediaRecorder && cbMediaRecorder.state !== "inactive") {
+            try { cbMediaRecorder.stop(); } catch(e) {}
+        }
+    }
+
+    /* ---- Text send via WebSocket ---- */
     async function cbSendText() {
         await window.cbSendProgrammaticText(null);
     }
@@ -4748,4010 +5147,119 @@
             input.value = "";
             input.style.height = "auto";
         }
-        
+
         if (!displayUserText) return;
 
+        cbAudioQueue.clear();
         cbAddMsg("user", displayUserText);
-        cbShowTyping(true);
+        cbHistory.push({ role: "user", content: displayUserText });
 
-        const formData = new FormData();
-        
         let finalMessage = text;
         if (window.isItineraryAdjustmentMode && window.hiddenItineraryContext) {
-            finalMessage = `${window.hiddenItineraryContext}\n\nNgười dùng yêu cầu: ${text}\n\nBẠN BẮT BUỘC PHẢI TRẢ VỀ TOÀN BỘ LỊCH TRÌNH MỚI BẰNG ĐÚNG CẤU TRÚC MARKDOWN GỐC (Bắt đầu bằng [TIÊU ĐỀ]..., sau đó # NGÀY 1... ). Không được trả lời suông!`;
-            // Reset mode sau khi gửỉ 1 lần để các câu hỏi sau không bị nhét context
+            finalMessage = `${window.hiddenItineraryContext}
+
+Người dùng yêu cầu: ${text}
+
+BẠN BẮT BUỘC PHẢI TRẢ VỀ TOÀN BỘ LỊCH TRÌNH MỚI BẰNG ĐÚNG CẤU TRÚC MARKDOWN GỐC (Bắt đầu bằng [TIÊU ĐỀ]..., sau đó # NGÀY 1... ). Không được trả lời suông!`;
             window.isItineraryAdjustmentMode = false;
         }
 
-
-        formData.append("message", finalMessage);
-        formData.append("history", JSON.stringify(cbHistory));
-
-        try {
+        cbEnsureWs(() => {
+            cbStartBotStreaming();
             const token = window.getAuthToken ? window.getAuthToken() : null;
-            if (token) {
-                formData.append("user_id", token);
-            }
-            const res = await fetch(`${CB_API}/chat`, { method: "POST", body: formData });
-            const data = await res.json();
-            const answer = data.answer || "(Không có phản hồi)";
-
-            cbHistory.push({ role: "user", content: displayUserText });
-            cbHistory.push({ role: "assistant", content: answer });
-            cbShowTyping(false);
-
-            const structItin = data.structured_itinerary;
-            const smartChecklist = data.smart_checklist;
-            const budgetBreakdown = data.budget_breakdown;
-            const mapMarkers = data.map_markers;
-
-            // CHỈ CẬP NHẬT VÀO BALO KHI INTENT THẬT SỰ LÀ LẬP LỊCH TRÌNH VÀ CÓ DỮ LIỆU HỢP LỆ
-            const isPlanIntent = data.intent === 'PLAN_ITINERARY';
-            const daysList = (structItin && (structItin.days || structItin.lich_trinh)) || [];
-            const hasValidItinerary = isPlanIntent && Array.isArray(daysList) && daysList.length > 0;
-
-            if (hasValidItinerary) {
-                let itinObj = structItin;
-                if (!itinObj.title || itinObj.title === "Chưa có lộ trình") {
-                    if (data.slots && data.slots.destination) {
-                        itinObj.title = `Lịch Trình Du Lịch ${data.slots.destination} (${daysList.length}N)`;
-                        itinObj.destination = data.slots.destination;
-                    }
-                }
-
-                // Lưu vào danh sách chờ chốt (Pending Proposals)
-                const proposalId = 'prop_' + Date.now();
-                if (!window.pendingProposals) window.pendingProposals = {};
-                window.pendingProposals[proposalId] = {
-                    itinObj: itinObj,
-                    smartChecklist: smartChecklist,
-                    budgetBreakdown: budgetBreakdown,
-                    mapMarkers: mapMarkers
-                };
-
-                // Hiển thị câu trả lời AI kèm Thẻ Đề Xuất Lộ Trình (Chờ khách chốt đơn)
-                const destTitle = itinObj.title || `Lịch Trình Khám Phá ${data.slots?.destination || 'Điểm Đến'}`;
-                const daysNum = daysList.length;
-                const budgetStr = budgetBreakdown?.formatted_summary || `~${(itinObj?.total_budget || 0).toLocaleString('vi-VN')} đ/người`;
-                const chkCount = (smartChecklist && smartChecklist.length) || 5;
-
-                const cardHtml = `
-                    <div style="margin-bottom: 12px;">${answer.replace(/\n/g, '<br>')}</div>
-                    <div class="itinerary-backpack-synced-card" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); border: 1.5px solid #10B981; border-radius: 14px; padding: 14px 16px; margin-top: 10px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="background: #059669; color: #FFFFFF; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px;">ĐỀ XUẤT LỘ TRÌNH DU LỊCH</span>
-                            <span style="font-size: 12px; color: #047857; font-weight: 700;">${daysNum} Ngày</span>
-                        </div>
-                        <h4 style="margin: 0 0 6px 0; color: #065F46; font-size: 14px; font-weight: 800;">${destTitle}</h4>
-                        <div style="font-size: 12px; color: #047857; margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
-                            <span>💰 <b>${budgetStr}</b></span>
-                            <span>•</span>
-                            <span>📋 <b>${chkCount} món hành trang</b></span>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <button onclick="window.confirmTripToBackpack('${proposalId}', this)" style="background: linear-gradient(135deg, #059669, #10B981); color: #FFFFFF; border: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);">
-                                🎒 Chốt Đơn & Lưu Vào Balo
-                            </button>
-                            <div style="display: flex; gap: 8px;">
-                                <button onclick="window.requestTripAdjustment('Tôi muốn điều chỉnh lại lịch trình: ')" style="flex: 1; background: #FFFFFF; color: #065F46; border: 1px solid #10B981; padding: 7px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;">
-                                    ✏️ Yêu Cầu Đổi Lại
-                                </button>
-                                <button onclick="window.syncBackpackToMap()" style="flex: 1; background: #FFFFFF; color: #065F46; border: 1px solid #10B981; padding: 7px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;">
-                                    🗺️ Xem Thử Bản Đồ
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                cbAddMsg("bot", cardHtml, true);
-                return;
-            }
-
-            // Với mọi câu hỏi khác (Thời tiết, Chào hỏi, Tìm quán ăn, Hỏi ngày giờ...) -> Chỉ hiển thị tin nhắn chat bình thường, KHÔNG THÊM VÀO BALO
-            cbAddMsg("bot", answer);
-        } catch (err) {
-            cbShowTyping(false);
-            cbAddMsg("bot", "Có lỗi xảy ra: " + err.message);
-        }
+            cbWs.send(JSON.stringify({
+                type: "text",
+                text: finalMessage,
+                enable_tts: cbTtsEnabled,
+                user_id: token
+            }));
+        });
     };
 
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- IMAGE UPLOAD → gửi ảnh kèm mô tả ---- */
-
-
-
-
-
+    /* ---- Image & Camera Handlers ---- */
     function cbHandleImageUpload(event) {
-
-
-
-
-
         const file = event.target.files[0];
-
-
-
-
-
         if (!file) return;
 
-
-
-
-
-
-
-
-
-
-
         const reader = new FileReader();
-
-
-
-
-
         reader.onload = (e) => {
-
-
-
-
-
-            // Show preview in chat
-
-
-
-
-
             const imgHtml = `<img src="${e.target.result}" style="max-width:180px;border-radius:8px;margin-bottom:6px;" /><br><span style="font-size:11px;opacity:0.7;">Ảnh đã gửi</span>`;
-
-
-
-
-
             cbAddMsg("user", imgHtml, true);
-
-
-
-
-
-
-
-
-
-
-
-            // Gửi kèm mô tả (backend hiện tại nhận text)
-
-
-
-
-
             cbAddMsg("bot", "📸 Tôi đã nhận ảnh của bạn! Hãy mô tả thêm bạn muốn hỏi gì về địa điểm này nhé.");
-
-
-
-
-
         };
-
-
-
-
-
         reader.readAsDataURL(file);
-
-
-
-
-
-        event.target.value = "";
-
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- CAMERA CAPTURE ---- */
-
-
-
-
 
     async function cbOpenCamera() {
-
-
-
-
-
         const modal = document.getElementById("cbCameraModal");
-
-
-
-
-
-        const video = document.getElementById("cbVideoStream");
-
-
-
-
-
-        modal.style.display = "flex";
-
-
-
-
+        const video = document.getElementById("cbCameraVideo");
+        if (!modal || !video) return;
 
         try {
-
-
-
-
-
             cbCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-
-
-
-
-
             video.srcObject = cbCameraStream;
-
-
-
-
-
-        } catch (err) {
-
-
-
-
-
-            cbAddMsg("bot", "⚠️ Không thể truy cập camera. Bạn kiểm tra lại quyền camera trong trình duyệt nhé!");
-
-
-
-
-
-            modal.style.display = "none";
-
-
-
-
-
+            modal.style.display = "flex";
+        } catch(e) {
+            cbAddMsg("bot", "⚠️ Không thể mở camera. Vui lòng kiểm tra quyền camera nhé!");
         }
-
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
 
     function cbCloseCamera() {
-
-
-
-
-
         const modal = document.getElementById("cbCameraModal");
-
-
-
-
-
-        modal.style.display = "none";
-
-
-
-
-
+        if (modal) modal.style.display = "none";
         if (cbCameraStream) {
-
-
-
-
-
             cbCameraStream.getTracks().forEach(t => t.stop());
-
-
-
-
-
             cbCameraStream = null;
-
-
-
-
-
         }
-
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
 
     function cbCapturePhoto() {
-
-
-
-
-
-        const video = document.getElementById("cbVideoStream");
-
-
-
-
-
+        const video = document.getElementById("cbCameraVideo");
         const canvas = document.getElementById("cbCaptureCanvas");
+        if (!video || !canvas) return;
 
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0);
 
-
-
-
-        canvas.width = video.videoWidth;
-
-
-
-
-
-        canvas.height = video.videoHeight;
-
-
-
-
-
-        canvas.getContext("2d").drawImage(video, 0, 0);
-
-
-
-
-
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-
-
-
-
-
-
-
-
-
-
-
+        const dataUrl = canvas.toDataURL("image/jpeg");
         cbCloseCamera();
 
-
-
-
-
         const imgHtml = `<img src="${dataUrl}" style="max-width:180px;border-radius:8px;margin-bottom:6px;" /><br><span style="font-size:11px;opacity:0.7;">Ảnh chụp</span>`;
-
-
-
-
-
         cbAddMsg("user", imgHtml, true);
-
-
-
-
-
         cbAddMsg("bot", "📸 Ảnh chụp đẹp! Bạn muốn hỏi gì về địa điểm này không?");
-
-
-
-
-
     }
 
-
-
-
-
-
-
-
-
-
-
-    /* ---- MICRO — ghi âm → POST /transcribe → POST /chat ---- */
-
-
-
-
-
-    async function cbToggleMic() {
-
-
-
-
-
-        if (cbMicActive) {
-
-
-
-
-
-            cbStopMic();
-
-
-
-
-
-        } else {
-
-
-
-
-
-            await cbStartMic();
-
-
-
-
-
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    async function cbStartMic() {
-
-
-
-
-
-        try {
-
-
-
-
-
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-
-
-
-
-            cbAudioChunks = [];
-
-
-
-
-
-            cbMediaRecorder = new MediaRecorder(stream);
-
-
-
-
-
-
-
-
-
-
-
-            cbMediaRecorder.ondataavailable = (e) => {
-
-
-
-
-
-                if (e.data.size > 0) cbAudioChunks.push(e.data);
-
-
-
-
-
-            };
-
-
-
-
-
-
-
-
-
-
-
-            cbMediaRecorder.onstop = async () => {
-
-
-
-
-
-                stream.getTracks().forEach(t => t.stop());
-
-
-
-
-
-                const blob = new Blob(cbAudioChunks, { type: "audio/webm" });
-
-
-
-
-
-                await cbTranscribeAndSend(blob);
-
-
-
-
-
-            };
-
-
-
-
-
-
-
-
-
-
-
-            cbMediaRecorder.start();
-
-
-
-
-
-            cbMicActive = true;
-
-
-
-
-
-
-
-
-
-
-
-            const btn = document.getElementById("cbMicBtn");
-
-
-
-
-
-            if (btn) btn.classList.add("cb-tool-active");
-
-
-
-
-
-            cbAddMsg("bot", "🎙️ Đang ghi âm... Nhấn Micro lần nữa để dừng và gửi.");
-
-
-
-
-
-        } catch (err) {
-
-
-
-
-
-            cbAddMsg("bot", "⚠️ Không thể truy cập microphone. Bạn kiểm tra lại quyền microphone trong trình duyệt nhé!");
-
-
-
-
-
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    function cbStopMic() {
-
-
-
-
-
-        if (cbMediaRecorder && cbMediaRecorder.state !== "inactive") {
-
-
-
-
-
-            cbMediaRecorder.stop();
-
-
-
-
-
-        }
-
-
-
-
-
-        cbMicActive = false;
-
-
-
-
-
-        const btn = document.getElementById("cbMicBtn");
-
-
-
-
-
-        if (btn) btn.classList.remove("cb-tool-active");
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    async function cbTranscribeAndSend(audioBlob) {
-
-
-
-
-
-        cbShowTyping(true);
-
-
-
-
-
-        cbAddMsg("bot", "⏳ Đang nhận dạng giọng nói...");
-
-
-
-
-
-
-
-
-
-
-
-        const formData = new FormData();
-
-
-
-
-
-        formData.append("audio", audioBlob, "recording.webm");
-
-
-
-
-
-
-
-
-
-
-
-        try {
-
-
-
-
-
-            const res = await fetch(`${CB_API}/transcribe`, { method: "POST", body: formData });
-
-
-
-
-
-            const data = await res.json();
-
-
-
-
-
-            const transcript = data.text || "";
-
-
-
-
-
-
-
-
-
-
-
-            if (!transcript) {
-
-
-
-
-
-                cbShowTyping(false);
-
-
-
-
-
-                cbAddMsg("bot", "🎙️ Không nhận diện được giọng nói. Hãy thử lại nhé.");
-
-
-
-
-
-                return;
-
-
-
-
-
-            }
-
-
-
-
-
-
-
-
-
-
-
-            cbAddMsg("user", `🎙️ "${transcript}"`);
-
-
-
-
-
-            cbShowTyping(true);
-
-
-
-
-
-
-
-
-
-
-
-            const formData2 = new FormData();
-
-
-
-
-
-            formData2.append("message", transcript);
-
-
-
-
-
-            formData2.append("history", JSON.stringify(cbHistory));
-
-
-
-
-
-
-
-
-
-
-
-            const res2 = await fetch(`${CB_API}/chat`, { method: "POST", body: formData2 });
-
-
-
-
-
-            const data2 = await res2.json();
-
-
-
-
-
-            const answer = data2.answer || "(Không có phản hồi)";
-
-
-
-
-
-
-
-
-
-
-
-            cbHistory.push({ role: "user", content: transcript });
-
-
-
-
-
-            cbHistory.push({ role: "assistant", content: answer });
-
-
-
-
-
-
-
-
-
-
-
-            cbShowTyping(false);
-
-
-
-
-
-            cbAddMsg("bot", answer);
-
-
-
-
-
-        } catch (err) {
-
-
-
-
-
-            cbShowTyping(false);
-
-
-
-
-
-            cbAddMsg("bot", "🙏 Xin lỗi, hệ thống đang tạm thời bận. Bạn vui lòng thử lại sau ít phút nhé!");
-
-
-
-
-
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- HELPERS: Voice overlay UI ---- */
-
-
-
-
-
-    function cbVoiceSetState(state, transcript) {
-
-
-
-
-
-        const overlay  = document.getElementById("cbVoiceOverlay");
-
-
-
-
-
-        const status   = document.getElementById("cbVoiceStatus");
-
-
-
-
-
-        const waves    = document.getElementById("cbWaveBars");
-
-
-
-
-
-        const transEl  = document.getElementById("cbVoiceTranscript");
-
-
-
-
-
-        if (!overlay) return;
-
-
-
-
-
-
-
-
-
-
-
-        // Reset classes
-
-
-
-
-
-        overlay.classList.remove("cb-speaking");
-
-
-
-
-
-        waves.classList.remove("cb-listening", "cb-speaking");
-
-
-
-
-
-
-
-
-
-
-
-        if (state === "connecting") {
-
-
-
-
-
-            if (status) status.textContent = "⏳ Đang kết nối...";
-
-
-
-
-
-        } else if (state === "listening") {
-
-
-
-
-
-            if (status) status.textContent = "🎙️ Đang lắng nghe...";
-
-
-
-
-
-            waves.classList.add("cb-listening");
-
-
-
-
-
-        } else if (state === "thinking") {
-
-
-
-
-
-            if (status) status.textContent = "💭 Beenavi AI đang suy nghĩ...";
-
-
-
-
-
-        } else if (state === "speaking") {
-
-
-
-
-
-            if (status) status.textContent = "🔊 Beenavi AI đang trả lời...";
-
-
-
-
-
-            overlay.classList.add("cb-speaking");
-
-
-
-
-
-            waves.classList.add("cb-speaking");
-
-
-
-
-
-        } else if (state === "ready") {
-
-
-
-
-
-            if (status) status.textContent = "🟢 Sẵn sàng — hãy nói!";
-
-
-
-
-
-            waves.classList.add("cb-listening");
-
-
-
-
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-        if (transcript !== undefined && transEl) {
-
-
-
-
-
-            transEl.textContent = transcript || "";
-
-
-
-
-
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    function cbVoiceShowError(msg) {
-
-
-
-
-
-        const errorBanner = document.getElementById("cbVoiceError");
-
-
-
-
-
-        const status = document.getElementById("cbVoiceStatus");
-
-
-
-
-
-        const waves = document.getElementById("cbWaveBars");
-
-
-
-
-
-        if (status) status.textContent = "⚠️ Lỗi cuộc gọi";
-
-
-
-
-
-        if (waves) waves.style.display = "none";
-
-
-
-
-
-        if (errorBanner) {
-
-
-
-
-
-            errorBanner.innerHTML = `
-
-
-
-
-
-                <div class="cb-error-content">
-
-
-
-
-
-                    <span>${msg}</span>
-
-
-
-
-
-                    <button class="cb-retry-btn" onclick="cbStartVoiceCall()">🔄 Thử lại</button>
-
-
-
-
-
-                </div>
-
-
-
-
-
-            `;
-
-
-
-
-
-            errorBanner.style.display = "block";
-
-
-
-
-
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    function cbVoiceShowOverlay(show) {
-
-
-
-
-
-        cbVoiceActive = show;
-
-
-
-
-
-        let overlay = document.getElementById("cbVoiceOverlay");
-
-
-
-
-
-        const chatView = document.getElementById("cbChatView");
-
-
-
-
-
-        const panel = document.getElementById("cbPanel");
-
-
-
-
-
-
-
-
-
-
-
-        if (show) {
-
-
-
-
-
-            // Conditional Rendering: Khi gọi điện, ẩn ChatView để ngắt luồng DOM cũ
-
-
-
-
-
-            if (chatView) chatView.style.display = "none";
-
-
-
-
-
-
-
-
-
-
-
-            // Render Component CallView độc lập phủ kín container cha
-
-
-
-
-
-            if (!overlay && panel) {
-
-
-
-
-
-                overlay = document.createElement("div");
-
-
-
-
-
-                overlay.className = "cb-voice-overlay";
-
-
-
-
-
-                overlay.id = "cbVoiceOverlay";
-
-
-
-
-
-                overlay.innerHTML = `
-
-
-
-
-
-                    <div class="cb-voice-main">
-
-
-
-
-
-                        <div class="cb-voice-rings" id="cbVoiceRings">
-
-
-
-
-
-                            <div class="cb-ring cb-ring-3"></div>
-
-
-
-
-
-                            <div class="cb-ring cb-ring-2"></div>
-
-
-
-
-
-                            <div class="cb-ring cb-ring-1"></div>
-
-
-
-
-
-                            <div class="cb-voice-avatar">
-
-
-
-
-
-                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-
-
-
-
-
-                                    <rect x="3" y="11" width="18" height="10" rx="3"></rect>
-
-
-
-
-
-                                    <circle cx="12" cy="5" r="2"></circle>
-
-
-
-
-
-                                    <path d="M12 7v4"></path>
-
-
-
-
-
-                                    <line x1="8" y1="15" x2="8" y2="15.01" stroke-width="3"></line>
-
-
-
-
-
-                                    <line x1="16" y1="15" x2="16" y2="15.01" stroke-width="3"></line>
-
-
-
-
-
-                                </svg>
-
-
-
-
-
-                            </div>
-
-
-
-
-
-                        </div>
-
-
-
-
-
-                        <div class="cb-voice-name">Beenavi AI</div>
-
-
-
-
-
-                        <div class="cb-voice-status" id="cbVoiceStatus">Đang kết nối...</div>
-
-
-
-
-
-
-
-
-
-
-
-                        <!-- Khối hiển thị lỗi ngoại lệ (Microphone, WebSocket) -->
-
-
-
-
-
-                        <div class="cb-voice-error-banner" id="cbVoiceError" style="display:none;"></div>
-
-
-
-
-
-
-
-
-
-
-
-                        <div class="cb-wave-bars" id="cbWaveBars">
-
-
-
-
-
-                            <span class="cb-wave-bar"></span>
-
-
-
-
-
-                            <span class="cb-wave-bar"></span>
-
-
-
-
-
-                            <span class="cb-wave-bar"></span>
-
-
-
-
-
-                            <span class="cb-wave-bar"></span>
-
-
-
-
-
-                            <span class="cb-wave-bar"></span>
-
-
-
-
-
-                            <span class="cb-wave-bar"></span>
-
-
-
-
-
-                            <span class="cb-wave-bar"></span>
-
-
-
-
-
-                            <span class="cb-wave-bar"></span>
-
-
-
-
-
-                            <span class="cb-wave-bar"></span>
-
-
-
-
-
-                        </div>
-
-
-
-
-
-                        <div class="cb-voice-transcript" id="cbVoiceTranscript"></div>
-
-
-
-
-
-                    </div>
-
-
-
-
-
-                    <button class="cb-hangup-btn" onclick="cbStopVoiceCall()" title="Kết thúc cuộc gọi">
-
-
-
-
-
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-
-
-
-
-                            <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 2.59 3.4z"/>
-
-
-
-
-
-                            <line x1="23" y1="1" x2="1" y2="23"/>
-
-
-
-
-
-                        </svg>
-
-
-
-
-
-                    </button>
-
-
-
-
-
-                `;
-
-
-
-
-
-                panel.appendChild(overlay);
-
-
-
-
-
-            }
-
-
-
-
-
-        } else {
-
-
-
-
-
-            // Khi dừng cuộc gọi: hiển thị lại ChatView và unmount CallView
-
-
-
-
-
-            if (chatView) chatView.style.display = "flex";
-
-
-
-
-
-            if (overlay) overlay.remove();
-
-
-
-
-
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- HÀNG CHỜ ÂM THANH REALTIME (ChatGPT Mode) ---- */
-
-
-
-
-
-    class RealtimeAudioQueue {
-
-
-
-
-
-        constructor() {
-
-
-
-
-
-            this.queue = [];
-
-
-
-
-
-            this.isPlaying = false;
-
-
-
-
-
-            this.currentAudio = null;
-
-
-
-
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-        enqueue(base64Wav) {
-
-
-
-
-
-            this.queue.push(base64Wav);
-
-
-
-
-
-            if (!this.isPlaying) {
-
-
-
-
-
-                this.playNext();
-
-
-
-
-
-            }
-
-
-
-
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-        playNext() {
-
-
-
-
-
-            if (this.queue.length === 0) {
-
-
-
-
-
-                this.isPlaying = false;
-
-
-
-
-
-                this.currentAudio = null;
-
-
-
-
-
-                return;
-
-
-
-
-
-            }
-
-
-
-
-
-
-
-
-
-
-
-            this.isPlaying = true;
-
-
-
-
-
-            const b64 = this.queue.shift();
-
-
-
-
-
-            try {
-
-
-
-
-
-                const binary = atob(b64);
-
-
-
-
-
-                const array = new Uint8Array(binary.length);
-
-
-
-
-
-                for (let i = 0; i < binary.length; i++) {
-
-
-
-
-
-                    array[i] = binary.charCodeAt(i);
-
-
-
-
-
-                }
-
-
-
-
-
-                const blob = new Blob([array], { type: "audio/wav" });
-
-
-
-
-
-                const url = URL.createObjectURL(blob);
-
-
-
-
-
-
-
-
-
-
-
-                const audio = new Audio(url);
-
-
-
-
-
-                this.currentAudio = audio;
-
-
-
-
-
-
-
-
-
-
-
-                audio.onended = () => {
-
-
-
-
-
-                    URL.revokeObjectURL(url);
-
-
-
-
-
-                    this.playNext();
-
-
-
-
-
-                };
-
-
-
-
-
-
-
-
-
-
-
-                audio.onerror = () => {
-
-
-
-
-
-                    URL.revokeObjectURL(url);
-
-
-
-
-
-                    this.playNext();
-
-
-
-
-
-                };
-
-
-
-
-
-
-
-
-
-
-
-                audio.play().catch(err => {
-
-
-
-
-
-                    console.warn("Audio play error:", err);
-
-
-
-
-
-                    this.playNext();
-
-
-
-
-
-                });
-
-
-
-
-
-            } catch (err) {
-
-
-
-
-
-                console.error("Decode audio b64 error:", err);
-
-
-
-
-
-                this.playNext();
-
-
-
-
-
-            }
-
-
-
-
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-        clear() {
-
-
-
-
-
-            this.queue = [];
-
-
-
-
-
-            if (this.currentAudio) {
-
-
-
-
-
-                try { this.currentAudio.pause(); } catch(e){}
-
-
-
-
-
-                this.currentAudio = null;
-
-
-
-
-
-            }
-
-
-
-
-
-            this.isPlaying = false;
-
-
-
-
-
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    const cbAudioQueue = new RealtimeAudioQueue();
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- ĐÀM THOẠI — WebSocket /ws ---- */
-
-
-
-
-
-    function cbToggleVoiceCall() {
-
-
-
-
-
-        if (cbVoiceActive) {
-
-
-
-
-
-            cbStopVoiceCall();
-
-
-
-
-
-        } else {
-
-
-
-
-
-            cbStartVoiceCall();
-
-
-
-
-
-        }
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    // Trần an toàn tối đa mỗi lượt nói (fallback nếu VAD không phát hiện được im lặng)
-
-
-
-
-
-    let cbVoiceTurnTimer = null;
-
-
-
-
-
-    // Flag: đang xử lý AI (không ghi âm)
-
-
-
-
-
-    let cbVoiceProcessing = false;
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- Voice Activity Detection (VAD) — phát hiện lúc người dùng ngừng nói ----
-
-
-
-
-
-       Trước đây mỗi lượt LUÔN ghi âm đủ 8 giây rồi mới gửi audio_end, bất kể
-
-
-
-
-
-       người dùng nói xong sớm hay không → hội thoại bị "khựng", cảm giác trễ.
-
-
-
-
-
-       Nay dùng AnalyserNode để đo năng lượng âm thanh theo thời gian thực:
-
-
-
-
-
-       hễ phát hiện im lặng liên tục CB_VAD_SILENCE_MS sau khi đã có tiếng nói,
-
-
-
-
-
-       lượt ghi âm kết thúc ngay lập tức. CB_VAD_MAX_TURN_MS chỉ là trần an toàn
-
-
-
-
-
-       (phòng khi trình duyệt không hỗ trợ Web Audio API hoặc micro quá ồn). */
-
-
-
-
-
-    const CB_VAD_SILENCE_MS = 900;
-
-
-
-
-
-    const CB_VAD_THRESHOLD = 0.015;
-
-
-
-
-
-    const CB_VAD_MAX_TURN_MS = 15000;
-
-
-
-
-
-
-
-
-
-
-
-    let cbVadCtx = null;
-
-
-
-
-
-    let cbVadAnalyser = null;
-
-
-
-
-
-    let cbVadSource = null;
-
-
-
-
-
-    let cbVadRafId = null;
-
-
-
-
-
-
-
-
-
-
-
-    function cbVadStop() {
-
-
-
-
-
-        if (cbVadRafId !== null) cancelAnimationFrame(cbVadRafId);
-
-
-
-
-
-        cbVadRafId = null;
-
-
-
-
-
-        if (cbVadSource) {
-
-
-
-
-
-            try { cbVadSource.disconnect(); } catch (e) {}
-
-
-
-
-
-            cbVadSource = null;
-
-
-
-
-
-        }
-
-
-
-
-
-        if (cbVadCtx) {
-
-
-
-
-
-            try { cbVadCtx.close(); } catch (e) {}
-
-
-
-
-
-            cbVadCtx = null;
-
-
-
-
-
-        }
-
-
-
-
-
-        cbVadAnalyser = null;
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    function cbVadStart(stream) {
-
-
-
-
-
-        cbVadStop();
-
-
-
-
-
-        try {
-
-
-
-
-
-            cbVadCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-
-
-
-
-            cbVadAnalyser = cbVadCtx.createAnalyser();
-
-
-
-
-
-            cbVadAnalyser.fftSize = 512;
-
-
-
-
-
-            cbVadSource = cbVadCtx.createMediaStreamSource(stream);
-
-
-
-
-
-            cbVadSource.connect(cbVadAnalyser);
-
-
-
-
-
-        } catch (err) {
-
-
-
-
-
-            console.warn("[Chatbot] VAD không khởi tạo được, dùng trần an toàn 15s:", err);
-
-
-
-
-
-            return;
-
-
-
-
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-        const data = new Uint8Array(cbVadAnalyser.fftSize);
-
-
-
-
-
-        let speechDetected = false;
-
-
-
-
-
-        let silenceStartedAt = null;
-
-
-
-
-
-
-
-
-
-
-
-        const tick = () => {
-
-
-
-
-
-            if (!cbVoiceActive || !cbVadAnalyser) return;
-
-
-
-
-
-            cbVadAnalyser.getByteTimeDomainData(data);
-
-
-
-
-
-
-
-
-
-
-
-            let sumSquares = 0;
-
-
-
-
-
-            for (let i = 0; i < data.length; i++) {
-
-
-
-
-
-                const norm = (data[i] - 128) / 128;
-
-
-
-
-
-                sumSquares += norm * norm;
-
-
-
-
-
-            }
-
-
-
-
-
-            const rms = Math.sqrt(sumSquares / data.length);
-
-
-
-
-
-            const now = performance.now();
-
-
-
-
-
-
-
-
-
-
-
-            if (rms > CB_VAD_THRESHOLD) {
-
-
-
-
-
-                speechDetected = true;
-
-
-
-
-
-                silenceStartedAt = null;
-
-
-
-
-
-            } else if (speechDetected) {
-
-
-
-
-
-                if (silenceStartedAt === null) {
-
-
-
-
-
-                    silenceStartedAt = now;
-
-
-
-
-
-                } else if (now - silenceStartedAt > CB_VAD_SILENCE_MS) {
-
-
-
-
-
-                    cbVoiceEndTurn();
-
-
-
-
-
-                    return;
-
-
-
-
-
-                }
-
-
-
-
-
-            }
-
-
-
-
-
-
-
-
-
-
-
-            cbVadRafId = requestAnimationFrame(tick);
-
-
-
-
-
-        };
-
-
-
-
-
-
-
-
-
-
-
-        cbVadRafId = requestAnimationFrame(tick);
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    /* Kết thúc lượt ghi âm hiện tại (do VAD phát hiện im lặng, hoặc do chạm trần an toàn) */
-
-
-
-
-
-    function cbVoiceEndTurn() {
-
-
-
-
-
-        if (!cbVoiceActive || cbVoiceProcessing) return;
-
-
-
-
-
-        clearTimeout(cbVoiceTurnTimer);
-
-
-
-
-
-        cbVadStop();
-
-
-
-
-
-
-
-
-
-
-
-        const ws = cbWs;
-
-
-
-
-
-        const recorder = ws && ws._voiceRecorder;
-
-
-
-
-
-
-
-
-
-
-
-        if (recorder && recorder.state === "recording") {
-
-
-
-
-
-            recorder.stop();
-
-
-
-
-
-        }
-
-
-
-
-
-        if (ws && ws.readyState === WebSocket.OPEN) {
-
-
-
-
-
-            ws.send(JSON.stringify({ type: "audio_end" }));
-
-
-
-
-
-        }
-
-
-
-
-
-        cbVoiceProcessing = true;
-
-
-
-
-
-        cbVoiceSetState("thinking", "");
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    /* Khởi động 1 lượt ghi âm — kết thúc theo VAD (im lặng), trần an toàn CB_VAD_MAX_TURN_MS */
-
-
-
-
-
-    function cbVoiceStartTurn() {
-
-
-
-
-
-        if (!cbVoiceActive || cbVoiceProcessing) return;
-
-
-
-
-
-        const ws = cbWs;
-
-
-
-
-
-        if (!ws || ws.readyState !== WebSocket.OPEN) return;
-
-
-
-
-
-
-
-
-
-
-
-        const recorder = ws._voiceRecorder;
-
-
-
-
-
-        if (!recorder || recorder.state === "recording") return;
-
-
-
-
-
-
-
-
-
-
-
-        ws.send(JSON.stringify({ type: "audio_start" }));
-
-
-
-
-
-        cbVoiceSetState("listening", "");
-
-
-
-
-
-        recorder.start(300);
-
-
-
-
-
-
-
-
-
-
-
-        if (ws._voiceStream) {
-
-
-
-
-
-            cbVadStart(ws._voiceStream);
-
-
-
-
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-        // Trần an toàn — chỉ kích hoạt nếu VAD không phát hiện được im lặng
-
-
-
-
-
-        clearTimeout(cbVoiceTurnTimer);
-
-
-
-
-
-        cbVoiceTurnTimer = setTimeout(() => {
-
-
-
-
-
-            cbVoiceEndTurn();
-
-
-
-
-
-        }, CB_VAD_MAX_TURN_MS);
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    /* Đợi TTS audio queue phát hết, sau đó bắt đầu lượt ghi âm mới */
-
-
-
-
-
-    function cbWaitQueueThenListen() {
-
-
-
-
-
-        if (!cbVoiceActive) return;
-
-
-
-
-
-        if (cbAudioQueue.isPlaying || cbAudioQueue.queue.length > 0) {
-
-
-
-
-
-            setTimeout(cbWaitQueueThenListen, 250);
-
-
-
-
-
-            return;
-
-
-
-
-
-        }
-
-
-
-
-
-        // Queue trống → bắt đầu lượt nghe mới
-
-
-
-
-
-        cbVoiceProcessing = false;
-
-
-
-
-
-        cbVoiceStartTurn();
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    function cbStartVoiceCall() {
-
-
-
-
-
-        cbAudioQueue.clear();
-
-
-
-
-
-        cbVoiceProcessing = false;
-
-
-
-
-
-        // Hiện overlay ngay
-
-
-
-
-
-        cbVoiceShowOverlay(true);
-
-
-
-
-
-        cbVoiceSetState("connecting", "");
-
-
-
-
-
-
-
-
-
-
-
-        const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-
-
-
-
-
-        const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
-
-
-
-
-
-
-
-
-
-
-
-        // Kiểm tra kết nối server trước
-
-
-
-
-
-        let connectionTimeout = setTimeout(() => {
-
-
-
-
-
-            if (cbWs && cbWs.readyState !== WebSocket.OPEN) {
-
-
-
-
-
-                cbVoiceSetState("connecting", "❌ Không kết nối được server!");
-
-
-
-
-
-                cbAddMsg("bot", "❌ Không thể kết nối đến server. Vui lòng kiểm tra server backend đang chạy rồi thử lại!");
-
-
-
-
-
-                setTimeout(() => { cbStopVoiceCall(); }, 3000);
-
-
-
-
-
-            }
-
-
-
-
-
-        }, 5000);
-
-
-
-
-
-
-
-
-
-
-
-        cbWs = new WebSocket(wsUrl);
-
-
-
-
-
-        cbVoiceActive = true;
-
-
-
-
-
-
-
-
-
-
-
-        const btn = document.getElementById("cbCallBtn");
-
-
-
-
-
-        if (btn) btn.classList.add("cb-tool-active");
-
-
-
-
-
-
-
-
-
-
-
-        let voiceStream = null;
-
-
-
-
-
-        let voiceRecorder = null;
-
-
-
-
-
-
-
-
-
-
-
-        cbWs.onopen = async () => {
-
-
-
-
-
-            clearTimeout(connectionTimeout);
-
-
-
-
-
-            cbVoiceSetState("ready", "");
-
-
-
-
-
-            try {
-
-
-
-
-
-                voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-
-
-
-
-
-
-
-
-
-
-                let options = {};
-
-
-
-
-
-                if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported) {
-
-
-
-
-
-                    if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
-
-
-
-
-
-                        options = { mimeType: "audio/webm;codecs=opus" };
-
-
-
-
-
-                    } else if (MediaRecorder.isTypeSupported("audio/webm")) {
-
-
-
-
-
-                        options = { mimeType: "audio/webm" };
-
-
-
-
-
-                    }
-
-
-
-
-
-                }
-
-
-
-
-
-                voiceRecorder = new MediaRecorder(voiceStream, options);
-
-
-
-
-
-
-
-
-
-
-
-                voiceRecorder.ondataavailable = (e) => {
-
-
-
-
-
-                    if (e.data.size > 0 && cbWs && cbWs.readyState === WebSocket.OPEN) {
-
-
-
-
-
-                        const reader = new FileReader();
-
-
-
-
-
-                        reader.onload = () => {
-
-
-
-
-
-                            const b64 = reader.result.split(",")[1];
-
-
-
-
-
-                            cbWs.send(JSON.stringify({ type: "audio_chunk", data: b64 }));
-
-
-
-
-
-                        };
-
-
-
-
-
-                        reader.readAsDataURL(e.data);
-
-
-
-
-
-                    }
-
-
-
-
-
-                };
-
-
-
-
-
-
-
-
-
-
-
-                // Gắn recorder và stream vào ws nếu websocket còn mở
-
-
-
-
-
-                if (cbWs) {
-
-
-
-
-
-                    cbWs._voiceStream = voiceStream;
-
-
-
-
-
-                    cbWs._voiceRecorder = voiceRecorder;
-
-
-
-
-
-                }
-
-
-
-
-
-
-
-
-
-
-
-                // Bắt đầu lượt đầu tiên
-
-
-
-
-
-                cbVoiceStartTurn();
-
-
-
-
-
-            } catch (err) {
-
-
-
-
-
-                clearTimeout(connectionTimeout);
-
-
-
-
-
-                console.warn("[Chatbot] getUserMedia error:", err);
-
-
-
-
-
-                cbVoiceShowError("⚠️ Không thể truy cập Microphone. Vui lòng cấp quyền Microphone trên góc thanh địa chỉ trình duyệt và thử lại!");
-
-
-
-
-
-            }
-
-
-
-
-
-        };
-
-
-
-
-
-
-
-
-
-
-
-        cbWs.onmessage = (event) => {
-
-
-
-
-
-            const payload = JSON.parse(event.data);
-
-
-
-
-
-
-
-
-
-
-
-            // LƯU Ý: toàn bộ khối này chỉ chạy trong lúc đang GỌI (voice call),
-
-
-
-
-
-            // vì cbWs chỉ được tạo bởi cbStartVoiceCall(). Trước đây các nhánh
-
-
-
-
-
-            // "greeting"/"transcript"/"answer" gọi cbAddMsg(...) ghi thẳng vào
-
-
-
-
-
-            // #cbBody (ô chat văn bản chính) → gây ra lỗi "sinh text vào ô chat
-
-
-
-
-
-            // lúc gọi". Nay chỉ cập nhật overlay cuộc gọi (cbVoiceSetState),
-
-
-
-
-
-            // KHÔNG đụng vào #cbBody nữa trong suốt cuộc gọi.
-
-
-
-
-
-
-
-
-
-
-
-            if (payload.type === "greeting" && payload.text) {
-
-
-
-
-
-                cbVoiceSetState("speaking", payload.text);
-
-
-
-
-
-
-
-
-
-
-
-            } else if (payload.type === "partial_transcript" && payload.text) {
-
-
-
-
-
-                // Hiện partial transcript trên overlay
-
-
-
-
-
-                cbVoiceSetState("listening", payload.text);
-
-
-
-
-
-
-
-
-
-
-
-            } else if (payload.type === "transcript" && payload.text) {
-
-
-
-
-
-                // Transcript đã nhận xong — ngắt âm thanh cũ, hiện trên overlay
-
-
-
-
-
-                cbAudioQueue.clear();
-
-
-
-
-
-                cbVoiceSetState("thinking", `"${payload.text}"`);
-
-
-
-
-
-                cbVoiceLastUserText = payload.text;
-
-
-
-
-
-
-
-
-
-
-
-            } else if (payload.type === "answer" && payload.text) {
-
-
-
-
-
-                // AI đang stream trả lời — hiện phụ đề trực tiếp trên overlay
-
-
-
-
-
-                // cuộc gọi (giống phụ đề cuộc gọi thoại), không tạo bubble chat.
-
-
-
-
-
-                cbVoiceSetState("speaking", payload.text);
-
-
-
-
-
-                cbVoiceLastAnswerText = payload.text;
-
-
-
-
-
-
-
-
-
-
-
-            } else if (payload.type === "tts_chunk" && payload.audio) {
-
-
-
-
-
-                // Âm thanh VieNeu-TTS theo từng câu -> enqueue và phát mượt.
-
-
-
-
-
-                // Không truyền transcript ở đây để tránh đè lên phụ đề đang
-
-
-
-
-
-                // tăng dần từ sự kiện "answer" (tránh nhấp nháy phụ đề).
-
-
-
-
-
-                cbAudioQueue.enqueue(payload.audio);
-
-
-
-
-
-                cbVoiceSetState("speaking");
-
-
-
-
-
-
-
-
-
-
-
-            } else if (payload.type === "done") {
-
-
-
-
-
-                // Xong 1 lượt hỏi-đáp trong cuộc gọi. Lưu lại vào cbHistory
-
-
-
-
-
-                // (không hiện lên ô chat) để nếu người dùng chuyển sang gõ
-
-
-
-
-
-                // chat sau khi cúp máy, bot vẫn nhớ ngữ cảnh vừa trao đổi.
-
-
-
-
-
-                if (cbVoiceLastUserText) {
-
-
-
-
-
-                    cbHistory.push({ role: "user", content: cbVoiceLastUserText });
-
-
-
-
-
-                    cbHistory.push({ role: "assistant", content: cbVoiceLastAnswerText || "" });
-
-
-
-
-
-                    cbVoiceLastUserText = "";
-
-
-
-
-
-                    cbVoiceLastAnswerText = "";
-
-
-
-
-
-                }
-
-
-
-
-
-                // Khi không có TTS chunk nào → cbAudioQueue rỗng → lắng nghe ngay
-
-
-
-
-
-                cbWaitQueueThenListen();
-
-
-
-
-
-
-
-
-
-
-
-            } else if (payload.type === "listening") {
-
-
-
-
-
-                cbVoiceSetState("listening", "");
-
-
-
-
-
-
-
-
-
-
-
-            } else if (payload.type === "stt_empty") {
-
-
-
-
-
-                cbVoiceSetState("listening", "Không nhận được âm thanh...");
-
-
-
-
-
-                setTimeout(() => cbVoiceSetState("listening", ""), 1800);
-
-
-
-
-
-            }
-
-
-
-
-
-        };
-
-
-
-
-
-
-
-
-
-
-
-        cbWs.onclose = (event) => {
-
-
-
-
-
-            clearTimeout(connectionTimeout);
-
-
-
-
-
-            if (!cbVoiceActive) return;
-
-
-
-
-
-            cbAudioQueue.clear();
-
-
-
-
-
-            if (voiceStream) voiceStream.getTracks().forEach(t => t.stop());
-
-
-
-
-
-            if (voiceRecorder && voiceRecorder.state !== "inactive") voiceRecorder.stop();
-
-
-
-
-
-        };
-
-
-
-
-
-
-
-
-
-
-
-        cbWs.onerror = (err) => {
-
-
-
-
-
-            clearTimeout(connectionTimeout);
-
-
-
-
-
-            console.warn("[Chatbot] WebSocket error:", err);
-
-
-
-
-
-            cbVoiceSetState("connecting", "⚠️ Lỗi kết nối WebSocket!");
-
-
-
-
-
-        };
-
-
-
-
-
-
-
-
-
-
-
-        cbWs._voiceStream = voiceStream;
-
-
-
-
-
-        cbWs._voiceRecorder = voiceRecorder;
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-    function cbStopVoiceCall() {
-        const wasActive = cbVoiceActive;
-        clearTimeout(cbVoiceTurnTimer);
-        cbVadStop();
-        cbVoiceProcessing = false;
-        cbVoiceLastUserText = "";
-        cbVoiceLastAnswerText = "";
-        cbAudioQueue.clear();
-
-        if (cbWs) {
-            if (cbWs._voiceRecorder && cbWs._voiceRecorder.state !== "inactive") {
-                try { cbWs._voiceRecorder.stop(); } catch(e) {}
-            }
-            if (cbWs._voiceStream) {
-                try { cbWs._voiceStream.getTracks().forEach(t => t.stop()); } catch(e) {}
-            }
-            if (cbWs.readyState === WebSocket.OPEN) {
-                try {
-                    cbWs.send(JSON.stringify({ type: "audio_end" }));
-                    cbWs.close();
-                } catch(e) {}
-            }
-            cbWs = null;
-        }
-
-        cbVoiceActive = false;
-
-        const btn = document.getElementById("cbCallBtn");
-        if (btn) btn.classList.remove("cb-tool-active");
-        cbVoiceShowOverlay(false);
-
-        if (wasActive) {
-            cbAddMsg("bot", "🎧 Đã kết thúc cuộc đàm thoại.");
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Export functions ra window để inline onclick gọi chắc chắn
-
-
-
-
-
-    window.cbToggle = cbToggle;
-
-
-
-
-
-    window.cbToggleCall = cbToggleCall;
-
-
-
-
-
-    window.cbToggleVoiceCall = cbToggleVoiceCall;
-
-
-
-
-
-    window.cbStopVoiceCall = cbStopVoiceCall;
-
-
-
-
-
-    window.cbSendText = cbSendText;
-
-
-
-
-
-    window.cbToggleMic = cbToggleMic;
-
-
-
-
-
-    window.cbOpenCamera = cbOpenCamera;
-
-
-
-
-
-    window.cbCloseCamera = cbCloseCamera;
-
-
-
-
-
-    window.cbCapturePhoto = cbCapturePhoto;
-
-
-
-
-
-    window.cbHandleImageUpload = cbHandleImageUpload;
-
-
-
-
-
-    window.cbScrollToBottom = cbScrollToBottom;
-
-
-
-
-
-
-
-
-
-
-
-    /* ---- Auto-resize textarea ---- */
-
-
-
-
-
-    document.addEventListener("DOMContentLoaded", () => {
-
-
-
-
-
-        const inp = document.getElementById("cbInput");
-
-
-
-
-
-        if (inp) {
-
-
-
-
-
-            inp.addEventListener("input", () => {
-
-
-
-
-
-                inp.style.height = "auto";
-
-
-
-
-
-                inp.style.height = Math.min(inp.scrollHeight, 100) + "px";
-
-
-
-
-
-            });
-
-
-
-
-
-        }
-
-
-
-
-
+    // Auto-open on load
+    window.addEventListener('load', function() {
+        setTimeout(() => {
+            cbEnsureWs();
+            if (!cbOpen) cbToggle();
+        }, 600);
     });
 
+    // Auto-resize textarea
+    document.addEventListener("DOMContentLoaded", () => {
+        const inp = document.getElementById("cbInput");
+        if (inp) {
+            inp.addEventListener("input", () => {
+                inp.style.height = "auto";
+                inp.style.height = Math.min(inp.scrollHeight, 100) + "px";
+            });
+        }
+    });
 
-
-
-
+    // Window global exports
+    window.cbToggle = cbToggle;
+    window.cbSendText = cbSendText;
+    window.cbToggleRecord = cbToggleRecord;
+    window.cbToggleTts = cbToggleTts;
+    window.cbOpenCamera = cbOpenCamera;
+    window.cbCloseCamera = cbCloseCamera;
+    window.cbCapturePhoto = cbCapturePhoto;
+    window.cbHandleImageUpload = cbHandleImageUpload;
+    window.cbScrollToBottom = cbScrollToBottom;
     </script>
 
 
@@ -8767,7 +5275,343 @@
 </div>
 <style>
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-</style>
+
+        /* ============================================================
+           SPLIT BUILDER MEGA 2-COLUMN LAYOUT CSS
+           ============================================================ */
+        .split-builder-wrapper {
+            max-width: 1240px;
+            margin: 20px auto 40px auto;
+            padding: 0 15px;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .builder-top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .builder-title-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .builder-logo-img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+        .builder-main-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1E293B;
+            margin: 0;
+        }
+        .builder-sub-title {
+            font-size: 13px;
+            color: #64748B;
+            margin: 2px 0 0 0;
+        }
+        .split-builder-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+            align-items: flex-start;
+        }
+        .builder-left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .builder-section-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+        .builder-section-card:hover {
+            border-color: #CBD5E1;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+        }
+        .builder-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        .builder-card-header .card-icon {
+            font-size: 20px;
+        }
+        .builder-card-header h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0F172A;
+            margin: 0;
+        }
+        .form-group-item label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+        .builder-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #CBD5E1;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #1E293B;
+            background: #F8FAFC;
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .builder-input:focus {
+            border-color: #E8B923;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(232, 185, 35, 0.2);
+        }
+        .chip-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .form-chip {
+            padding: 8px 14px;
+            border: 1px solid #E2E8F0;
+            background: #F8FAFC;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .form-chip:hover {
+            background: #F1F5F9;
+            border-color: #CBD5E1;
+        }
+        .form-chip.active {
+            background: #E8B923;
+            color: #FFFFFF;
+            border-color: #E8B923;
+            box-shadow: 0 4px 14px rgba(232, 185, 35, 0.35);
+        }
+        .checkbox-member-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .custom-chk-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            background: #F8FAFC;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+            transition: all 0.2s ease;
+        }
+        .custom-chk-label:hover {
+            background: #F1F5F9;
+        }
+        .mode-b-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        /* Live Preview Sticky Card */
+        .builder-right-col {
+            position: sticky;
+            top: 85px;
+        }
+        .live-preview-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        .preview-hero-img-wrap {
+            position: relative;
+            height: 140px;
+            overflow: hidden;
+        }
+        .preview-hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .preview-img-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.85) 100%);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            color: white;
+        }
+        .preview-tag-live {
+            font-size: 10px;
+            font-weight: 800;
+            background: #10B981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 6px;
+            width: fit-content;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        .preview-dest-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .preview-dest-origin {
+            font-size: 12px;
+            color: rgba(255,255,255,0.85);
+            margin: 2px 0 0 0;
+        }
+        .preview-content-body {
+            padding: 18px;
+        }
+        .preview-badges-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .preview-badge-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #F8FAFC;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid #F1F5F9;
+        }
+        .preview-badge-item .badge-icon {
+            font-size: 16px;
+        }
+        .preview-badge-item .badge-text small {
+            display: block;
+            font-size: 10px;
+            color: #94A3B8;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .preview-badge-item .badge-text strong {
+            font-size: 12px;
+            color: #1E293B;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        .preview-cost-box {
+            background: linear-gradient(135deg, rgba(232, 185, 35, 0.08), rgba(245, 158, 11, 0.05));
+            border: 1px solid rgba(232, 185, 35, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+        .cost-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+        .cost-badge-tag {
+            font-size: 10px;
+            background: rgba(232, 185, 35, 0.18);
+            color: #D97706;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .cost-box-amount {
+            font-size: 20px;
+            font-weight: 800;
+            color: #D97706;
+        }
+        .cost-box-breakdown {
+            font-size: 11px;
+            color: #64748B;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .preview-notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .preview-note-item {
+            background: #F8FAFC;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border-left: 3px solid #E8B923;
+        }
+        .btn-mega-generate {
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .btn-mega-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(217, 119, 6, 0.45);
+        }
+        .preview-guarantee-text {
+            font-size: 11px;
+            color: #94A3B8;
+            text-align: center;
+            margin-top: 8px;
+            line-height: 1.3;
+        }
+        @media (max-width: 960px) {
+            .split-builder-layout {
+                grid-template-columns: 1fr;
+            }
+            .builder-right-col {
+                position: static;
+            }
+        }
+
+    </style>
 
 
     <!-- Destination Info Modal -->
@@ -9256,6 +6100,86 @@
             color: #64748B;
         }
     </style>
+
+    <!-- FULLSCREEN MAP MODAL (ROOT BODY LEVEL TO ESCAPE STICKY & TRANSFORM CONTAINERS) -->
+    <div id="mapFullscreenModal" style="display: none; position: fixed; inset: 0; background: #FFFFFF; z-index: 999999999; flex-direction: column; width: 100vw; height: 100vh;">
+        <div style="padding: 12px 24px; background: #FFFFFF; border-bottom: 2px solid #CBD5E1; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #1E293B; display: flex; align-items: center; gap: 8px;">
+                    🗺️ Bản Đồ Lộ Trình Tuyến Đường (Toàn Màn Hình)
+                </h3>
+                <span id="fsActiveMapDayLabel" style="font-size: 12px; background: rgba(232, 185, 35, 0.25); color: #B45309; padding: 4px 12px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(232, 185, 35, 0.4);">
+                    Ngày 1
+                </span>
+            </div>
+            <button type="button" onclick="closeMapFullscreenModal()" style="background: linear-gradient(135deg, #EF4444, #DC2626); color: #FFFFFF; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35); transition: all 0.2s;">
+                ✕ Thu Nhỏ Màn Hình (Esc)
+            </button>
+        </div>
+        <div id="fullscreenMapHolder" style="flex: 1 1 auto; width: 100vw; height: calc(100vh - 65px); position: relative; background: #F8FAFC;"></div>
+    </div>
+
+    <script>
+        window.toggleMapFullscreen = function() {
+            const modal = document.getElementById('mapFullscreenModal');
+            const holder = document.getElementById('fullscreenMapHolder');
+            const originalParent = document.getElementById('originalMapParent');
+            const mapEl = document.getElementById('leafletMap');
+            const btnZoomOverlay = document.getElementById('btnMapFullscreenOverlay');
+
+            if (!modal || !holder || !mapEl) {
+                console.error("Map elements missing for fullscreen", { modal, holder, mapEl });
+                return;
+            }
+
+            const isFullscreen = modal.style.display === 'flex';
+
+            if (isFullscreen) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                if (originalParent) {
+                    originalParent.appendChild(mapEl);
+                }
+                mapEl.style.height = '400px';
+                mapEl.style.borderRadius = '';
+                if (btnZoomOverlay) btnZoomOverlay.innerHTML = '⛶ Phóng To Bản Đồ';
+            } else {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                holder.appendChild(mapEl);
+                mapEl.style.height = 'calc(100vh - 65px)';
+                mapEl.style.borderRadius = '0';
+                if (btnZoomOverlay) btnZoomOverlay.innerHTML = '✕ Thu nhỏ';
+
+                const labelSrc = document.getElementById('activeMapDayLabel');
+                const labelTarget = document.getElementById('fsActiveMapDayLabel');
+                if (labelSrc && labelTarget) {
+                    labelTarget.textContent = labelSrc.textContent;
+                }
+            }
+
+            [50, 150, 300, 500, 800].forEach(delay => {
+                setTimeout(() => {
+                    if (window.leafletMap) {
+                        window.leafletMap.invalidateSize(true);
+                    }
+                }, delay);
+            });
+        };
+
+        window.closeMapFullscreenModal = function() {
+            const modal = document.getElementById('mapFullscreenModal');
+            if (modal && modal.style.display === 'flex') {
+                window.toggleMapFullscreen();
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.closeMapFullscreenModal();
+            }
+        });
+    </script>
 
 </body>
 

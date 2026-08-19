@@ -1,4 +1,7 @@
-import time
+"""
+ai_engine/context_merger.py
+Bộ gộp ngữ cảnh thông minh và tạo Prompt động cho Chatbot Tư vấn Du lịch BeeNavi AI.
+"""
 import datetime
 from typing import Any, Dict, List, Optional
 from api_server.config import SYSTEM_PROMPT
@@ -13,10 +16,11 @@ class ContextMerger:
         tool_results: Dict[str, Dict[str, Any]],
         user_profile: Optional[Dict[str, Any]] = None,
         slots: Optional[Dict[str, Any]] = None,
-        intent: str = "GENERAL_CHAT"
+        intent: str = "GENERAL_TRAVEL_CHAT",
+        is_voice_mode: bool = False
     ) -> str:
         """
-        Ghép dữ liệu các Tool vào System Prompt kèm thời gian thực tế.
+        Ghép dữ liệu từ các Tool chuyên biệt vào System Prompt kèm thời gian thực tế.
         """
         now = datetime.datetime.now()
         days_vn = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
@@ -25,19 +29,32 @@ class ContextMerger:
 
         sections: List[str] = [
             SYSTEM_PROMPT.strip(),
-            f"[THỜI GIAN THỰC TẾ]: Hôm nay là {current_time_str}. Khi người dùng hỏi về ngày/giờ, hãy trả lời chính xác theo mốc thời gian thực này."
+            f"[THỜI GIAN THỰC TẾ]: Hôm nay là {current_time_str}."
         ]
+
+        # Chế độ Cuộc gọi Thoại & Chat Đa phương thức -> Tối ưu súc tích, phản xạ cực nhanh
+        if is_voice_mode:
+            sections.append(
+                "[CHẾ ĐỘ TRÒ CHUYỆN ĐA PHƯƠNG THỨC (VOICE & TEXT CHAT)]:\n"
+                "- Bạn đang trò chuyện tư vấn trực tiếp với khách hàng (hệ thống vừa hiển thị văn bản vừa phát âm thanh đọc câu trả lời).\n"
+                "- Trả lời súc tích, tự nhiên, thân thiện, mạch lạc và giàu thông tin hữu ích.\n"
+                "- QUY TẮC DẤU CÂU & NGỮ ĐIỆU CHO GIỌNG ĐỌC AI:\n"
+                "  + Luôn sử dụng đầy đủ dấu chấm (.), dấu phẩy (,), dấu hỏi (?) và LUÔN CÁCH KHOẢNG TRẮNG sau mỗi dấu câu (Ví dụ: 'kế hoạch chi tiết nhé. Bạn muốn...' thay vì 'nhé.Bạn').\n"
+                "  + TUYỆT ĐỐI KHÔNG dùng dấu gạch chéo (/) trong câu (Ví dụ: không viết 'ngày/đêm', 'xe/tàu', '1/2' mà hãy viết rõ 'ngày và đêm', 'xe hoặc tàu', '1 đến 2').\n"
+                "- Trình bày đẹp mắt với các gạch đầu dòng ngắn gọn hoặc bôi đậm tên địa điểm/món ăn để người dùng dễ đọc.\n"
+                "- TUYỆT ĐỐI KHÔNG bắt đầu bằng 'Chào bạn', 'Chào bạn!', 'Xin chào'. Hãy đi thẳng ngay vào câu trả lời, hoặc dùng các từ đệm tự nhiên như 'Được thôi,', 'Tuyệt vời,', 'Mình hiểu rồi,', 'Ok,'."
+            )
 
         # 1. Ngữ cảnh Hồ sơ & Sở thích người dùng (Cá nhân hóa)
         profile_summary = tool_results.get("user_profile", {}).get("summary")
         if profile_summary and "chưa đăng nhập" not in profile_summary.lower():
             sections.append(
-                f"\n[HỒ SƠ & SỞ THÍCH CÁ NHÂN HÓA CỦA NGƯỜI DÙNG]:\n"
+                f"\n[HỒ SƠ & SỞ THÍCH CỦA NGƯỜI DÙNG]:\n"
                 f"- {profile_summary}\n"
-                f"- LƯU Ý: Hãy cá nhân hóa câu trả lời dựa trên sở thích, kiêng cữ và ngân sách này của người dùng!"
+                f"- LƯU Ý: Ưu tiên gợi ý phù hợp với sở thích, kiêng cữ và khẩu vị này của người dùng!"
             )
 
-        # 2. Ngữ cảnh Thời tiết thực tế & Quy tắc gợi ý
+        # 2. Ngữ cảnh Thời tiết thực tế
         weather_summary = tool_results.get("get_weather", {}).get("summary")
         if weather_summary:
             sections.append(f"\n{weather_summary}")
@@ -47,34 +64,45 @@ class ContextMerger:
         if rag_summary and rag_summary.strip():
             sections.append(f"\n{rag_summary}")
 
-        # 4. Ngữ cảnh Lịch trình mẫu từ Planner Engine (Rule + K-Means)
-        planner_summary = tool_results.get("plan_itinerary", {}).get("summary")
-        if planner_summary and planner_summary.strip():
-            sections.append(f"\n{planner_summary}")
+        # 4. Ngữ cảnh Bản đồ, Khoảng cách & Tuyến đường
+        map_summary = tool_results.get("map_service", {}).get("summary")
+        if map_summary and map_summary.strip():
+            sections.append(f"\n{map_summary}")
 
-        # 5. Ngữ cảnh Nhật ký & Lịch sử chuyến đi
-        diary_summary = tool_results.get("diary_service", {}).get("summary")
-        if diary_summary and diary_summary.strip():
-            sections.append(f"\n{diary_summary}")
+        # 5. Ngữ cảnh Dự toán Ngân sách & Chi phí
+        budget_summary = tool_results.get("budget_tool", {}).get("summary")
+        if budget_summary and budget_summary.strip():
+            sections.append(f"\n{budget_summary}")
 
-        # 6. Chỉ dẫn cụ thể theo từng Intent
-        if intent == "PLAN_ITINERARY":
+        # 6. Ngữ cảnh Danh sách Hành lý & Đồ dùng cần chuẩn bị
+        checklist_summary = tool_results.get("checklist_tool", {}).get("summary")
+        if checklist_summary and checklist_summary.strip():
+            sections.append(f"\n{checklist_summary}")
+
+        # 7. Chỉ dẫn trọng tâm theo từng Intent
+        if intent == "CHECK_WEATHER":
             sections.append(
-                "\n[HƯỚNG DẪN ĐẶC BIỆT KHI VIẾT LỊCH TRÌNH]:\n"
-                "1. ĐIỂM XUẤT PHÁT: Nếu người dùng KHÔNG chỉ định rõ nơi xuất phát (ví dụ chỉ nói 'Hà Nội' hoặc 'Đà Nẵng'), TUYỆT ĐỐI KHÔNG tự ý giả định người dùng ở TP.HCM! Hãy tính toán theo tour tại chỗ hoặc ghi chú rõ: '(Dự toán di chuyển nội thành / chưa bao gồm vé liên tỉnh tùy nơi xuất phát của bạn)'.\n"
-                "2. ĐỊA GIỚI HÀNH CHÍNH: CHỈ gợi ý các địa điểm thuộc đúng tỉnh thành điểm đến (Ví dụ: Hà Nội chỉ gợi ý Hồ Gươm, Phố Cổ, Văn Miếu, Hồ Tây, Lăng Bác, Bát Tràng... KHÔNG đưa Đền Hùng Phú Thọ hay Hòa Bình vào lịch trình Hà Nội).\n"
-                "3. CHẤT LƯỢNG ĐỊA ĐIỂM: Chỉ giới thiệu danh lam thắng cảnh, di tích lịch sử nổi tiếng, quán ăn ngon, cafe view đẹp. KHÔNG đưa cơ quan công quyền, đồn công an hay trường học vào lịch trình du lịch.\n"
-                "4. Trình bày lịch trình rõ ràng theo từng Ngày (Ngày 1, Ngày 2...).\n"
-                "5. Mỗi hoạt động viết đúng 1 câu ngắn gọn, súc tích, hấp dẫn.\n"
-                "6. KẾT THÚC: Hãy hỏi khách hàng có muốn điều chỉnh thêm gì không (đổi ngày, ngân sách, hoạt động) hay muốn chốt phương án này để lưu vào Balo hành trang."
+                "\n[HƯỚNG DẪN TRẢ LỜI]: Tóm tắt ngắn gọn tình hình thời tiết, nhiệt độ hiện tại và đưa ra lời khuyên thiết thực (ví dụ: mang áo ấm, mang ô/dù, trang phục phù hợp)."
             )
-        elif intent == "CHECK_WEATHER":
+        elif intent == "ASK_DISTANCE_TRANSPORT":
             sections.append(
-                "\n[HƯỚNG DẪN]: Tóm tắt nhanh thời tiết hiện tại và gợi ý hoạt động phù hợp (trong nhà/ngoài trời, mang ô/áo ấm) dựa trên quy tắc thời tiết trên."
+                "\n[HƯỚNG DẪN TRẢ LỜI]: Nêu rõ cự ly (km), thời gian di chuyển ước tính và gợi ý phương tiện thuận tiện nhất (xe máy, taxi, đi bộ hoặc thuê xe)."
+            )
+        elif intent == "ASK_BUDGET_COST":
+            sections.append(
+                "\n[HƯỚNG DẪN TRẢ LỜI]: Tư vấn rõ ràng các khoản chi phí dự kiến (chỗ ở, ăn uống, đi lại, vé tham quan). Trình bày mạch lạc, dễ hiểu kèm mẹo tiết kiệm chi phí nếu có."
+            )
+        elif intent == "ASK_CHECKLIST_PACKING":
+            sections.append(
+                "\n[HƯỚNG DẪN TRẢ LỜI]: Liệt kê các vật dụng cần thiết theo danh mục (Giấy tờ, Thiết bị, Trang phục, Y tế cá nhân) phù hợp với thời tiết và đặc thù điểm đến."
             )
         elif intent == "EXPLORE_LOCATION":
             sections.append(
-                "\n[HƯỚNG DẪN]: Cung cấp thông tin địa điểm chi tiết, giờ mở cửa, địa chỉ và món ăn đặc sắc dựa vào dữ liệu thực tế tra cứu được. Chỉ gợi ý các điểm đến thuộc đúng địa phương được hỏi."
+                "\n[HƯỚNG DẪN TRẢ LỜI]: Giới thiệu địa điểm hấp dẫn, điểm đặc sắc, món ăn ngon/đặc sản nên thử dựa trên dữ liệu thực tế đã tra cứu. Trả lời truyền cảm, hữu ích và chân thực."
+            )
+        else:
+            sections.append(
+                "\n[HƯỚNG DẪN TRẢ LỜI]: Đóng vai trò là một Chuyên gia Trợ lý Du lịch Việt Nam nhiệt tình, am hiểu văn hóa và địa phương. Giải đáp súc tích, thân thiện và chính xác."
             )
 
         return "\n\n".join(sections)
