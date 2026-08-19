@@ -3,7 +3,10 @@ geo_services/weather_service.py
 Dịch vụ thời tiết thực tế và sinh Quy tắc hoạt động du lịch (Weather Rules) cho AI.
 """
 import os
-import requests
+try:
+    import requests
+except ImportError:
+    import httpx as requests
 from typing import Dict, Any, Optional
 
 # API key đọc từ .env
