@@ -2141,6 +2141,37 @@ function switchWizardMode(mode) {
 
                     </div>
 
+                    <!-- CARD ĐÁNH GIÁ 5 SAO CHO LỊCH TRÌNH AI (ĐỒNG BỘ SUPABASE) -->
+                    <div class="feedback-card" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.05); margin-top: 20px; text-align: center;">
+                        <h4 style="margin: 0 0 6px 0; color: #2c3e50; font-size: 16px; font-weight: 700;">⭐ Bạn thấy lịch trình này thế nào?</h4>
+                        <p style="font-size: 13px; color: #7f8c8d; margin: 0 0 12px 0;">Đánh giá của bạn giúp BeeNavi AI tối ưu hoá lộ trình tốt hơn!</p>
+                        
+                        <div class="star-rating" id="starRatingContainer" style="display: flex; justify-content: center; gap: 8px; font-size: 30px; cursor: pointer; color: #dcdde1; user-select: none;">
+                            <span class="star-item" data-value="1" onclick="selectRating(1)" onmouseover="hoverRating(1)" onmouseout="resetHoverRating()">★</span>
+                            <span class="star-item" data-value="2" onclick="selectRating(2)" onmouseover="hoverRating(2)" onmouseout="resetHoverRating()">★</span>
+                            <span class="star-item" data-value="3" onclick="selectRating(3)" onmouseover="hoverRating(3)" onmouseout="resetHoverRating()">★</span>
+                            <span class="star-item" data-value="4" onclick="selectRating(4)" onmouseover="hoverRating(4)" onmouseout="resetHoverRating()">★</span>
+                            <span class="star-item" data-value="5" onclick="selectRating(5)" onmouseover="hoverRating(5)" onmouseout="resetHoverRating()">★</span>
+                        </div>
+                        
+                        <div id="feedbackFormCollapse" style="display: none; margin-top: 15px; text-align: left;">
+                            <label style="font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; display: block;">Chủ đề đánh giá:</label>
+                            <select id="feedbackCategorySelect" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #dcdde1; margin-bottom: 10px; font-size: 13px; outline: none;">
+                                <option value="Lịch trình AI">Lịch trình AI & Cung đường</option>
+                                <option value="Tốc độ sinh">Tốc độ sinh & Phản hồi</option>
+                                <option value="Dữ liệu địa điểm">Độ chính xác địa điểm</option>
+                                <option value="Giao diện">Giao diện & Tiện ích</option>
+                            </select>
+                            <label style="font-size: 12px; font-weight: bold; color: #555; margin-bottom: 4px; display: block;">Ý kiến đóng góp (tùy chọn):</label>
+                            <textarea id="feedbackCommentText" placeholder="VD: Lịch trình rất hay và hợp lý, thời gian di chuyển chuẩn xác..." style="width: 100%; height: 65px; padding: 10px; border-radius: 8px; border: 1px solid #dcdde1; font-size: 13px; resize: none; margin-bottom: 12px; box-sizing: border-box; outline: none;"></textarea>
+                            <button type="button" id="btnSubmitFeedback" onclick="submitUserFeedback()" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #0194f3, #0076c7); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s;">Gửi Đánh Giá</button>
+                        </div>
+                        <div id="feedbackSuccessMsg" style="display:none; color: #27ae60; font-weight: bold; font-size: 14px; margin-top: 12px;">
+                            🎉 Cảm ơn bạn đã đóng góp ý kiến cho BeeNavi!
+                        </div>
+                    </div>
+
+
 
 
 

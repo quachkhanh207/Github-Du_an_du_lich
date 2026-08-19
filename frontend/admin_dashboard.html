@@ -498,9 +498,15 @@
                     
                 const delBtn = `<button onclick="deleteAnnounce('${item.id}')" style="padding:4px 10px; background:#34495e; color:white; border:none; border-radius:4px; cursor:pointer; margin-left:5px;">Xóa</button>`;
                 
+                const displayTitle = item.title || "Thông báo";
+                const displayContent = item.content || item.message || "";
+
                 h += `<tr>
                     <td style="font-size: 13px; color: #7f8c8d;">${date}</td>
-                    <td style="font-weight: bold;">${item.message}</td>
+                    <td>
+                        <div style="font-weight: bold; color: var(--trv-primary);">${displayTitle}</div>
+                        <div style="font-size: 13px; color: #555; margin-top: 2px;">${displayContent}</div>
+                    </td>
                     <td>${statusBadge}</td>
                     <td>${toggleBtn} ${delBtn}</td>
                 </tr>`;
@@ -515,7 +521,12 @@
             // Tắt tất cả thông báo cũ trước khi bật cái mới
             await window.db_supabase.from('announcements').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000');
             
-            const { error } = await window.db_supabase.from('announcements').insert([{ message: msg, is_active: true }]);
+            const { error } = await window.db_supabase.from('announcements').insert([{ 
+                title: "Thông báo từ Ban Quản Trị",
+                content: msg, 
+                type: "info",
+                is_active: true 
+            }]);
             if (error) alert("Lỗi: " + error.message);
             else {
                 document.getElementById('newAnnounceText').value = '';

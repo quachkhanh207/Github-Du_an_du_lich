@@ -2630,6 +2630,41 @@ window.saveCurrentTripToJournal = async function () {
                 }).catch(e => console.warn("Lỗi lưu checklist bulk:", e));
             }
 
+            // Đồng bộ trực tiếp lên Supabase Cloud
+            if (window.db_supabase && window.currentUser) {
+                try {
+                    const { data: sTrip } = await window.db_supabase.from('trips').insert([{
+                        user_id: window.currentUser.id,
+                        title: dest,
+                        destination: destinationClean,
+                        budget_limit: budgetNum,
+                        number_of_days: daysList.length || 3,
+                        status: 'active'
+                    }]).select().single();
+
+                    if (sTrip && sTrip.id) {
+                        await window.db_supabase.from('itineraries').insert([{
+                            trip_id: sTrip.id,
+                            days_data: daysList,
+                            estimated_cost: costText,
+                            weather_info: { desc: weatherText }
+                        }]);
+
+                        if (currentChecklist.length > 0) {
+                            const clInserts = currentChecklist.map(c => ({
+                                trip_id: sTrip.id,
+                                item_name: c.name,
+                                category: c.category || 'Đồ dùng chung',
+                                is_completed: !!c.checked
+                            }));
+                            await window.db_supabase.from('checklist_items').insert(clInserts);
+                        }
+                    }
+                } catch(sErr) {
+                    console.warn("[Supabase] Direct trip save notice:", sErr);
+                }
+            }
+
             // 4. LƯU VÀO BALO HÀNH TRANG (Chỉ chứa chuyến đi và checklist vừa lưu)
             window.currentBackpack = {
                 tripId: tripId,
@@ -3321,21 +3356,18 @@ async function generateItineraryFromWizard(event, mode = 'A') {
         
         renderAIItinerary(aiData, tripData.destination, structured.weather);
         
-        // Xóa save history vì parseMarkdownToItineraryJSON đã bị loại bỏ
-        // Ghi thẳng vào Supabase table ai_itineraries qua API ẩn
-        try {
-            await fetch('/api/analytics/ai_itineraries', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: window.currentUser.id,
-                    destination: tripData.destination,
-                    days: tripData.num_days || 1,
-                    style: tripData.mode === 'B' ? 'Khám phá điểm' : tripData.trip_objective,
-                    budget: tripData.budget || 'N/A'
-                })
-            });
-        } catch(e) {}
+        // Ghi thẳng vào Supabase table ai_itineraries
+        if (window.db_supabase) {
+            window.db_supabase.from('ai_itineraries').insert([{
+                user_id: window.currentUser ? window.currentUser.id : null,
+                destination: tripData.destination,
+                days: tripData.num_days || 1,
+                style: tripData.mode === 'B' ? 'Khám phá 1 điểm' : (tripData.trip_objective || 'Khám phá'),
+                budget: String(tripData.budget || 'Tiêu chuẩn'),
+                mode: tripData.mode || 'A',
+                raw_result: structured
+            }]).then(() => {}).catch(e => console.warn("[Supabase] AI Itinerary log notice:", e));
+        }
 
     } catch (err) {
         console.error('Lỗi khi sinh lịch trình:', err);
@@ -4434,3 +4466,127 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
+
+
+/* ==========================================================================
+   MODULE: SUPABASE DIRECT SYNCHRONIZATION (ANNOUNCEMENTS, FEEDBACKS, TRIPS)
+   ========================================================================== */
+
+// 1. TẢI VÀ HIỂN THỊ THÔNG BÁO TỪ SUPABASE
+async function loadActiveAnnouncements() {
+    if (!window.db_supabase) return;
+    try {
+        const { data, error } = await window.db_supabase
+            .from('announcements')
+            .select('*')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (error || !data || data.length === 0) return;
+
+        const item = data[0];
+        const banner = document.getElementById('globalAnnouncement');
+        const textEl = document.getElementById('globalAnnounceText');
+
+        if (banner && textEl) {
+            const title = item.title ? `🔔 [${item.title}] ` : '🔔 ';
+            const content = item.content || item.message || '';
+            textEl.textContent = title + content;
+            banner.style.display = 'block';
+
+            if (item.type === 'warning') {
+                banner.style.background = '#e67e22';
+            } else if (item.type === 'success') {
+                banner.style.background = '#27ae60';
+            } else if (item.type === 'promo') {
+                banner.style.background = '#8e44ad';
+            } else {
+                banner.style.background = '#0194f3';
+            }
+        }
+    } catch(e) {
+        console.warn("[Supabase] Load announcements failed:", e);
+    }
+}
+
+// 2. ĐÁNH GIÁ 5 SAO CHO LỊCH TRÌNH AI (USER FEEDBACK)
+let currentSelectedRating = 0;
+
+window.selectRating = function(val) {
+    currentSelectedRating = val;
+    highlightStars(val);
+    const form = document.getElementById('feedbackFormCollapse');
+    if (form) form.style.display = 'block';
+};
+
+window.hoverRating = function(val) {
+    highlightStars(val);
+};
+
+window.resetHoverRating = function() {
+    highlightStars(currentSelectedRating);
+};
+
+function highlightStars(count) {
+    const stars = document.querySelectorAll('#starRatingContainer .star-item');
+    stars.forEach((star, index) => {
+        if (index < count) {
+            star.style.color = '#f1c40f'; // Màu vàng sáng
+        } else {
+            star.style.color = '#dcdde1'; // Màu xám
+        }
+    });
+}
+
+window.submitUserFeedback = async function() {
+    if (currentSelectedRating === 0) {
+        alert("Vui lòng chọn số sao đánh giá (1 - 5 sao)!");
+        return;
+    }
+
+    const catSelect = document.getElementById('feedbackCategorySelect');
+    const commentInput = document.getElementById('feedbackCommentText');
+    const btnSubmit = document.getElementById('btnSubmitFeedback');
+    const successMsg = document.getElementById('feedbackSuccessMsg');
+    const form = document.getElementById('feedbackFormCollapse');
+
+    const category = catSelect ? catSelect.value : 'Lịch trình AI';
+    const comment = commentInput ? commentInput.value.trim() : '';
+
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = 'Đang gửi...';
+    }
+
+    try {
+        if (window.db_supabase) {
+            const { error } = await window.db_supabase.from('user_feedbacks').insert([{
+                user_id: window.currentUser ? window.currentUser.id : null,
+                user_email: window.currentUser ? window.currentUser.email : null,
+                rating: currentSelectedRating,
+                category: category,
+                comment: comment,
+                status: 'pending'
+            }]);
+
+            if (error) throw error;
+        }
+
+        if (form) form.style.display = 'none';
+        if (successMsg) successMsg.style.display = 'block';
+        showToast("⭐ Cảm ơn bạn đã gửi đánh giá cho BeeNavi AI!");
+    } catch(e) {
+        console.error("Gửi feedback thất bại:", e);
+        alert("Có lỗi khi gửi đánh giá: " + (e.message || e));
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Gửi Đánh Giá';
+        }
+    }
+};
+
+// Khởi chạy khi tài liệu tải xong
+document.addEventListener("DOMContentLoaded", function() {
+    loadActiveAnnouncements();
+});
