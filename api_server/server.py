@@ -374,8 +374,12 @@ async def api_generate_itinerary(request: Request):
         "weather_tag": weather_tag
     }
 
-    # Tọa độ trung tâm điểm đến cho Leaflet Map
-    structured["center"] = [weather.get("lat", 16.068), weather.get("lon", 108.230)]
+    # Tọa độ trung tâm điểm đến cho Leaflet Map (Ưu tiên centroid thực tế của các POIs)
+    if "center" not in structured or not structured["center"] or structured["center"] == [16.068, 108.230]:
+        if weather.get("lat") and weather.get("lon"):
+            structured["center"] = [weather.get("lat"), weather.get("lon")]
+        else:
+            structured["center"] = [16.068, 108.230]
 
     return structured
 

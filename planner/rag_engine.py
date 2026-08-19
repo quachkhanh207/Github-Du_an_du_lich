@@ -57,15 +57,15 @@ def kmeans_cluster(pois, k, max_iter=15):
 def time_route_day(pois_for_day, start_time="08:00"):
     morning, lunch, afternoon, evening = [], [], [], []
     for poi in pois_for_day:
-        cat = (poi.get('category', '') + ' ' + poi.get('sub_category', '')).lower()
-        if any(kw in cat for kw in ['restaurant', 'food', 'ăn', 'quán', 'nhà hàng', 'bún', 'cơm', 'phở', 'ẩm thực']):
+        cat = (poi.get('category', '') + ' ' + (poi.get('sub_category') or '') + ' ' + (poi.get('description') or '')).lower()
+        if any(kw in cat for kw in ['restaurant', 'food', 'ăn', 'quán', 'nhà hàng', 'bún', 'cơm', 'phở', 'ẩm thực', 'lẩu', 'nướng']):
             if not lunch:
                 lunch.append(poi)
             else:
                 evening.append(poi)
-        elif any(kw in cat for kw in ['bar', 'pub', 'nightlife', 'đêm']):
+        elif any(kw in cat for kw in ['bar', 'pub', 'nightlife', 'đêm', 'chợ đêm', 'phố đi bộ']):
             evening.append(poi)
-        elif any(kw in cat for kw in ['beach', 'biển', 'bãi tắm', 'đảo']):
+        elif any(kw in cat for kw in ['beach', 'biển', 'bãi tắm', 'đảo', 'hoàng hôn']):
             afternoon.append(poi)
         else:
             if len(morning) < 2:
@@ -106,33 +106,99 @@ def time_route_day(pois_for_day, start_time="08:00"):
     return schedule
 
 def get_theme_img(poi):
-    theme_images = {
-        "dining": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80",
-        "beach": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
-        "sightseeing": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80",
-        "nature": "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=600&q=80",
-        "nightlife": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80",
-        "cultural": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80"
+    if poi.get("image_url") and poi["image_url"].startswith("http"):
+        return poi["image_url"]
+
+    photo_pools = {
+        "coffee": [
+            "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80"
+        ],
+        "dining": [
+            "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80"
+        ],
+        "beach": [
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80"
+        ],
+        "nature": [
+            "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80"
+        ],
+        "cultural": [
+            "https://images.unsplash.com/photo-1548625361-125026723b72?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80"
+        ],
+        "nightlife": [
+            "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=600&q=80"
+        ]
     }
-    cat_lower = (poi.get("category", "") + " " + (poi.get("description") or "")).lower()
-    if "ăn" in cat_lower or "nhà hàng" in cat_lower or "quán" in cat_lower or "bún" in cat_lower:
-        return theme_images["dining"]
-    elif "biển" in cat_lower or "bãi" in cat_lower or "đảo" in cat_lower:
-        return theme_images["beach"]
-    elif "bar" in cat_lower or "pub" in cat_lower or "chợ đêm" in cat_lower:
-        return theme_images["nightlife"]
-    elif "núi" in cat_lower or "rừng" in cat_lower or "thác" in cat_lower:
-        return theme_images["nature"]
-    elif "chùa" in cat_lower or "bảo tàng" in cat_lower or "di tích" in cat_lower:
-        return theme_images["cultural"]
+    name_desc = (poi.get("name", "") + " " + (poi.get("category") or "") + " " + (poi.get("description") or "")).lower()
+
+    if "cafe" in name_desc or "cà phê" in name_desc or "coffee" in name_desc or "trà" in name_desc:
+        pool = photo_pools["coffee"]
+    elif any(k in name_desc for k in ["ăn", "quán", "nhà hàng", "bún", "phở", "cơm", "lẩu", "nướng", "hải sản", "food"]):
+        pool = photo_pools["dining"]
+    elif any(k in name_desc for k in ["biển", "bãi", "đảo", "vịnh", "hải đăng", "lặn"]):
+        pool = photo_pools["beach"]
+    elif any(k in name_desc for k in ["núi", "rừng", "thác", "săn mây", "đèo", "thung lũng", "suối", "vườn"]):
+        pool = photo_pools["nature"]
+    elif any(k in name_desc for k in ["chùa", "bảo tàng", "di tích", "lăng", "đền", "tháp", "phố cổ", "nhà thờ"]):
+        pool = photo_pools["cultural"]
+    elif any(k in name_desc for k in ["bar", "pub", "chợ đêm", "phố đi bộ", "night"]):
+        pool = photo_pools["nightlife"]
     else:
-        return theme_images["sightseeing"]
+        pool = photo_pools["cultural"]
+
+    idx = abs(hash(poi.get("name", ""))) % len(pool)
+    return pool[idx]
+
+def calculate_dynamic_cost(num_days: int, budget_tier: str = "Tiêu chuẩn") -> tuple:
+    """Tính toán chi phí du lịch động nhân theo số ngày, đêm và phân hạng ngân sách"""
+    num_nights = max(1, num_days - 1)
+    tier_lower = (budget_tier or "Tiêu chuẩn").lower()
+
+    if "tiết kiệm" in tier_lower or "budget" in tier_lower or "re" in tier_lower:
+        hotel_per_night = 350000
+        food_per_day = 220000
+        trans_ticket_per_day = 130000
+        hotel_label = f"Homestay ({num_nights} đêm): {hotel_per_night * num_nights // 1000:,.0f}k"
+        food_label = f"Ẩm thực ({num_days} ngày): {food_per_day * num_days // 1000:,.0f}k"
+        trans_label = f"Vé & Di chuyển: {trans_ticket_per_day * num_days // 1000:,.0f}k"
+    elif "sang" in tier_lower or "vip" in tier_lower or "luxury" in tier_lower:
+        hotel_per_night = 2200000
+        food_per_day = 950000
+        trans_ticket_per_day = 600000
+        hotel_label = f"Resort 4-5* ({num_nights} đêm): {hotel_per_night * num_nights // 1000:,.0f}k"
+        food_label = f"Nhà hàng cao cấp ({num_days} ngày): {food_per_day * num_days // 1000:,.0f}k"
+        trans_label = f"Tour & Xe riêng: {trans_ticket_per_day * num_days // 1000:,.0f}k"
+    else: # Tiêu chuẩn
+        hotel_per_night = 750000
+        food_per_day = 450000
+        trans_ticket_per_day = 250000
+        hotel_label = f"Khách sạn 3* ({num_nights} đêm): {hotel_per_night * num_nights // 1000:,.0f}k"
+        food_label = f"Ăn uống ({num_days} ngày): {food_per_day * num_days // 1000:,.0f}k"
+        trans_label = f"Vé & Xe: {trans_ticket_per_day * num_days // 1000:,.0f}k"
+
+    total = (hotel_per_night * num_nights) + ((food_per_day + trans_ticket_per_day) * num_days)
+    cost_val = f"{total:,.0f} VNĐ / người".replace(",", ".")
+    cost_details = f"{hotel_label} • {food_label} • {trans_label}"
+    return cost_val, cost_details
+
 
 class RagEngine:
     def __init__(self, index_path=None):
         self.db_path = DB_PATH
         self.loaded = True
-        self.locations = [] # Giữ lại property này cho các chỗ gọi cũ nếu có
+        self.locations = []
 
     def load_index(self):
         pass
@@ -152,7 +218,7 @@ class RagEngine:
             
             if words:
                 query_sql = """
-                    SELECT p.id, p.name, p.category, p.sub_category, p.address, p.lat, p.lon, p.description
+                    SELECT p.id, p.name, p.category, p.sub_category, p.address, p.lat, p.lon, p.description, p.image_url
                     FROM pois_fts f
                     JOIN pois p ON f.id = p.id
                     WHERE pois_fts MATCH ?
@@ -173,7 +239,7 @@ class RagEngine:
                             rows.append(r)
                             existing_ids.add(r['id'])
                             
-                # 3. Nếu vẫn quá ít kết quả (ví dụ truy vấn mở), thử OR
+                # 3. Nếu vẫn quá ít kết quả, thử OR
                 if len(rows) < 5:
                     or_q = " OR ".join([f'"{w}"' for w in words[:6]])
                     or_rows = c.execute(query_sql, (or_q, limit)).fetchall()
@@ -183,10 +249,9 @@ class RagEngine:
                             rows.append(r)
                             existing_ids.add(r['id'])
                             
-                # Cắt đúng limit
                 rows = rows[:limit]
             else:
-                rows = c.execute("SELECT id, name, category, sub_category, address, lat, lon, description FROM pois LIMIT ?", (limit,)).fetchall()
+                rows = c.execute("SELECT id, name, category, sub_category, address, lat, lon, description, image_url FROM pois LIMIT ?", (limit,)).fetchall()
                 
             pois = [dict(r) for r in rows]
             conn.close()
@@ -197,8 +262,9 @@ class RagEngine:
     def get_structured_itinerary(self, trip_data: dict) -> dict:
         mode = trip_data.get("mode", "A")
         dest = trip_data.get("destination", "Đà Nẵng")
+        budget = trip_data.get("budget", "Tiêu chuẩn")
         
-        # CHẾ ĐỘ B: KHÁM PHÁ ĐỊA ĐIỂM CỤ THỂ
+        # CHẾ ĐỘ B: KHÁM PHÁ ĐỊA ĐIỂM CỤ THỂ (Bán kính 2km)
         if mode == "B":
             session_val = trip_data.get("session", "Sáng")
             anchor_pois = self._query_sqlite(dest, limit=1)
@@ -235,12 +301,15 @@ class RagEngine:
                     "distance_from_prev": act.get("distance_from_prev", 0)
                 })
                 
+            cost_val, cost_desc = calculate_dynamic_cost(1, budget)
+
             return {
                 "destination": dest,
                 "title": f"Khám phá {dest}",
                 "subtitle": f"Bán kính 2km quanh {anchor['name']}",
-                "cost": "Tùy chi tiêu",
+                "cost": "Tùy chi tiêu (Ước tính ~250.000 VNĐ)",
                 "costDetails": "Khoảng cách gần, đi bộ hoặc gọi xe công nghệ",
+                "center": [anchor["lat"], anchor["lon"]],
                 "days": [{
                     "dayNum": 1,
                     "title": f"Buổi {session_val} tại {dest}",
@@ -254,8 +323,6 @@ class RagEngine:
         except:
             num_days = 3
             
-        budget = trip_data.get("budget", "Tiêu chuẩn")
-        
         # 1. Truy vấn POIs
         raw_pois = self._query_sqlite(dest, limit=60)
         if not raw_pois:
@@ -270,6 +337,8 @@ class RagEngine:
         clusters = kmeans_cluster(raw_pois, k=num_days)
         
         days_list = []
+        all_lats, all_lngs = [], []
+
         for d in range(1, num_days + 1):
             pois_for_day = clusters.get(d, [])
             if not pois_for_day:
@@ -280,6 +349,10 @@ class RagEngine:
             
             activities = []
             for act in schedule:
+                if act.get("lat") and act.get("lon"):
+                    all_lats.append(float(act["lat"]))
+                    all_lngs.append(float(act["lon"]))
+
                 activities.append({
                     "time": act["time"],
                     "title": act["name"],
@@ -297,20 +370,19 @@ class RagEngine:
                 "activities": activities
             })
             
-        # Chi phí
-        cost_map = {
-            "Tiết kiệm": ("1.500.000 VNĐ / người", "Homestay: 600k • Ẩm thực: 500k • Vé & xe: 400k"),
-            "Tiêu chuẩn": ("2.850.000 VNĐ / người", "Khách sạn 3*: 1.200k • Ăn uống: 950k • Vé & xe: 700k"),
-            "Sang trọng": ("5.200.000 VNĐ / người", "Resort 4-5*: 2.800k • Nhà hàng cao cấp: 1.500k • Tour VIP: 900k"),
-        }
-        cost_val, cost_desc = cost_map.get(budget, cost_map["Tiêu chuẩn"])
+        # 4. Tính toán chi phí động theo số ngày & phân hạng ngân sách
+        cost_val, cost_desc = calculate_dynamic_cost(num_days, budget)
+
+        # 5. Tính toán Centroid trung tâm bản đồ chính xác
+        center_coords = [sum(all_lats)/len(all_lats), sum(all_lngs)/len(all_lngs)] if all_lats else [16.068, 108.230]
 
         return {
             "destination": dest,
             "title": f"Lịch Trình Chi Tiết • {dest} ({num_days}N{max(1, num_days-1)}Đ)",
-            "subtitle": f"RAG Engine đã tự động phân cụm địa lý {len(raw_pois)} địa điểm",
+            "subtitle": f"RAG Engine đã tự động phân cụm địa lý {len(raw_pois)} địa điểm thực tế.",
             "cost": cost_val,
             "costDetails": cost_desc,
+            "center": center_coords,
             "days": days_list
         }
         

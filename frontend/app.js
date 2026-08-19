@@ -464,7 +464,7 @@ window.previewPrebuiltTrip = function (destKey) {
     showToast(`🗺️ Đang mở lộ trình mẫu: ${destKey.toUpperCase()}`);
 };
 
-window.clonePrebuiltTrip = function (destKey, tripTitle) {
+window.clonePrebuiltTrip = async function (destKey, tripTitle) {
     if (!window.currentUser) {
         showToast("🔐 Vui lòng đăng nhập để Clone & Lưu trữ lộ trình AI về tài khoản!");
         window.location.href = "/login.html";
@@ -472,13 +472,16 @@ window.clonePrebuiltTrip = function (destKey, tripTitle) {
     }
 
     window.switchMainTab('itinerary');
-    if (typeof showSkeletonAndRender === 'function') {
-        showSkeletonAndRender(destKey);
+    const aiData = await renderItineraryForDestination(destKey);
+    
+    // Tự động lưu vào Supabase Cloud & Balo
+    if (typeof saveCurrentTripToJournal === 'function') {
+        setTimeout(() => {
+            saveCurrentTripToJournal();
+        }, 500);
     }
-    showToast(`🎉 Đã Clone thành công: "${tripTitle}"`);
-    if (typeof openDrawerWithPrompt === 'function') {
-        openDrawerWithPrompt(`Tôi vừa nhân bản (Clone) lịch trình: "${tripTitle}". Hãy giúp tôi điều chỉnh và tối ưu thêm chi phí cũng như các điểm check-in!`);
-    }
+
+    showToast(`🎉 Đã Clone thành công: "${tripTitle}" & đồng bộ vào Balo!`);
 };
 
 window.filterCuratedTrips = function (category, btnEl) {
@@ -610,135 +613,71 @@ async function fetchWeatherForCity(cityName) {
 }
 window.fetchWeatherForCity = fetchWeatherForCity;
 
-function renderItineraryForDestination(destKey) {
-
+async function renderItineraryForDestination(destKey) {
     currentDestination = destKey;
+    const destNameMap = {
+        danang: "Đà Nẵng",
+        sapa: "Sa Pa",
+        phuquoc: "Phú Quốc",
+        dalat: "Đà Lạt",
+        hanoi: "Hà Nội",
+        hagiang: "Hà Giang",
+        ninhbinh: "Ninh Bình",
+        quynhon: "Quy Nhơn",
+        nhatrang: "Nha Trang",
+        hue: "Huế"
+    };
+    const destName = destNameMap[destKey.toLowerCase()] || destKey;
+    const daysCount = destKey === "ninhbinh" ? 2 : (destKey === "phuquoc" ? 4 : 3);
 
-    const destData = DESTINATIONS_DB[destKey] || DESTINATIONS_DB["danang"];
+    const overlay = document.getElementById('aiLoadingOverlay');
+    if (overlay) overlay.style.display = 'flex';
 
-    const titleEl = document.getElementById("itinerarySectionTitle");
+    try {
+        const response = await fetch('/api/generate_itinerary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                destination: destName,
+                num_days: daysCount,
+                budget: 'Tiêu chuẩn',
+                mode: 'A'
+            })
+        });
 
-    const subTitleEl = document.getElementById("itinerarySectionSubtitle");
+        if (response.ok) {
+            const structured = await response.json();
+            const aiData = {
+                tieu_de: structured.title || `Lịch Trình Chi Tiết • ${destName}`,
+                tong_chi_phi: structured.cost || "",
+                chi_tiet_chi_phi_str: structured.costDetails || "",
+                thoi_tiet: structured.weather ? structured.weather.desc : "Nắng đẹp",
+                lich_trinh: (structured.days || []).map(d => ({
+                    ngay: d.title || `Ngày ${d.dayNum}`,
+                    diem_den: (d.activities || []).map(a => ({
+                        thoi_gian: a.time,
+                        ten: a.title,
+                        mo_ta: a.desc,
+                        toa_do: [a.lat, a.lng],
+                        img: a.img,
+                        distance_from_prev: a.distance_from_prev
+                    }))
+                }))
+            };
 
-    const costAmount = document.getElementById("costAmountText");
+            const emptyState = document.getElementById('emptyItineraryState');
+            const itContent = document.getElementById('itineraryContent');
+            if (emptyState) emptyState.style.display = 'none';
+            if (itContent) itContent.style.display = 'block';
 
-    const costDetails = document.getElementById("costDetailsText");
-
-    if (titleEl) titleEl.textContent = destData.title;
-
-    if (subTitleEl) subTitleEl.textContent = destData.subtitle;
-
-    if (destData.weather) {
-        updateWeatherUI(destData.weather, destKey === "hanoi" ? "Hà Nội" : destKey === "sapa" ? "Sa Pa" : destKey === "phuquoc" ? "Phú Quốc" : destKey === "dalat" ? "Đà Lạt" : "Đà Nẵng");
+            renderAIItinerary(aiData, destName, structured.weather);
+            return aiData;
+        }
+    } catch(e) {
+        console.warn("Lỗi khi tải lịch trình động:", e);
+    } finally {
+        if (overlay) overlay.style.display = 'none';
     }
-
-    // Tự động gọi API thời tiết thực tế theo điểm đến
-    const queryCity = destKey === "hanoi" ? "Hà Nội" :
-                      destKey === "sapa" ? "Sa Pa" :
-                      destKey === "phuquoc" ? "Phú Quốc" :
-                      destKey === "dalat" ? "Đà Lạt" : "Đà Nẵng";
-    fetchWeatherForCity(queryCity);
-
-    if (costAmount) costAmount.textContent = destData.cost;
-
-    if (costDetails) costDetails.textContent = destData.costDetails;
-
-
-
-    const container = document.getElementById("timelineAccordionContainer");
-
-    if (!container) return;
-
-
-
-    let html = "";
-
-    destData.days.forEach((day, idx) => {
-
-        const isActive = idx === 0 ? "active" : "";
-
-        html += `
-
-            <div class="day-accordion ${isActive}" data-day="${day.dayNum}">
-
-                <div class="day-header" onclick="toggleAccordion(this)">
-
-                    <div class="day-title-group">
-
-                        <div class="day-badge">Ngày ${day.dayNum}</div>
-
-                        <div class="day-info">
-
-                            <h3>${day.title}</h3>
-
-                            <p>${day.subtitle}</p>
-
-                        </div>
-
-                    </div>
-
-                    <div class="accordion-toggle-icon">
-
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-
-                    </div>
-
-                </div>
-
-                <div class="day-body">
-
-                    <div class="activities-list">
-
-                        ${day.activities.map(act => `
-
-                            <div class="activity-card" onclick="focusMapLocation(${act.lat}, ${act.lng}, '${act.title}')">
-
-                                <div class="activity-time"><span class="time-badge">${act.time}</span></div>
-
-                                <div class="activity-icon-box">
-
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-
-                                </div>
-
-                                <div class="activity-content">
-
-                                    <div class="activity-title">
-
-                                        ${act.title}
-
-                                        <span class="location-tag">📍 Xem vị trí</span>
-
-                                    </div>
-
-                                    <p class="activity-desc">${act.desc}</p>
-
-                                </div>
-
-                                <img src="${act.img}" class="activity-img" alt="${act.title}">
-
-                            </div>
-
-                        `).join("")}
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        `;
-
-    });
-
-
-
-    container.innerHTML = html;
-
-    updateMapForDestination(destData);
-
-    renderTripChecklist("trip_" + destKey, queryCity, destData.weather?.desc);
-
 }
 
 
