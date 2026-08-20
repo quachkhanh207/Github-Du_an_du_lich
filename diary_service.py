@@ -525,8 +525,19 @@ def save_trip_checklist_bulk(trip_id: str, items: List[dict]) -> List[dict]:
     c = conn.cursor()
     c.execute("DELETE FROM checklist_items WHERE trip_id = ?", (trip_id,))
     res = []
+    seen_ids = set()
     for it in items:
-        item_id = it.get("id") or str(uuid.uuid4())
+        item_id = it.get("id")
+        if not item_id or item_id in seen_ids:
+            item_id = str(uuid.uuid4())
+        else:
+            # Check if this ID already exists in another trip's checklist
+            c.execute("SELECT 1 FROM checklist_items WHERE id = ?", (item_id,))
+            if c.fetchone():
+                item_id = str(uuid.uuid4())
+                
+        seen_ids.add(item_id)
+        
         item_name = it.get("item_name") or it.get("text") or "Đồ dùng"
         category = it.get("category", "Đồ dùng chung")
         quantity = int(it.get("quantity", 1))
