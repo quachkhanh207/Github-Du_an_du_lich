@@ -2426,6 +2426,9 @@ function switchWizardMode(mode) {
 
 
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button class="pref-select" style="padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border-radius: 8px; background: #10B981; color: #fff; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);" onclick="saveCurrentTripToJournal()">
+                        💾 Lưu Về CSDL Supabase
+                    </button>
                     <button class="pref-select" style="padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border-radius: 8px; background: #fff; border: 1px solid #CBD5E1; color: #334155; cursor: pointer;" onclick="showHistoryModal()">
                         📜 Lịch sử tạo
                     </button>
@@ -4693,7 +4696,7 @@ function switchWizardMode(mode) {
 
 
 
-    <script src="/static/app.js?v=39_history_button_added"></script>
+    <script src="/static/app.js?v=40_auto_save_supabase"></script>
 
 
 

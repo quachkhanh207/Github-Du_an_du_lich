@@ -2801,17 +2801,23 @@ window.saveCurrentTripToJournal = async function () {
                 }).catch(e => console.warn("Lỗi lưu checklist bulk:", e));
             }
 
-            // Đồng bộ trực tiếp lên Supabase Cloud
+            // Đồng bộ trực tiếp lên Supabase Cloud CSDL (public.trips & public.itineraries)
             if (window.db_supabase && window.currentUser) {
                 try {
-                    const { data: sTrip } = await window.db_supabase.from('trips').insert([{
+                    const originLoc = document.getElementById('wizOrigin')?.value || 'Hồ Chí Minh';
+                    const { data: sTrip, error: sErr } = await window.db_supabase.from('trips').insert([{
                         user_id: window.currentUser.id,
                         title: dest,
                         destination: destinationClean,
+                        departure_location: originLoc,
                         budget_limit: budgetNum,
                         number_of_days: daysList.length || 3,
                         status: 'active'
                     }]).select().single();
+
+                    if (sErr) {
+                        console.warn("[Supabase] Direct trip insert error:", sErr);
+                    }
 
                     if (sTrip && sTrip.id) {
                         await window.db_supabase.from('itineraries').insert([{
@@ -2834,6 +2840,10 @@ window.saveCurrentTripToJournal = async function () {
                 } catch(sErr) {
                     console.warn("[Supabase] Direct trip save notice:", sErr);
                 }
+            }
+
+            if (typeof showToast === 'function') {
+                showToast("💾 Đã lưu & đồng bộ chuyến đi vào Supabase CSDL thành công!");
             }
 
             // 4. LƯU VÀO BALO HÀNH TRANG (Chỉ chứa chuyến đi và checklist vừa lưu)
@@ -3602,6 +3612,13 @@ async function generateItineraryFromWizard(event, mode = 'A') {
                 mode: tripData.mode || 'A',
                 raw_result: structured
             }]).then(() => {}).catch(e => console.warn("[Supabase] AI Itinerary log notice:", e));
+        }
+
+        // Tự động lưu & đồng bộ chuyến đi vừa tạo vào public.trips của CSDL Supabase
+        if (typeof window.saveCurrentTripToJournal === 'function') {
+            setTimeout(() => {
+                window.saveCurrentTripToJournal();
+            }, 600);
         }
 
     } catch (err) {
