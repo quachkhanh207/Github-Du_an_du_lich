@@ -3626,10 +3626,13 @@ async function generateItineraryFromWizard(event, mode = 'A') {
             });
         }
         
-        const emptyState = document.getElementById('emptyItineraryState');
-        const itContent = document.getElementById('itineraryContent');
-        if (emptyState) emptyState.style.display = 'none';
-        if (itContent) itContent.style.display = 'block';
+        const viewHome = document.getElementById("viewHome");
+        const viewItinerary = document.getElementById("viewItinerary");
+        const itContent = document.getElementById("itineraryContent");
+
+        if (viewHome) viewHome.style.display = "none";
+        if (viewItinerary) viewItinerary.style.display = "block";
+        if (itContent) itContent.style.display = "block";
         
         renderAIItinerary(aiData, tripData.destination, structured.weather);
         
@@ -4612,28 +4615,29 @@ function resetToWizard() {
     const viewItinerary = document.getElementById("viewItinerary");
     const viewJournal = document.getElementById("viewJournal");
     const viewHotels = document.getElementById("viewHotels");
-
     const emptyState = document.getElementById("emptyItineraryState");
-    const contentState = document.getElementById("itineraryContent");
 
-    // 1. Chuyển sang container viewItinerary
-    if (viewHome) viewHome.style.display = "none";
-    if (viewItinerary) viewItinerary.style.display = "block";
+    // 1. Chuyển về viewHome (Trang Chủ chứa Form Builder)
+    if (viewHome) viewHome.style.display = "block";
+    if (viewItinerary) viewItinerary.style.display = "none";
     if (viewJournal) viewJournal.style.display = "none";
     if (viewHotels) viewHotels.style.display = "none";
-
-    // 2. Hiển thị Form Builder (emptyItineraryState) và ẩn màn hình kết quả (itineraryContent)
     if (emptyState) emptyState.style.display = "block";
-    if (contentState) contentState.style.display = "none";
 
-    // 3. Highlight tab Lộ Trình AI trên Header
+    // 2. Highlight tab Trang Chủ trên Header
     document.querySelectorAll(".trv-nav-links a").forEach(link => link.classList.remove("active"));
-    const itinTab = document.querySelector(".trv-nav-links a[onclick*='resetToWizard'], .trv-nav-links a[onclick*='itinerary']");
-    if (itinTab) itinTab.classList.add("active");
+    const homeTab = document.querySelector(".trv-nav-links a[onclick*='home']");
+    if (homeTab) homeTab.classList.add("active");
 
-    // 4. Cuộn mượt lên đầu Form
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast("📝 Đã mở Form Khởi Tạo Lộ Trình AI!");
+    // 3. Cuộn mượt đến Form Builder ngay dưới Hero Banner
+    setTimeout(() => {
+        if (emptyState) {
+            emptyState.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            window.scrollTo({ top: 500, behavior: 'smooth' });
+        }
+    }, 50);
+    showToast("📝 Đã mở Form Tạo Lộ Trình AI!");
 }
 window.resetToWizard = resetToWizard;
 

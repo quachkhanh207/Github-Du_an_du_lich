@@ -968,6 +968,406 @@
             </div>
         </section>
 
+<!-- ============================================================
+     BẢNG KHỞI TẠO LỘ TRÌNH TOÀN CẢNH (SPLIT-SCREEN 2 CỘT KÈM LIVE PREVIEW)
+     ============================================================ -->
+<div id="emptyItineraryState" class="split-builder-wrapper">
+    <div class="builder-top-header">
+        <div class="builder-title-row">
+            <img src="/static/beenavi_logo_nobg.png" alt="BeeNavi" class="builder-logo-img">
+            <div>
+                <h2 class="builder-main-title">Thiết Kế Chuyến Đi Cùng BeeNavi AI</h2>
+                <p class="builder-sub-title">Tùy chỉnh thông số & xem bản tóm tắt chi phí thay đổi theo thời gian thực</p>
+            </div>
+        </div>
+        <div class="mode-switch-container" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button type="button" id="btnModeA" class="wiz-mode-btn active" onclick="switchWizardMode('A')">🛫 Chuyến Đi Nhiều Ngày</button>
+            <button type="button" id="btnModeB" class="wiz-mode-btn" onclick="switchWizardMode('B')">📍 Khám Phá 1 Điểm Cụ Thể</button>
+            <button type="button" class="wiz-mode-btn" onclick="showHistoryModal()" style="background: linear-gradient(135deg, #2563EB, #1D4ED8); color: #FFFFFF; border: none; font-weight: 800; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);">
+                📜 Lịch Sử Đã Tạo
+            </button>
+        </div>
+    </div>
+
+    <!-- CHẾ ĐỘ B: KHÁM PHÁ 1 ĐIỂM CỤ THỂ (Bán kính 2.5km) -->
+    <div id="wizardPaneModeB" class="mode-b-card" style="display:none; background: #FFFFFF; padding: 24px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 24px;">
+        <div class="builder-card-header" style="display: flex; align-items: center; gap: 10px;">
+            <span class="card-icon" style="font-size: 22px;">📍</span>
+            <h4 style="font-size: 16px; font-weight: 800; color: #1E293B; margin: 0;">Khám Phá Địa Điểm Cụ Thể (Tự Động Đề Xuất Điểm Đẹp Bán Kính 2.5km)</h4>
+        </div>
+        <p style="font-size: 13px; color: #64748B; margin: 8px 0 18px 0;">Nhập 1 địa điểm cụ thể bạn muốn ghé thăm (VD: Lăng Bác, Bà Nà Hills, Hồ Gươm, Chợ Bến Thành), AI sẽ lập tức gợi ý lịch trình chi tiết bán kính 2.5km quanh điểm đó!</p>
+        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group-item">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Tên địa điểm cụ thể *</label>
+                <input type="text" id="wizPoiName" class="builder-input" placeholder="VD: Lăng Bác, Bà Nà Hills..." value="Lăng Bác" oninput="updateLiveTripPreview()">
+            </div>
+            <div class="form-group-item">
+                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Buổi tham quan mong muốn</label>
+                <select id="wizPoiSession" class="builder-input" onchange="updateLiveTripPreview()">
+                    <option value="Sáng">Buổi Sáng (Bắt đầu từ 08:00)</option>
+                    <option value="Chiều">Buổi Chiều (Bắt đầu từ 14:00)</option>
+                    <option value="Tối">Buổi Tối & Đêm (Bắt đầu từ 18:00)</option>
+                </select>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 24px;">
+            <button type="button" class="btn-mega-generate" style="max-width: 340px; margin: 0 auto; background: linear-gradient(135deg, #F59E0B, #D97706); color: #FFFFFF; border: none; padding: 12px 28px; border-radius: 10px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);" onclick="generateItineraryFromWizard(event, 'B')">
+                🚀 Khám Phá Địa Điểm Cụ Thể Ngay!
+            </button>
+        </div>
+    </div>
+
+    <!-- CHẾ ĐỘ A: GIAO DIỆN 2 CỘT TOÀN CẢNH -->
+    <div id="wizardPanesModeA" class="split-builder-layout">
+        
+        <!-- CỘT TRÁI: FORM ĐIỀU KHIỂN CHI TIẾT (62%) -->
+        <div class="builder-left-col">
+            
+            <!-- KHỐI 1: HÀNH TRÌNH & THỜI GIAN -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>1. Điểm Đi, Điểm Đến & Thời Gian</h4>
+                </div>
+                <div class="builder-card-body">
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group-item">
+                            <label>Điểm xuất phát *</label>
+                            <input type="text" id="wizOrigin" class="builder-input" placeholder="VD: Hồ Chí Minh" value="Hồ Chí Minh" oninput="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Điểm đến mong muốn *</label>
+                            <input type="text" id="wizDest" class="builder-input" placeholder="VD: Hà Nội" value="Hà Nội" oninput="updateLiveTripPreview()">
+                        </div>
+                    </div>
+
+                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                        <div class="form-group-item">
+                            <label>Ngày bắt đầu khởi hành (tùy chọn):</label>
+                            <input type="date" id="wizStartDate" class="builder-input" onchange="updateLiveTripPreview()">
+                        </div>
+                        <div class="form-group-item">
+                            <label>Số ngày chuyến đi (Tối thiểu 2 ngày):</label>
+                            <input type="number" id="wizDaysCustom" class="builder-input" min="2" max="30" value="3" placeholder="Nhập số ngày (VD: 2, 3, 5...)" oninput="handleCustomDaysInput(this)">
+                        </div>
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 12px;">
+                        <label>Chọn nhanh số ngày:</label>
+                        <div class="chip-group" id="daysChipGroup">
+                            <button type="button" class="form-chip" onclick="selectFormChip('days', '2', this)">2N1Đ</button>
+                            <button type="button" class="form-chip active" onclick="selectFormChip('days', '3', this)">3N2Đ (Phổ biến)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('days', '4', this)">4N3Đ</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('days', '5', this)">5N4Đ</button>
+                        </div>
+                        <input type="hidden" id="wizDays" value="3">
+                    </div>
+                </div>
+            </div>
+
+            <!-- KHỐI 2: ĐỒNG HÀNH, DI CHUYỂN & LƯU TRÚ -->
+            <div class="builder-section-card">
+                <div class="builder-card-header">
+                    <h4>2. Đồng Hành, Di Chuyển & Nơi Lưu Trú</h4>
+                </div>
+                <div class="builder-card-body">
+                    <div class="form-group-item">
+                        <label>Đối tượng chuyến đi:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('companion', 'Cặp đôi', this)">Cặp đôi</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Một mình', this)">Đi một mình (Solo)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Nhóm bạn', this)">Nhóm bạn</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Gia đình', this)">Gia đình</button>
+                        </div>
+                        <input type="hidden" id="wizCompanion" value="Cặp đôi">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Số lượng người trong đoàn:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', '1 người', this)">1 Người</button>
+                            <button type="button" class="form-chip active" onclick="selectFormChip('groupSize', '2 người', this)">2 Người</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', '3-5 người', this)">3 - 5 Người</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', 'Đoàn đông (>6)', this)">Đoàn đông (>6 người)</button>
+                        </div>
+                        <input type="hidden" id="wizGroupSize" value="2 người">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Phương tiện di chuyển chính:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip active" onclick="selectFormChip('vehicle', 'Xe máy', this)">Thuê xe máy</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Taxi', this)">Taxi / Grab</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Ô tô', this)">Ô tô tự lái</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Đi bộ', this)">Đi bộ & Xe bus</button>
+                        </div>
+                        <input type="hidden" id="wizVehicle" value="Xe máy">
+                    </div>
+
+                    <div class="form-group-item" style="margin-top: 14px;">
+                        <label>Loại hình nơi lưu trú:</label>
+                        <div class="chip-group">
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Đi trong ngày', this)">☀️ Đi trong ngày (0 đêm)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'AI tự đề xuất', this)">🤖 Chưa chọn (AI tự đề xuất)</button>
+                            <button type="button" class="form-chip active" onclick="selectFormChip('accommodation', 'Khách sạn 3-4 sao', this)">Khách sạn 3-4 sao</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Homestay', this)">Homestay / Hostel</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Resort 4-5 sao', this)">Resort 4-5 sao</button>
+                        </div>
+                        <input type="hidden" id="wizAccommodation" value="Khách sạn 3-4 sao">
+                    </div>
+
+                    <div id="wizHotelChipsWrapper" style="transition: all 0.3s ease; margin-top: 14px;">
+                        <div id="wizHotelChipsBox" style="margin-bottom: 10px;">
+                            <label style="font-size: 12.5px; font-weight: 700; color: #475569; margin-bottom: 6px; display: block;">💡 Gợi ý chọn nhanh nơi ở phổ biến:</label>
+                            <div id="wizHotelChipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                                <!-- Dynamic chips fill here -->
+                            </div>
+                        </div>
+                        <div class="form-group-item">
+                            <label>Hoặc nhập tên khách sạn / homestay bạn đã đặt (tùy chọn):</label>
+                            <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Chọn chip ở trên hoặc gõ tên nơi ở..." oninput="updateLiveTripPreview()">
+                            <datalist id="wizHotelsDatalist">
+                                <!-- Dynamic datalist -->
+                            </datalist>
+                            <small id="wizHotelNote" style="color: #059669; font-size: 11.5px; font-weight: 600; margin-top: 4px; display: block;">AI sẽ xếp đường đi xuất phát và về lại nơi ở này mỗi ngày</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NÚT MỞ RỘNG TÙY CHỌN CHI TIẾT KHÁC (GIẢI PHÁP TẠO NHANH 5 GIÂY) -->
+            <div style="margin: 16px 0;">
+                <button type="button" id="btnToggleWizAdvanced" onclick="toggleWizAdvancedOptions()" style="width: 100%; padding: 12px 18px; background: #F8FAFC; color: #334155; border: 1.5px dashed #CBD5E1; border-radius: 12px; font-weight: 700; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <span>⚙️ Tùy Chọn Chi Tiết Khác (Gu Ăn Uống, Nhịp Độ, Điểm Ghim...)</span>
+                    <span id="wizAdvIcon" style="font-size: 11px; transition: transform 0.2s;">▼</span>
+                </button>
+            </div>
+
+            <!-- VÙNG CẤU HÌNH NÂNG CAO (ẨN MẶC ĐỊNH CHO FORM GỌN GÀNG TẠO NHANH 5 GIÂY) -->
+            <div id="wizAdvancedOptionsPane" style="display: none; transition: all 0.3s ease;">
+                <!-- KHỐI 3: PHONG CÁCH & NHỊP ĐỘ -->
+                <div class="builder-section-card">
+                    <div class="builder-card-header">
+                        <h4>3. Phong Cách, Ẩm Thực & Nhịp Độ</h4>
+                    </div>
+                    <div class="builder-card-body">
+                        <div class="form-group-item">
+                            <label>Mục tiêu trải nghiệm chính:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('objective', 'Khám phá', this)">Khám phá & Di sản</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Chụp ảnh sống ảo', this)">Check-in & Sống ảo</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Ẩm thực', this)">Foodtour Ẩm thực</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Nghỉ dưỡng', this)">Nghỉ dưỡng & Thư giãn</button>
+                            </div>
+                            <input type="hidden" id="wizObjective" value="Khám phá">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 10px;">
+                            <input type="text" id="wizCustomObjective" class="builder-input" placeholder="Hoặc nhập mục tiêu riêng (VD: Đi tour tâm linh, chụp ảnh kỷ yếu...)" oninput="updateLiveTripPreview()">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Gu ẩm thực yêu thích:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('diningStyle', 'Bình thường', this)">Hài hòa / Đặc sản địa phương</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Vỉa hè', this)">Ẩm thực đường phố / Vỉa hè</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Sang trọng', this)">Nhà hàng sang trọng / View đẹp</button>
+                            </div>
+                            <input type="hidden" id="wizDiningStyle" value="Bình thường">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Mức độ vận động / Thể lực:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('activityLevel', 'Bình thường', this)">Vừa phải / Linh hoạt</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Nhẹ nhàng', this)">Nhẹ nhàng / Dạo mát</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Vận động nhiều', this)">Nhiều / Leo dốc & Đi bộ</button>
+                            </div>
+                            <input type="hidden" id="wizActivityLevel" value="Bình thường">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Nhịp độ di chuyển:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('pacing', 'Cân bằng', this)">Cân bằng (4-5 điểm/ngày)</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Thư giãn', this)">Thư giãn (2-3 điểm/ngày)</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Khám phá tối đa', this)">Khám phá tối đa (6+ điểm)</button>
+                            </div>
+                            <input type="hidden" id="wizPacing" value="Cân bằng">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Hoạt động buổi tối (Nightlife):</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('nightlife', 'Bình thường', this)">Tự do / Thư giãn</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Cà phê, Chợ đêm', this)">Cà phê & Chợ đêm</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Bar, Pub, Vũ trường', this)">Bar & Pub sôi động</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Nghỉ ngơi sớm', this)">Nghỉ ngơi sớm</button>
+                            </div>
+                            <input type="hidden" id="wizNightlife" value="Bình thường">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Nhu cầu mua sắm:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('shopping', 'Bình thường', this)">Không bắt buộc</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua quà đặc sản', this)">Đặc sản & Quà lưu niệm</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua sắm TTTM', this)">Trung tâm thương mại</button>
+                            </div>
+                            <input type="hidden" id="wizShopping" value="Bình thường">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KHỐI 4: RÀNG BUỘC & ĐIỂM GHIM -->
+                <div class="builder-section-card">
+                    <div class="builder-card-header">
+                        <h4>4. Ràng Buộc & Yêu Cầu Riêng</h4>
+                    </div>
+                    <div class="builder-card-body">
+                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+                            <div class="form-group-item">
+                                <label>Điểm BẮT BUỘC ĐI (Ghim ưu tiên):</label>
+                                <input type="text" id="wizMustVisit" class="builder-input" placeholder="VD: Lăng Bác, Hồ Gươm, Bà Nà Hills..." oninput="updateLiveTripPreview()">
+                            </div>
+                            <div class="form-group-item">
+                                <label>Điểm CẤM ĐI (Bỏ qua khỏi lịch trình):</label>
+                                <input type="text" id="wizMustAvoid" class="builder-input" placeholder="VD: Bát Tràng, điểm đã đi rồi..." oninput="updateLiveTripPreview()">
+                            </div>
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Đoàn có thành viên đặc biệt (Tự động né dốc cao, leo núi):</label>
+                            <div class="checkbox-member-row">
+                                <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Người già" onchange="updateLiveTripPreview()"> Người cao tuổi</label>
+                                <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Trẻ nhỏ" onchange="updateLiveTripPreview()"> Trẻ nhỏ</label>
+                                <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Phụ nữ mang thai" onchange="updateLiveTripPreview()"> Phụ nữ mang thai</label>
+                            </div>
+                        </div>
+
+                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                            <div class="form-group-item">
+                                <label>Món ăn dị ứng / Cần tránh:</label>
+                                <input type="text" id="wizDiningConstraints" class="builder-input" placeholder="VD: Hải sản, Đậu phộng..." oninput="updateLiveTripPreview()">
+                            </div>
+                            <div class="form-group-item">
+                                <label>Ghi chú riêng thêm cho AI:</label>
+                                <input type="text" id="wizExtra" class="builder-input" placeholder="VD: Sắp xếp cho tôi đi cafe ngắm hoàng hôn...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CỘT PHẢI: LIVE TRIP PREVIEW STICKY (38%) -->
+        <div class="builder-right-col">
+            <div class="live-preview-card" id="livePreviewCard">
+                <div class="preview-hero-img-wrap">
+                    <img id="previewDestImg" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80" alt="Destination" class="preview-hero-img">
+                    <div class="preview-img-overlay">
+                        <span class="preview-tag-live">TỔNG QUAN CHUYẾN ĐI</span>
+                        <h3 class="preview-dest-title" id="previewDestTitle">Hà Nội (3N2Đ)</h3>
+                        <p class="preview-dest-origin" id="previewOriginSubtitle">Xuất phát từ Hồ Chí Minh</p>
+                    </div>
+                </div>
+
+                <div class="preview-content-body">
+                    <!-- Badges Row -->
+                    <div class="preview-badges-grid">
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Đồng hành</small>
+                                <strong id="previewBadgeCompanion">Cặp đôi</strong>
+                            </div>
+                        </div>
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Phương tiện</small>
+                                <strong id="previewBadgeVehicle">Xe máy</strong>
+                            </div>
+                        </div>
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Lưu trú</small>
+                                <strong id="previewBadgeAcc">Khách sạn 3-4★</strong>
+                            </div>
+                        </div>
+                        <div class="preview-badge-item">
+                            <div class="badge-text">
+                                <small>Phong cách</small>
+                                <strong id="previewBadgeObjective">Khám phá</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cost Estimate Box -->
+                    <div class="preview-cost-box">
+                        <div class="cost-box-header">
+                            <span>Dự toán chi phí tham khảo:</span>
+                            <span class="cost-badge-tag">Tự động tính</span>
+                        </div>
+                        <div class="cost-box-amount" id="previewCostAmount">~4.350.000 VNĐ / người</div>
+                        <div class="cost-box-breakdown" id="previewCostBreakdown">
+                            Khách sạn (2 đêm): 1.500k • Ẩm thực (3N): 1.350k • Vé & Xe: 750k
+                        </div>
+                    </div>
+
+                    <!-- Highlights & Requirements preview -->
+                    <div class="preview-notes-list" id="previewNotesList">
+                        <div class="preview-note-item" id="previewNoteMustVisit" style="display:none;">
+                            Ghim: <span id="previewMustVisitText"></span>
+                        </div>
+                        <div class="preview-note-item" id="previewNoteAvoid" style="display:none; color: #e74c3c;">
+                            Tránh: <span id="previewMustAvoidText"></span>
+                        </div>
+                        <div class="preview-note-item" id="previewNoteSpecial" style="display:none; color: #e67e22;">
+                            Bảo vệ: <span id="previewSpecialText"></span>
+                        </div>
+                    </div>
+
+                    <div class="preview-action-wrap">
+                        <button type="button" class="btn-mega-generate" onclick="generateItineraryFromWizard(event, 'A')">
+                            <span>TẠO LỘ TRÌNH AI</span>
+                        </button>
+                        <button type="button" onclick="showHistoryModal()" style="width: 100%; margin-top: 10px; padding: 10px 14px; background: #FFFFFF; color: #2563EB; border: 2px solid #2563EB; border-radius: 10px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12); font-family: 'Be Vietnam Pro', 'Inter', sans-serif !important;">
+                            Xem Lại Lịch Sử Lộ Trình Đã Tạo
+                        </button>
+                        <div class="preview-guarantee-text">
+                            Thuật toán AI tự động tối ưu tuyến đường theo tiêu chí đã chọn
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thêm Script switch mode -->
+<script>
+function switchWizardMode(mode) {
+    document.getElementById('btnModeA').classList.remove('active');
+    document.getElementById('btnModeB').classList.remove('active');
+    document.getElementById('btnMode' + mode).classList.add('active');
+    
+    if (mode === 'A') {
+        document.getElementById('wizardPanesModeA').style.display = 'block';
+        document.getElementById('wizFooterModeA').style.display = 'flex';
+        document.getElementById('wizardPaneModeB').style.display = 'none';
+        document.getElementById('wizDescModeA').style.display = 'block';
+        document.getElementById('wizDescModeB').style.display = 'none';
+        document.getElementById('wizProgressWrapper').style.visibility = 'visible';
+    } else {
+        document.getElementById('wizardPanesModeA').style.display = 'none';
+        document.getElementById('wizFooterModeA').style.display = 'none';
+        document.getElementById('wizardPaneModeB').style.display = 'block';
+        document.getElementById('wizDescModeA').style.display = 'none';
+        document.getElementById('wizDescModeB').style.display = 'block';
+        document.getElementById('wizProgressWrapper').style.visibility = 'hidden';
+    }
+}
+
+
         <!-- ============================================================
              KHỐI LỘ TRÌNH AI ĐƯỢC ĐỀ XUẤT & SẴN SÀNG CLONE (CURATED AI ROUTES)
              ============================================================ -->
@@ -2039,404 +2439,6 @@
         </div>
         <!-- Kết thúc: Modal Chọn Địa Điểm Thay Thế -->
 
-<!-- ============================================================
-     BẢNG KHỞI TẠO LỘ TRÌNH TOÀN CẢNH (SPLIT-SCREEN 2 CỘT KÈM LIVE PREVIEW)
-     ============================================================ -->
-<div id="emptyItineraryState" class="split-builder-wrapper">
-    <div class="builder-top-header">
-        <div class="builder-title-row">
-            <img src="/static/beenavi_logo_nobg.png" alt="BeeNavi" class="builder-logo-img">
-            <div>
-                <h2 class="builder-main-title">Thiết Kế Chuyến Đi Cùng BeeNavi AI</h2>
-                <p class="builder-sub-title">Tùy chỉnh thông số & xem bản tóm tắt chi phí thay đổi theo thời gian thực</p>
-            </div>
-        </div>
-        <div class="mode-switch-container" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <button type="button" id="btnModeA" class="wiz-mode-btn active" onclick="switchWizardMode('A')">🛫 Chuyến Đi Nhiều Ngày</button>
-            <button type="button" id="btnModeB" class="wiz-mode-btn" onclick="switchWizardMode('B')">📍 Khám Phá 1 Điểm Cụ Thể</button>
-            <button type="button" class="wiz-mode-btn" onclick="showHistoryModal()" style="background: linear-gradient(135deg, #2563EB, #1D4ED8); color: #FFFFFF; border: none; font-weight: 800; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);">
-                📜 Lịch Sử Đã Tạo
-            </button>
-        </div>
-    </div>
-
-    <!-- CHẾ ĐỘ B: KHÁM PHÁ 1 ĐIỂM CỤ THỂ (Bán kính 2.5km) -->
-    <div id="wizardPaneModeB" class="mode-b-card" style="display:none; background: #FFFFFF; padding: 24px; border-radius: 16px; border: 1px solid #E2E8F0; box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 24px;">
-        <div class="builder-card-header" style="display: flex; align-items: center; gap: 10px;">
-            <span class="card-icon" style="font-size: 22px;">📍</span>
-            <h4 style="font-size: 16px; font-weight: 800; color: #1E293B; margin: 0;">Khám Phá Địa Điểm Cụ Thể (Tự Động Đề Xuất Điểm Đẹp Bán Kính 2.5km)</h4>
-        </div>
-        <p style="font-size: 13px; color: #64748B; margin: 8px 0 18px 0;">Nhập 1 địa điểm cụ thể bạn muốn ghé thăm (VD: Lăng Bác, Bà Nà Hills, Hồ Gươm, Chợ Bến Thành), AI sẽ lập tức gợi ý lịch trình chi tiết bán kính 2.5km quanh điểm đó!</p>
-        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div class="form-group-item">
-                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Tên địa điểm cụ thể *</label>
-                <input type="text" id="wizPoiName" class="builder-input" placeholder="VD: Lăng Bác, Bà Nà Hills..." value="Lăng Bác" oninput="updateLiveTripPreview()">
-            </div>
-            <div class="form-group-item">
-                <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Buổi tham quan mong muốn</label>
-                <select id="wizPoiSession" class="builder-input" onchange="updateLiveTripPreview()">
-                    <option value="Sáng">Buổi Sáng (Bắt đầu từ 08:00)</option>
-                    <option value="Chiều">Buổi Chiều (Bắt đầu từ 14:00)</option>
-                    <option value="Tối">Buổi Tối & Đêm (Bắt đầu từ 18:00)</option>
-                </select>
-            </div>
-        </div>
-        <div style="text-align: center; margin-top: 24px;">
-            <button type="button" class="btn-mega-generate" style="max-width: 340px; margin: 0 auto; background: linear-gradient(135deg, #F59E0B, #D97706); color: #FFFFFF; border: none; padding: 12px 28px; border-radius: 10px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);" onclick="generateItineraryFromWizard(event, 'B')">
-                🚀 Khám Phá Địa Điểm Cụ Thể Ngay!
-            </button>
-        </div>
-    </div>
-
-    <!-- CHẾ ĐỘ A: GIAO DIỆN 2 CỘT TOÀN CẢNH -->
-    <div id="wizardPanesModeA" class="split-builder-layout">
-        
-        <!-- CỘT TRÁI: FORM ĐIỀU KHIỂN CHI TIẾT (62%) -->
-        <div class="builder-left-col">
-            
-            <!-- KHỐI 1: HÀNH TRÌNH & THỜI GIAN -->
-            <div class="builder-section-card">
-                <div class="builder-card-header">
-                    <h4>1. Điểm Đi, Điểm Đến & Thời Gian</h4>
-                </div>
-                <div class="builder-card-body">
-                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
-                        <div class="form-group-item">
-                            <label>Điểm xuất phát *</label>
-                            <input type="text" id="wizOrigin" class="builder-input" placeholder="VD: Hồ Chí Minh" value="Hồ Chí Minh" oninput="updateLiveTripPreview()">
-                        </div>
-                        <div class="form-group-item">
-                            <label>Điểm đến mong muốn *</label>
-                            <input type="text" id="wizDest" class="builder-input" placeholder="VD: Hà Nội" value="Hà Nội" oninput="updateLiveTripPreview()">
-                        </div>
-                    </div>
-
-                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
-                        <div class="form-group-item">
-                            <label>Ngày bắt đầu khởi hành (tùy chọn):</label>
-                            <input type="date" id="wizStartDate" class="builder-input" onchange="updateLiveTripPreview()">
-                        </div>
-                        <div class="form-group-item">
-                            <label>Số ngày chuyến đi (Tối thiểu 2 ngày):</label>
-                            <input type="number" id="wizDaysCustom" class="builder-input" min="2" max="30" value="3" placeholder="Nhập số ngày (VD: 2, 3, 5...)" oninput="handleCustomDaysInput(this)">
-                        </div>
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 12px;">
-                        <label>Chọn nhanh số ngày:</label>
-                        <div class="chip-group" id="daysChipGroup">
-                            <button type="button" class="form-chip" onclick="selectFormChip('days', '2', this)">2N1Đ</button>
-                            <button type="button" class="form-chip active" onclick="selectFormChip('days', '3', this)">3N2Đ (Phổ biến)</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('days', '4', this)">4N3Đ</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('days', '5', this)">5N4Đ</button>
-                        </div>
-                        <input type="hidden" id="wizDays" value="3">
-                    </div>
-                </div>
-            </div>
-
-            <!-- KHỐI 2: ĐỒNG HÀNH, DI CHUYỂN & LƯU TRÚ -->
-            <div class="builder-section-card">
-                <div class="builder-card-header">
-                    <h4>2. Đồng Hành, Di Chuyển & Nơi Lưu Trú</h4>
-                </div>
-                <div class="builder-card-body">
-                    <div class="form-group-item">
-                        <label>Đối tượng chuyến đi:</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip active" onclick="selectFormChip('companion', 'Cặp đôi', this)">Cặp đôi</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Một mình', this)">Đi một mình (Solo)</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Nhóm bạn', this)">Nhóm bạn</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('companion', 'Gia đình', this)">Gia đình</button>
-                        </div>
-                        <input type="hidden" id="wizCompanion" value="Cặp đôi">
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 14px;">
-                        <label>Số lượng người trong đoàn:</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', '1 người', this)">1 Người</button>
-                            <button type="button" class="form-chip active" onclick="selectFormChip('groupSize', '2 người', this)">2 Người</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', '3-5 người', this)">3 - 5 Người</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('groupSize', 'Đoàn đông (>6)', this)">Đoàn đông (>6 người)</button>
-                        </div>
-                        <input type="hidden" id="wizGroupSize" value="2 người">
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 14px;">
-                        <label>Phương tiện di chuyển chính:</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip active" onclick="selectFormChip('vehicle', 'Xe máy', this)">Thuê xe máy</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Taxi', this)">Taxi / Grab</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Ô tô', this)">Ô tô tự lái</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('vehicle', 'Đi bộ', this)">Đi bộ & Xe bus</button>
-                        </div>
-                        <input type="hidden" id="wizVehicle" value="Xe máy">
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 14px;">
-                        <label>Loại hình nơi lưu trú:</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Đi trong ngày', this)">☀️ Đi trong ngày (0 đêm)</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'AI tự đề xuất', this)">🤖 Chưa chọn (AI tự đề xuất)</button>
-                            <button type="button" class="form-chip active" onclick="selectFormChip('accommodation', 'Khách sạn 3-4 sao', this)">Khách sạn 3-4 sao</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Homestay', this)">Homestay / Hostel</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Resort 4-5 sao', this)">Resort 4-5 sao</button>
-                        </div>
-                        <input type="hidden" id="wizAccommodation" value="Khách sạn 3-4 sao">
-                    </div>
-
-                    <div id="wizHotelChipsWrapper" style="transition: all 0.3s ease; margin-top: 14px;">
-                        <div id="wizHotelChipsBox" style="margin-bottom: 10px;">
-                            <label style="font-size: 12.5px; font-weight: 700; color: #475569; margin-bottom: 6px; display: block;">💡 Gợi ý chọn nhanh nơi ở phổ biến:</label>
-                            <div id="wizHotelChipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
-                                <!-- Dynamic chips fill here -->
-                            </div>
-                        </div>
-                        <div class="form-group-item">
-                            <label>Hoặc nhập tên khách sạn / homestay bạn đã đặt (tùy chọn):</label>
-                            <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Chọn chip ở trên hoặc gõ tên nơi ở..." oninput="updateLiveTripPreview()">
-                            <datalist id="wizHotelsDatalist">
-                                <!-- Dynamic datalist -->
-                            </datalist>
-                            <small id="wizHotelNote" style="color: #059669; font-size: 11.5px; font-weight: 600; margin-top: 4px; display: block;">AI sẽ xếp đường đi xuất phát và về lại nơi ở này mỗi ngày</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NÚT MỞ RỘNG TÙY CHỌN CHI TIẾT KHÁC (GIẢI PHÁP TẠO NHANH 5 GIÂY) -->
-            <div style="margin: 16px 0;">
-                <button type="button" id="btnToggleWizAdvanced" onclick="toggleWizAdvancedOptions()" style="width: 100%; padding: 12px 18px; background: #F8FAFC; color: #334155; border: 1.5px dashed #CBD5E1; border-radius: 12px; font-weight: 700; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
-                    <span>⚙️ Tùy Chọn Chi Tiết Khác (Gu Ăn Uống, Nhịp Độ, Điểm Ghim...)</span>
-                    <span id="wizAdvIcon" style="font-size: 11px; transition: transform 0.2s;">▼</span>
-                </button>
-            </div>
-
-            <!-- VÙNG CẤU HÌNH NÂNG CAO (ẨN MẶC ĐỊNH CHO FORM GỌN GÀNG TẠO NHANH 5 GIÂY) -->
-            <div id="wizAdvancedOptionsPane" style="display: none; transition: all 0.3s ease;">
-                <!-- KHỐI 3: PHONG CÁCH & NHỊP ĐỘ -->
-                <div class="builder-section-card">
-                    <div class="builder-card-header">
-                        <h4>3. Phong Cách, Ẩm Thực & Nhịp Độ</h4>
-                    </div>
-                    <div class="builder-card-body">
-                        <div class="form-group-item">
-                            <label>Mục tiêu trải nghiệm chính:</label>
-                            <div class="chip-group">
-                                <button type="button" class="form-chip active" onclick="selectFormChip('objective', 'Khám phá', this)">Khám phá & Di sản</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Chụp ảnh sống ảo', this)">Check-in & Sống ảo</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Ẩm thực', this)">Foodtour Ẩm thực</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Nghỉ dưỡng', this)">Nghỉ dưỡng & Thư giãn</button>
-                            </div>
-                            <input type="hidden" id="wizObjective" value="Khám phá">
-                        </div>
-
-                        <div class="form-group-item" style="margin-top: 10px;">
-                            <input type="text" id="wizCustomObjective" class="builder-input" placeholder="Hoặc nhập mục tiêu riêng (VD: Đi tour tâm linh, chụp ảnh kỷ yếu...)" oninput="updateLiveTripPreview()">
-                        </div>
-
-                        <div class="form-group-item" style="margin-top: 14px;">
-                            <label>Gu ẩm thực yêu thích:</label>
-                            <div class="chip-group">
-                                <button type="button" class="form-chip active" onclick="selectFormChip('diningStyle', 'Bình thường', this)">Hài hòa / Đặc sản địa phương</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Vỉa hè', this)">Ẩm thực đường phố / Vỉa hè</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Sang trọng', this)">Nhà hàng sang trọng / View đẹp</button>
-                            </div>
-                            <input type="hidden" id="wizDiningStyle" value="Bình thường">
-                        </div>
-
-                        <div class="form-group-item" style="margin-top: 14px;">
-                            <label>Mức độ vận động / Thể lực:</label>
-                            <div class="chip-group">
-                                <button type="button" class="form-chip active" onclick="selectFormChip('activityLevel', 'Bình thường', this)">Vừa phải / Linh hoạt</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Nhẹ nhàng', this)">Nhẹ nhàng / Dạo mát</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Vận động nhiều', this)">Nhiều / Leo dốc & Đi bộ</button>
-                            </div>
-                            <input type="hidden" id="wizActivityLevel" value="Bình thường">
-                        </div>
-
-                        <div class="form-group-item" style="margin-top: 14px;">
-                            <label>Nhịp độ di chuyển:</label>
-                            <div class="chip-group">
-                                <button type="button" class="form-chip active" onclick="selectFormChip('pacing', 'Cân bằng', this)">Cân bằng (4-5 điểm/ngày)</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Thư giãn', this)">Thư giãn (2-3 điểm/ngày)</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Khám phá tối đa', this)">Khám phá tối đa (6+ điểm)</button>
-                            </div>
-                            <input type="hidden" id="wizPacing" value="Cân bằng">
-                        </div>
-
-                        <div class="form-group-item" style="margin-top: 14px;">
-                            <label>Hoạt động buổi tối (Nightlife):</label>
-                            <div class="chip-group">
-                                <button type="button" class="form-chip active" onclick="selectFormChip('nightlife', 'Bình thường', this)">Tự do / Thư giãn</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Cà phê, Chợ đêm', this)">Cà phê & Chợ đêm</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Bar, Pub, Vũ trường', this)">Bar & Pub sôi động</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Nghỉ ngơi sớm', this)">Nghỉ ngơi sớm</button>
-                            </div>
-                            <input type="hidden" id="wizNightlife" value="Bình thường">
-                        </div>
-
-                        <div class="form-group-item" style="margin-top: 14px;">
-                            <label>Nhu cầu mua sắm:</label>
-                            <div class="chip-group">
-                                <button type="button" class="form-chip active" onclick="selectFormChip('shopping', 'Bình thường', this)">Không bắt buộc</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua quà đặc sản', this)">Đặc sản & Quà lưu niệm</button>
-                                <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua sắm TTTM', this)">Trung tâm thương mại</button>
-                            </div>
-                            <input type="hidden" id="wizShopping" value="Bình thường">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- KHỐI 4: RÀNG BUỘC & ĐIỂM GHIM -->
-                <div class="builder-section-card">
-                    <div class="builder-card-header">
-                        <h4>4. Ràng Buộc & Yêu Cầu Riêng</h4>
-                    </div>
-                    <div class="builder-card-body">
-                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
-                            <div class="form-group-item">
-                                <label>Điểm BẮT BUỘC ĐI (Ghim ưu tiên):</label>
-                                <input type="text" id="wizMustVisit" class="builder-input" placeholder="VD: Lăng Bác, Hồ Gươm, Bà Nà Hills..." oninput="updateLiveTripPreview()">
-                            </div>
-                            <div class="form-group-item">
-                                <label>Điểm CẤM ĐI (Bỏ qua khỏi lịch trình):</label>
-                                <input type="text" id="wizMustAvoid" class="builder-input" placeholder="VD: Bát Tràng, điểm đã đi rồi..." oninput="updateLiveTripPreview()">
-                            </div>
-                        </div>
-
-                        <div class="form-group-item" style="margin-top: 14px;">
-                            <label>Đoàn có thành viên đặc biệt (Tự động né dốc cao, leo núi):</label>
-                            <div class="checkbox-member-row">
-                                <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Người già" onchange="updateLiveTripPreview()"> Người cao tuổi</label>
-                                <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Trẻ nhỏ" onchange="updateLiveTripPreview()"> Trẻ nhỏ</label>
-                                <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Phụ nữ mang thai" onchange="updateLiveTripPreview()"> Phụ nữ mang thai</label>
-                            </div>
-                        </div>
-
-                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
-                            <div class="form-group-item">
-                                <label>Món ăn dị ứng / Cần tránh:</label>
-                                <input type="text" id="wizDiningConstraints" class="builder-input" placeholder="VD: Hải sản, Đậu phộng..." oninput="updateLiveTripPreview()">
-                            </div>
-                            <div class="form-group-item">
-                                <label>Ghi chú riêng thêm cho AI:</label>
-                                <input type="text" id="wizExtra" class="builder-input" placeholder="VD: Sắp xếp cho tôi đi cafe ngắm hoàng hôn...">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- CỘT PHẢI: LIVE TRIP PREVIEW STICKY (38%) -->
-        <div class="builder-right-col">
-            <div class="live-preview-card" id="livePreviewCard">
-                <div class="preview-hero-img-wrap">
-                    <img id="previewDestImg" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80" alt="Destination" class="preview-hero-img">
-                    <div class="preview-img-overlay">
-                        <span class="preview-tag-live">TỔNG QUAN CHUYẾN ĐI</span>
-                        <h3 class="preview-dest-title" id="previewDestTitle">Hà Nội (3N2Đ)</h3>
-                        <p class="preview-dest-origin" id="previewOriginSubtitle">Xuất phát từ Hồ Chí Minh</p>
-                    </div>
-                </div>
-
-                <div class="preview-content-body">
-                    <!-- Badges Row -->
-                    <div class="preview-badges-grid">
-                        <div class="preview-badge-item">
-                            <div class="badge-text">
-                                <small>Đồng hành</small>
-                                <strong id="previewBadgeCompanion">Cặp đôi</strong>
-                            </div>
-                        </div>
-                        <div class="preview-badge-item">
-                            <div class="badge-text">
-                                <small>Phương tiện</small>
-                                <strong id="previewBadgeVehicle">Xe máy</strong>
-                            </div>
-                        </div>
-                        <div class="preview-badge-item">
-                            <div class="badge-text">
-                                <small>Lưu trú</small>
-                                <strong id="previewBadgeAcc">Khách sạn 3-4★</strong>
-                            </div>
-                        </div>
-                        <div class="preview-badge-item">
-                            <div class="badge-text">
-                                <small>Phong cách</small>
-                                <strong id="previewBadgeObjective">Khám phá</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Cost Estimate Box -->
-                    <div class="preview-cost-box">
-                        <div class="cost-box-header">
-                            <span>Dự toán chi phí tham khảo:</span>
-                            <span class="cost-badge-tag">Tự động tính</span>
-                        </div>
-                        <div class="cost-box-amount" id="previewCostAmount">~4.350.000 VNĐ / người</div>
-                        <div class="cost-box-breakdown" id="previewCostBreakdown">
-                            Khách sạn (2 đêm): 1.500k • Ẩm thực (3N): 1.350k • Vé & Xe: 750k
-                        </div>
-                    </div>
-
-                    <!-- Highlights & Requirements preview -->
-                    <div class="preview-notes-list" id="previewNotesList">
-                        <div class="preview-note-item" id="previewNoteMustVisit" style="display:none;">
-                            Ghim: <span id="previewMustVisitText"></span>
-                        </div>
-                        <div class="preview-note-item" id="previewNoteAvoid" style="display:none; color: #e74c3c;">
-                            Tránh: <span id="previewMustAvoidText"></span>
-                        </div>
-                        <div class="preview-note-item" id="previewNoteSpecial" style="display:none; color: #e67e22;">
-                            Bảo vệ: <span id="previewSpecialText"></span>
-                        </div>
-                    </div>
-
-                    <div class="preview-action-wrap">
-                        <button type="button" class="btn-mega-generate" onclick="generateItineraryFromWizard(event, 'A')">
-                            <span>TẠO LỘ TRÌNH AI</span>
-                        </button>
-                        <button type="button" onclick="showHistoryModal()" style="width: 100%; margin-top: 10px; padding: 10px 14px; background: #FFFFFF; color: #2563EB; border: 2px solid #2563EB; border-radius: 10px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12); font-family: 'Be Vietnam Pro', 'Inter', sans-serif !important;">
-                            Xem Lại Lịch Sử Lộ Trình Đã Tạo
-                        </button>
-                        <div class="preview-guarantee-text">
-                            Thuật toán AI tự động tối ưu tuyến đường theo tiêu chí đã chọn
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Thêm Script switch mode -->
-<script>
-function switchWizardMode(mode) {
-    document.getElementById('btnModeA').classList.remove('active');
-    document.getElementById('btnModeB').classList.remove('active');
-    document.getElementById('btnMode' + mode).classList.add('active');
-    
-    if (mode === 'A') {
-        document.getElementById('wizardPanesModeA').style.display = 'block';
-        document.getElementById('wizFooterModeA').style.display = 'flex';
-        document.getElementById('wizardPaneModeB').style.display = 'none';
-        document.getElementById('wizDescModeA').style.display = 'block';
-        document.getElementById('wizDescModeB').style.display = 'none';
-        document.getElementById('wizProgressWrapper').style.visibility = 'visible';
-    } else {
-        document.getElementById('wizardPanesModeA').style.display = 'none';
-        document.getElementById('wizFooterModeA').style.display = 'none';
-        document.getElementById('wizardPaneModeB').style.display = 'block';
-        document.getElementById('wizDescModeA').style.display = 'none';
-        document.getElementById('wizDescModeB').style.display = 'block';
-        document.getElementById('wizProgressWrapper').style.visibility = 'hidden';
-    }
-}
 </script>
 <div id="itineraryContent" style="display: none;">
             <div class="section-header">
@@ -4737,7 +4739,7 @@ function switchWizardMode(mode) {
 
 
 
-    <script src="/static/app.js?v=63_fix_reset_to_wizard_display"></script>
+    <script src="/static/app.js?v=64_form_builder_on_viewHome"></script>
 
 
 
