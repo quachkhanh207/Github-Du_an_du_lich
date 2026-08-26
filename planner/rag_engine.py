@@ -723,12 +723,77 @@ class RagEngine:
         style_str = f" • Phong cách: {trip_objective}" if trip_objective and trip_objective not in ["Khám phá", "Cân bằng"] else ""
         subtitle = f"Thiết kế riêng cho {companion} ({group_size}) • Di chuyển bằng {vehicle} • {hotel_str}{style_str}"
 
-        # Phân bổ chi phí
-        cost_str = f"{int(b_val):,} VNĐ / người".replace(",", ".")
-        hotel_cost = int(b_val * 0.4)
-        food_cost = int(b_val * 0.35)
-        ticket_cost = int(b_val * 0.25)
-        cost_details = f"{accommodation} ({num_days-1} đêm): {hotel_cost:,}k • Ẩm thực ({num_days}N): {food_cost:,}k • Vé & Xe: {ticket_cost:,}k".replace(",", ".")
+        # Phân bổ chi phí động chuẩn xác thực tế
+        nights = max(0, num_days - 1)
+        raw_room_price = 1200000
+        acc_lower = accommodation.lower()
+        if "đi trong ngày" in acc_lower or "0 đêm" in acc_lower:
+            raw_room_price = 0
+        elif "ai tự đề xuất" in acc_lower or "chưa chọn" in acc_lower:
+            raw_room_price = 900000
+        elif "homestay" in acc_lower or "hostel" in acc_lower:
+            raw_room_price = 500000
+        elif "resort" in acc_lower or "5 sao" in acc_lower:
+            raw_room_price = 3200000
+
+        hotel_rate_per_person = int(raw_room_price / 2)
+        g_lower = group_size.lower()
+        c_lower = companion.lower()
+        if "1 người" in g_lower or "một mình" in c_lower or "solo" in c_lower:
+            hotel_rate_per_person = raw_room_price
+        elif "3-5" in g_lower:
+            hotel_rate_per_person = int(raw_room_price / 2.5)
+        elif ">6" in g_lower or "đoàn đông" in g_lower:
+            hotel_rate_per_person = int(raw_room_price / 3)
+
+        d_lower = dining_style.lower()
+        if "sang trọng" in d_lower:
+            food_per_day = 750000
+        elif "vỉa hè" in d_lower:
+            food_per_day = 280000
+        else:
+            food_per_day = 450000
+
+        o_clean = re.sub(r'tỉnh|thành phố|tp\.|tp', '', origin.lower()).strip()
+        d_clean = re.sub(r'tỉnh|thành phố|tp\.|tp', '', dest_raw.lower()).strip()
+        is_intercity = (o_clean != d_clean) and len(o_clean) > 0 and len(d_clean) > 0
+
+        v_lower = vehicle.lower()
+        if "taxi" in v_lower:
+            trans_per_day = 280000
+        elif "ô tô" in v_lower:
+            trans_per_day = 380000
+        else:
+            trans_per_day = 100000
+
+        intercity_fare = 0
+        if is_intercity:
+            if "xe máy" in v_lower:
+                intercity_fare = 350000
+            elif "ô tô" in v_lower:
+                intercity_fare = 1200000
+            else:
+                intercity_fare = 1800000
+
+        hotel_total = hotel_rate_per_person * nights
+        food_total = food_per_day * num_days
+        local_trans_total = trans_per_day * num_days
+        total_est = hotel_total + food_total + local_trans_total + intercity_fare
+
+        cost_str = f"{total_est:,} VNĐ / người".replace(",", ".")
+        
+        hotel_label = specific_hotel or accommodation
+        if "đi trong ngày" in acc_lower:
+            hotel_part = "☀️ Đi trong ngày: 0k"
+        else:
+            hotel_part = f"{hotel_label} ({nights} đêm): {int(hotel_total/1000):,}k"
+
+        food_part = f"Ẩm thực ({num_days}N): {int(food_total/1000):,}k"
+        trans_part = f"Nội thành ({num_days}N): {int(local_trans_total/1000):,}k"
+        if is_intercity:
+            trans_part += f" • Vé liên tỉnh khứ hồi: {int(intercity_fare/1000):,}k"
+
+        cost_details = f"{hotel_part} • {food_part} • {trans_part}".replace(",", ".")
 
         center_coords = selected_clusters[0]["center"]
 
