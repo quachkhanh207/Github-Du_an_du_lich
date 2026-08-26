@@ -632,7 +632,7 @@
 
             <nav class="traveloka-nav-links">
                 <a href="javascript:void(0)" onclick="switchMainTab('home', event)" class="trv-link active whitespace-nowrap">Trang Chủ</a>
-                <a href="javascript:void(0)" onclick="resetToWizard()" class="trv-link whitespace-nowrap">Lộ Trình AI</a>
+                <a href="#itinerarySection" onclick="switchMainTab('itinerary', event)" class="trv-link whitespace-nowrap">Lộ Trình AI</a>
                 <a href="javascript:void(0)" onclick="switchMainTab('journal', event)" class="trv-link whitespace-nowrap">Nhật Ký</a>
 
 
@@ -959,7 +959,7 @@
 
                 <!-- Nút Tạo Lộ Trình AI Căn Giữa Nổi Bật -->
                 <div style="display: flex; justify-content: center; margin-top: 32px;">
-                    <button class="hero-create-itinerary-btn" onclick="resetToWizard()">
+                    <button class="hero-create-itinerary-btn" onclick="switchMainTab('itinerary', event)">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
                         <span>Tạo Lộ Trình AI Ngay</span>
                         <span class="hero-hot-badge">HOT 🔥</span>
@@ -2022,22 +2022,8 @@
                     <div class="history-empty">Chưa có lịch sử lộ trình nào.</div>
                 </div>
             </div>
-        <!-- Modal Chọn Địa Điểm Thay Thế (Gợi Ý 3 Ứng Viên) -->
-        <div class="history-modal-overlay" id="swapPoiModal" onclick="if(event.target===this) hideSwapPoiModal()" style="display: none; align-items: center; justify-content: center; z-index: 99999;">
-            <div class="history-modal-content" style="max-width: 520px; width: 92%; border-radius: 20px; padding: 24px; background: #FFFFFF; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
-                <div class="history-modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 14px;">
-                    <h3 style="font-size: 17px; font-weight: 800; color: #1E293B; margin: 0; display: flex; align-items: center; gap: 8px;">
-                        <span>🔄</span> Chọn Địa Điểm Thay Thế Phù Hợp
-                    </h3>
-                    <button class="history-close-btn" onclick="hideSwapPoiModal()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #64748B;">&times;</button>
-                </div>
-                <p id="swapPoiModalSubtitle" style="font-size: 13px; color: #64748B; margin: 0 0 16px 0; line-height: 1.5;">Hệ thống lọc ra 3 địa điểm cùng loại hình & cùng mạn khu vực. Chọn điểm bạn thích nhất:</p>
-                <div id="swapPoiCandidatesList" style="display: flex; flex-direction: column; gap: 12px;">
-                    <!-- 3 Dynamic candidate cards render here -->
-                </div>
-            </div>
         </div>
-        <!-- Kết thúc: Modal Chọn Địa Điểm Thay Thế -->
+        <!-- Kết thúc: Lịch sử Modal -->
 
 <!-- ============================================================
      BẢNG KHỞI TẠO LỘ TRÌNH TOÀN CẢNH (SPLIT-SCREEN 2 CỘT KÈM LIVE PREVIEW)
@@ -4737,7 +4723,7 @@ function switchWizardMode(mode) {
 
 
 
-    <script src="/static/app.js?v=65_reverted_to_clean_structure"></script>
+    <script src="/static/app.js?v=57_hotel_category_chips"></script>
 
 
 
