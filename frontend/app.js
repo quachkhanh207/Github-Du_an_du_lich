@@ -688,22 +688,16 @@ window.resolveHotelObject = function(data) {
     const subtitle = (data && data.subtitle) || (window.currentAiData && window.currentAiData.phu_de) || "";
     const lowerSub = subtitle.toLowerCase();
     
-    // Nếu chọn 'Chưa chọn' / 'tự do' / 'đi trong ngày' -> TUYỆT ĐỐI KHÔNG VẼ KHÁCH SẠN
-    const accInput = document.getElementById('wizAccommodation')?.value;
-    if (accInput === 'Chưa chọn' || lowerSub.includes('chưa chọn') || lowerSub.includes('tự do') || lowerSub.includes('đi trong ngày')) {
+    // Nếu chọn 'Đi trong ngày' (0 đêm) -> KHÔNG vẽ hay trả về khách sạn
+    const accInput = document.getElementById('wizAccommodation')?.value || '';
+    if (accInput.includes('Đi trong ngày') || lowerSub.includes('đi trong ngày') || lowerSub.includes('0 đêm')) {
         return null;
     }
 
     if (data && data.hotel && data.hotel.lat && (data.hotel.lon || data.hotel.lng)) {
-        if (data.hotel.name && (data.hotel.name.includes("Chưa chọn") || data.hotel.name.includes("tự do"))) {
-            return null;
-        }
         return data.hotel;
     }
     if (window.currentAiData && window.currentAiData.hotel && window.currentAiData.hotel.lat) {
-        if (window.currentAiData.hotel.name && (window.currentAiData.hotel.name.includes("Chưa chọn") || window.currentAiData.hotel.name.includes("tự do"))) {
-            return null;
-        }
         return window.currentAiData.hotel;
     }
 
@@ -728,7 +722,8 @@ window.resolveHotelObject = function(data) {
         }
     }
 
-    return null;
+    // Mặc định trả về khách sạn 5 sao đại diện tại Hà Nội nếu chọn AI tự đề xuất
+    return catalog[0];
 };
 
 function drawItineraryMap(destData, activeDayNum = 1) {
