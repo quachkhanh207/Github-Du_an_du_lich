@@ -5116,6 +5116,36 @@ window.selectFormChip = function(groupName, value, btnEl) {
     } else if (groupName === 'companion') {
         const input = document.getElementById('wizCompanion');
         if (input) input.value = value;
+
+        // Tự động nhảy Số lượng người tương ứng khi chọn Đối tượng chuyến đi
+        if (value.includes('Một mình') || value.includes('Solo')) {
+            const sizeChip = document.querySelector('button[onclick*="groupSize"][onclick*="1 người"]');
+            if (sizeChip) {
+                const parentGroup = sizeChip.closest('.chip-group') || sizeChip.parentElement;
+                if (parentGroup) parentGroup.querySelectorAll('.form-chip').forEach(c => c.classList.remove('active'));
+                sizeChip.classList.add('active');
+                const sizeInput = document.getElementById('wizGroupSize');
+                if (sizeInput) sizeInput.value = '1 người';
+            }
+        } else if (value.includes('Cặp đôi')) {
+            const sizeChip = document.querySelector('button[onclick*="groupSize"][onclick*="2 người"]');
+            if (sizeChip) {
+                const parentGroup = sizeChip.closest('.chip-group') || sizeChip.parentElement;
+                if (parentGroup) parentGroup.querySelectorAll('.form-chip').forEach(c => c.classList.remove('active'));
+                sizeChip.classList.add('active');
+                const sizeInput = document.getElementById('wizGroupSize');
+                if (sizeInput) sizeInput.value = '2 người';
+            }
+        } else if (value.includes('Nhóm bạn') || value.includes('Gia đình')) {
+            const sizeChip = document.querySelector('button[onclick*="groupSize"][onclick*="3-5 người"]');
+            if (sizeChip) {
+                const parentGroup = sizeChip.closest('.chip-group') || sizeChip.parentElement;
+                if (parentGroup) parentGroup.querySelectorAll('.form-chip').forEach(c => c.classList.remove('active'));
+                sizeChip.classList.add('active');
+                const sizeInput = document.getElementById('wizGroupSize');
+                if (sizeInput) sizeInput.value = '3-5 người';
+            }
+        }
     } else if (groupName === 'groupSize') {
         const input = document.getElementById('wizGroupSize');
         if (input) input.value = value;
@@ -5287,15 +5317,25 @@ window.updateLiveTripPreview = function() {
     if (badgeObj) badgeObj.textContent = `${finalObjective} • ${pacing}`;
 
     // Dự toán chi phí động chuẩn xác thực tế
-    let hotelRate = 750000;
+    let rawRoomPrice = 1200000;
     if (accommodation.includes('Đi trong ngày')) {
-        hotelRate = 0;
+        rawRoomPrice = 0;
     } else if (accommodation.includes('AI tự đề xuất') || accommodation === 'Chưa chọn') {
-        hotelRate = 600000;
+        rawRoomPrice = 900000;
     } else if (accommodation.includes('Homestay') || accommodation.includes('Hostel')) {
-        hotelRate = 350000;
+        rawRoomPrice = 500000;
     } else if (accommodation.includes('Resort') || accommodation.includes('5 sao')) {
-        hotelRate = 2200000;
+        rawRoomPrice = 3200000;
+    }
+
+    // Chi phí phòng tính theo số người thực tế trong đoàn
+    let hotelRate = Math.round(rawRoomPrice / 2); // Mặc định 2 người ở chung 1 phòng
+    if (groupSize.includes('1 người') || companion.includes('Một mình')) {
+        hotelRate = rawRoomPrice; // Đi 1 mình (Solo) bao trọn 100% tiền phòng đơn
+    } else if (groupSize.includes('3-5')) {
+        hotelRate = Math.round(rawRoomPrice / 2.5); // Phòng gia đình / nhóm 3-5 người
+    } else if (groupSize.includes('>6') || groupSize.includes('đoàn đông')) {
+        hotelRate = Math.round(rawRoomPrice / 3);
     }
 
     let foodPerDay = diningStyle.includes('Sang trọng') ? 750000 : (diningStyle.includes('Vỉa hè') ? 280000 : 450000);
