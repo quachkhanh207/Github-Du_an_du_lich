@@ -3124,6 +3124,27 @@ window.switchMainTab = function (tabKey, event) {
 
     // 5. Switch to target dedicated page view
     if (tabKey === 'itinerary') {
+        if (!window.currentAiData) {
+            // Thử nạp lại lộ trình gần nhất từ localStorage nếu có
+            try {
+                const history = JSON.parse(localStorage.getItem('beeNavi_ItineraryHistory')) || [];
+                if (history.length > 0 && history[0].data) {
+                    window.currentAiData = history[0].data;
+                    if (typeof renderAIItinerary === 'function') {
+                        renderAIItinerary(window.currentAiData);
+                    }
+                }
+            } catch(e) {}
+        }
+
+        if (!window.currentAiData) {
+            // Nếu vẫn chưa có lộ trình, giữ trang chủ chứa Form tạo lộ trình để du khách điền form
+            if (viewHome) viewHome.style.display = "block";
+            showToast("💡 Vui lòng điền thông tin và bấm '🚀 TẠO LỘ TRÌNH AI'!");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
         if (viewItinerary) viewItinerary.style.display = "block";
         if (typeof leafletMap !== 'undefined' && leafletMap) {
             setTimeout(() => { leafletMap.invalidateSize(); }, 150);
