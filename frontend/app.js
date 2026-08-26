@@ -4613,26 +4613,27 @@ function resetToWizard() {
     const viewJournal = document.getElementById("viewJournal");
     const viewHotels = document.getElementById("viewHotels");
 
-    if (viewHome) viewHome.style.display = "block";
-    if (viewItinerary) viewItinerary.style.display = "none";
+    const emptyState = document.getElementById("emptyItineraryState");
+    const contentState = document.getElementById("itineraryContent");
+
+    // 1. Chuyển sang container viewItinerary
+    if (viewHome) viewHome.style.display = "none";
+    if (viewItinerary) viewItinerary.style.display = "block";
     if (viewJournal) viewJournal.style.display = "none";
     if (viewHotels) viewHotels.style.display = "none";
 
-    // Cập nhật tab active trên Header
-    document.querySelectorAll(".trv-nav-links a").forEach(link => link.classList.remove("active"));
-    const homeTab = document.querySelector(".trv-nav-links a[onclick*='home']");
-    if (homeTab) homeTab.classList.add("active");
+    // 2. Hiển thị Form Builder (emptyItineraryState) và ẩn màn hình kết quả (itineraryContent)
+    if (emptyState) emptyState.style.display = "block";
+    if (contentState) contentState.style.display = "none";
 
-    // Cuộn mượt đến Form tạo lộ trình
-    setTimeout(() => {
-        const wizardSection = document.getElementById('emptyItineraryState') || document.querySelector('.split-builder-wrapper') || document.getElementById('wizBuilderSection');
-        if (wizardSection) {
-            wizardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            window.scrollTo({ top: 600, behavior: 'smooth' });
-        }
-    }, 50);
-    showToast("📝 Đã chuyển đến Form Tạo Lộ Trình AI!");
+    // 3. Highlight tab Lộ Trình AI trên Header
+    document.querySelectorAll(".trv-nav-links a").forEach(link => link.classList.remove("active"));
+    const itinTab = document.querySelector(".trv-nav-links a[onclick*='resetToWizard'], .trv-nav-links a[onclick*='itinerary']");
+    if (itinTab) itinTab.classList.add("active");
+
+    // 4. Cuộn mượt lên đầu Form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast("📝 Đã mở Form Khởi Tạo Lộ Trình AI!");
 }
 window.resetToWizard = resetToWizard;
 
