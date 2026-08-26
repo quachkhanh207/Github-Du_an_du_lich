@@ -4625,14 +4625,14 @@ function resetToWizard() {
 
     // Cuộn mượt đến Form tạo lộ trình
     setTimeout(() => {
-        const wizardSection = document.getElementById('wizBuilderSection') || document.querySelector('.wiz-form-card') || document.getElementById('builderSection');
+        const wizardSection = document.getElementById('emptyItineraryState') || document.querySelector('.split-builder-wrapper') || document.getElementById('wizBuilderSection');
         if (wizardSection) {
             wizardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
-            window.scrollTo({ top: 500, behavior: 'smooth' });
+            window.scrollTo({ top: 600, behavior: 'smooth' });
         }
     }, 50);
-    showToast("📝 Đã mở Form Tạo Lộ Trình AI!");
+    showToast("📝 Đã chuyển đến Form Tạo Lộ Trình AI!");
 }
 window.resetToWizard = resetToWizard;
 
