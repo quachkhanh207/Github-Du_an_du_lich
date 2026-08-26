@@ -2163,7 +2163,8 @@
                     <div class="form-group-item" style="margin-top: 14px;">
                         <label>Loại hình nơi lưu trú:</label>
                         <div class="chip-group">
-                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Chưa chọn', this)">Chưa chọn / Đi trong ngày</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Đi trong ngày', this)">☀️ Đi trong ngày (0 đêm)</button>
+                            <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'AI tự đề xuất', this)">🤖 Chưa chọn (AI tự đề xuất)</button>
                             <button type="button" class="form-chip active" onclick="selectFormChip('accommodation', 'Khách sạn 3-4 sao', this)">Khách sạn 3-4 sao</button>
                             <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Homestay', this)">Homestay / Hostel</button>
                             <button type="button" class="form-chip" onclick="selectFormChip('accommodation', 'Resort 4-5 sao', this)">Resort 4-5 sao</button>
@@ -2381,10 +2382,10 @@
 
                     <div class="preview-action-wrap">
                         <button type="button" class="btn-mega-generate" onclick="generateItineraryFromWizard(event, 'A')">
-                            <span>🚀 TẠO LỘ TRÌNH AI</span>
+                            <span>TẠO LỘ TRÌNH AI</span>
                         </button>
                         <button type="button" onclick="showHistoryModal()" style="width: 100%; margin-top: 10px; padding: 10px 14px; background: #FFFFFF; color: #2563EB; border: 2px solid #2563EB; border-radius: 10px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12); font-family: 'Be Vietnam Pro', 'Inter', sans-serif !important;">
-                            📜 Xem Lại Lịch Sử Lộ Trình Đã Tạo
+                            Xem Lại Lịch Sử Lộ Trình Đã Tạo
                         </button>
                         <div class="preview-guarantee-text">
                             Thuật toán AI tự động tối ưu tuyến đường theo tiêu chí đã chọn
@@ -4751,7 +4752,7 @@ function switchWizardMode(mode) {
 
 
 
-    <script src="/static/app.js?v=41_unified_font_fix"></script>
+    <script src="/static/app.js?v=42_separate_daytrip_hotel"></script>
 
 
 

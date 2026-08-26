@@ -5235,16 +5235,32 @@ window.updateLiveTripPreview = function() {
     if (badgeVeh) badgeVeh.textContent = vehicle;
 
     const badgeAcc = document.getElementById('previewBadgeAcc');
-    if (badgeAcc) badgeAcc.textContent = specificHotel ? specificHotel : (accommodation === 'Chưa chọn' ? 'Tự do / Đi trong ngày' : accommodation);
+    if (badgeAcc) {
+        if (specificHotel) {
+            badgeAcc.textContent = specificHotel;
+        } else if (accommodation.includes('Đi trong ngày')) {
+            badgeAcc.textContent = '☀️ Đi trong ngày (0 đêm)';
+        } else if (accommodation.includes('AI tự đề xuất') || accommodation === 'Chưa chọn') {
+            badgeAcc.textContent = '🤖 AI tự đề xuất';
+        } else {
+            badgeAcc.textContent = accommodation;
+        }
+    }
 
     const badgeObj = document.getElementById('previewBadgeObjective');
     if (badgeObj) badgeObj.textContent = `${finalObjective} • ${pacing}`;
 
     // Dự toán chi phí động
     let hotelRate = 750000;
-    if (accommodation === 'Chưa chọn') hotelRate = 0;
-    else if (accommodation.includes('Homestay') || accommodation.includes('Hostel')) hotelRate = 350000;
-    else if (accommodation.includes('Resort') || accommodation.includes('5 sao')) hotelRate = 2200000;
+    if (accommodation.includes('Đi trong ngày')) {
+        hotelRate = 0;
+    } else if (accommodation.includes('AI tự đề xuất') || accommodation === 'Chưa chọn') {
+        hotelRate = 600000;
+    } else if (accommodation.includes('Homestay') || accommodation.includes('Hostel')) {
+        hotelRate = 350000;
+    } else if (accommodation.includes('Resort') || accommodation.includes('5 sao')) {
+        hotelRate = 2200000;
+    }
 
     let foodPerDay = diningStyle.includes('Sang trọng') ? 750000 : (diningStyle.includes('Vỉa hè') ? 280000 : 450000);
     let transPerDay = vehicle.includes('Taxi') ? 350000 : (vehicle.includes('Ô tô') ? 450000 : 150000);
