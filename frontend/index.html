@@ -2172,14 +2172,20 @@
                         <input type="hidden" id="wizAccommodation" value="Khách sạn 3-4 sao">
                     </div>
 
-                    <div id="wizHotelChipsWrapper" style="transition: all 0.3s ease;">
-                        <div class="form-group-item" style="margin-top: 14px;">
-                            <label>Tên khách sạn bạn đã đặt (tùy chọn):</label>
-                            <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Gõ tên khách sạn bạn đã đặt (nếu có)..." oninput="updateLiveTripPreview()">
+                    <div id="wizHotelChipsWrapper" style="transition: all 0.3s ease; margin-top: 14px;">
+                        <div id="wizHotelChipsBox" style="margin-bottom: 10px;">
+                            <label style="font-size: 12.5px; font-weight: 700; color: #475569; margin-bottom: 6px; display: block;">💡 Gợi ý chọn nhanh nơi ở phổ biến:</label>
+                            <div id="wizHotelChipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                                <!-- Dynamic chips fill here -->
+                            </div>
+                        </div>
+                        <div class="form-group-item">
+                            <label>Hoặc nhập tên khách sạn / homestay bạn đã đặt (tùy chọn):</label>
+                            <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Chọn chip ở trên hoặc gõ tên nơi ở..." oninput="updateLiveTripPreview()">
                             <datalist id="wizHotelsDatalist">
                                 <!-- Dynamic datalist -->
                             </datalist>
-                            <small id="wizHotelNote" style="color: #059669; font-size: 11.5px; font-weight: 600; margin-top: 4px; display: block;">AI sẽ xếp đường đi xuất phát và về lại khách sạn này mỗi ngày</small>
+                            <small id="wizHotelNote" style="color: #059669; font-size: 11.5px; font-weight: 600; margin-top: 4px; display: block;">AI sẽ xếp đường đi xuất phát và về lại nơi ở này mỗi ngày</small>
                         </div>
                     </div>
                 </div>
@@ -4717,7 +4723,7 @@ function switchWizardMode(mode) {
 
 
 
-    <script src="/static/app.js?v=56_fix_timeline_blank_error"></script>
+    <script src="/static/app.js?v=57_hotel_category_chips"></script>
 
 
 

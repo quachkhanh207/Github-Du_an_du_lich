@@ -5175,47 +5175,27 @@ window.selectFormChip = function(groupName, value, btnEl) {
 
         const hotelWrapper = document.getElementById('wizHotelChipsWrapper');
         const hotelInput = document.getElementById('wizSpecificHotel');
-        const hotelChipsContainer = document.getElementById('wizHotelChipsContainer');
         const hotelNote = document.getElementById('wizHotelNote');
 
-        if (value === 'Chưa chọn') {
+        if (value.includes('Đi trong ngày') || value.includes('AI tự đề xuất')) {
             if (hotelInput) {
                 hotelInput.value = '';
-                hotelInput.disabled = true;
-                hotelInput.placeholder = 'Bạn chọn Tự do / Đi trong ngày';
             }
             if (hotelWrapper) {
-                hotelWrapper.style.opacity = '0.35';
-                hotelWrapper.style.pointerEvents = 'none';
-            }
-            if (hotelChipsContainer) {
-                hotelChipsContainer.querySelectorAll('.wiz-hotel-chip').forEach(c => {
-                    c.style.background = '#FFFFFF';
-                    c.style.color = '#334155';
-                    c.style.borderColor = '#CBD5E1';
-                });
-            }
-            if (hotelNote) {
-                hotelNote.innerHTML = 'Chuyến đi tự do / đi trong ngày (không tính chi phí khách sạn)';
-                hotelNote.style.color = '#64748B';
+                hotelWrapper.style.display = 'none';
             }
         } else {
             if (hotelInput) {
                 hotelInput.disabled = false;
-                hotelInput.placeholder = 'Chọn ở trên hoặc gõ tên khách sạn...';
+                hotelInput.placeholder = 'Chọn chip gợi ý ở trên hoặc gõ tên nơi ở...';
             }
             if (hotelWrapper) {
+                hotelWrapper.style.display = 'block';
                 hotelWrapper.style.opacity = '1';
                 hotelWrapper.style.pointerEvents = 'auto';
             }
-            if (hotelNote) {
-                if (hotelInput && hotelInput.value) {
-                    hotelNote.innerHTML = `<strong>Đã chọn "${hotelInput.value}":</strong> AI sẽ tự động lập lộ trình xuất phát & về lại đây mỗi ngày.`;
-                    hotelNote.style.color = '#059669';
-                } else {
-                    hotelNote.innerHTML = 'AI sẽ xếp đường đi xuất phát và về lại khách sạn này mỗi ngày';
-                    hotelNote.style.color = '#059669';
-                }
+            if (typeof loadWizardHotelSuggestions === 'function') {
+                loadWizardHotelSuggestions(document.getElementById('wizDest')?.value, value);
             }
         }
     } else if (groupName === 'objective') {
@@ -5444,32 +5424,60 @@ window.switchWizardMode = function(mode) {
    ========================================================================== */
 window.lastLoadedHotelCity = "";
 
-window.loadWizardHotelSuggestions = async function(city) {
+window.loadWizardHotelSuggestions = async function(city, accType = "") {
     const container = document.getElementById("wizHotelChipsContainer");
     const datalist = document.getElementById("wizHotelsDatalist");
     if (!container) return;
 
     const targetCity = city || document.getElementById('wizDest')?.value || 'Hà Nội';
-    if (window.lastLoadedHotelCity === targetCity && container.children.length > 0) return;
-    window.lastLoadedHotelCity = targetCity;
+    const category = accType || document.getElementById('wizAccommodation')?.value || 'Khách sạn 3-4 sao';
+    
+    const cacheKey = `${targetCity}_${category}`;
+    if (window.lastLoadedHotelCity === cacheKey && container.children.length > 0) return;
+    window.lastLoadedHotelCity = cacheKey;
 
-    container.innerHTML = `<span style="font-size: 12px; color: #64748B;">⏳ Đang nạp khách sạn nổi tiếng tại ${targetCity}...</span>`;
+    container.innerHTML = `<span style="font-size: 12px; color: #64748B;">⏳ Đang nạp danh sách ${category} nổi tiếng tại ${targetCity}...</span>`;
 
     try {
         const res = await fetch(`/api/hotels?city=${encodeURIComponent(targetCity)}`);
         const data = await res.json();
         
-        if (data && data.hotels && data.hotels.length > 0) {
+        let hotelsList = (data && data.hotels) ? data.hotels : [];
+
+        // Lọc theo loại hình nếu có
+        const catLower = category.toLowerCase();
+        if (catLower.includes('homestay') || catLower.includes('hostel')) {
+            const filtered = hotelsList.filter(h => h.name.toLowerCase().includes('homestay') || h.name.toLowerCase().includes('hostel') || h.name.toLowerCase().includes('villa'));
+            if (filtered.length > 0) hotelsList = filtered;
+            else {
+                hotelsList = [
+                    { name: `${targetCity} Central Homestay`, stars: "3★", address: `Trung tâm ${targetCity}`, rating: 8.8 },
+                    { name: `Cozy Corner Villa ${targetCity}`, stars: "3★", address: `Khu du lịch ${targetCity}`, rating: 9.0 },
+                    { name: `Retro Vintage Hostel`, stars: "3★", address: `Phố cổ ${targetCity}`, rating: 8.7 }
+                ];
+            }
+        } else if (catLower.includes('resort') || catLower.includes('5 sao')) {
+            const filtered = hotelsList.filter(h => h.name.toLowerCase().includes('resort') || h.stars.includes('5'));
+            if (filtered.length > 0) hotelsList = filtered;
+            else {
+                hotelsList = [
+                    { name: `InterContinental ${targetCity} Resort`, stars: "5★", address: `Bãi biển / Phố chính ${targetCity}`, rating: 9.5 },
+                    { name: `${targetCity} Grand Luxury Resort`, stars: "5★", address: `Trung tâm nghỉ dưỡng ${targetCity}`, rating: 9.3 }
+                ];
+            }
+        }
+
+        if (hotelsList && hotelsList.length > 0) {
             let chipsHtml = '';
             let optionsHtml = '';
-            data.hotels.forEach((h) => {
+            hotelsList.slice(0, 6).forEach((h) => {
                 const cleanName = h.name.replace(/'/g, "\\'");
                 const shortName = h.name.split('(')[0].replace('Khách Sạn', '').replace('Hotel', '').trim();
                 const cleanStars = (h.stars || '4★').replace('⭐', '★');
-                const goldStars = cleanStars.replace(/★/g, '<span class="star-gold">★</span>');
+                const goldStars = cleanStars.replace(/★/g, '<span style="color:#F59E0B">★</span>');
                 chipsHtml += `
                     <button type="button" class="form-chip wiz-hotel-chip" onclick="selectWizardHotel('${cleanName}', this)" style="border-radius: 20px; font-size: 12.5px; font-weight: 600; padding: 5px 12px; transition: all 0.2s; background: #FFFFFF; border: 1px solid #CBD5E1; color: #334155; cursor: pointer;">
-                        ${shortName} (${goldStars})
+                        🏨 ${shortName} (${goldStars})
                     </button>
                 `;
                 optionsHtml += `<option value="${h.name}">${h.address} • ★ ${h.rating}/10</option>`;
@@ -5477,11 +5485,11 @@ window.loadWizardHotelSuggestions = async function(city) {
             container.innerHTML = chipsHtml;
             if (datalist) datalist.innerHTML = optionsHtml;
         } else {
-            container.innerHTML = `<span style="font-size: 12px; color: #64748B;">Gõ tên khách sạn bạn đã chọn bên dưới, AI sẽ tự động định vị vị trí!</span>`;
+            container.innerHTML = `<span style="font-size: 12px; color: #64748B;">Gõ tên nơi ở bạn đã đặt bên dưới, AI sẽ tự động xếp đường đi!</span>`;
         }
     } catch (e) {
-        console.warn("Lỗi nạp gợi ý khách sạn:", e);
-        container.innerHTML = `<span style="font-size: 12px; color: #64748B;">Nhập tên khách sạn tùy chọn bên dưới để AI sắp xếp.</span>`;
+        console.warn("Lỗi nạp gợi ý nơi ở:", e);
+        container.innerHTML = `<span style="font-size: 12px; color: #64748B;">Nhập tên nơi ở tùy chọn bên dưới để AI sắp xếp.</span>`;
     }
 };
 
