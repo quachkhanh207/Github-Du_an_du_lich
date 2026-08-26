@@ -4624,12 +4624,14 @@ function resetToWizard() {
     if (homeTab) homeTab.classList.add("active");
 
     // Cuộn mượt đến Form tạo lộ trình
-    const wizardSection = document.getElementById('wizBuilderSection') || document.querySelector('.wiz-form-card') || document.getElementById('builderSection');
-    if (wizardSection) {
-        wizardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    setTimeout(() => {
+        const wizardSection = document.getElementById('wizBuilderSection') || document.querySelector('.wiz-form-card') || document.getElementById('builderSection');
+        if (wizardSection) {
+            wizardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            window.scrollTo({ top: 500, behavior: 'smooth' });
+        }
+    }, 50);
     showToast("📝 Đã mở Form Tạo Lộ Trình AI!");
 }
 window.resetToWizard = resetToWizard;
