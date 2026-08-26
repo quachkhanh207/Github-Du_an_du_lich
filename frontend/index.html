@@ -2185,114 +2185,125 @@
                 </div>
             </div>
 
-            <!-- KHỐI 3: PHONG CÁCH & NHỊP ĐỘ -->
-            <div class="builder-section-card">
-                <div class="builder-card-header">
-                    <h4>3. Phong Cách, Ẩm Thực & Nhịp Độ</h4>
-                </div>
-                <div class="builder-card-body">
-                    <div class="form-group-item">
-                        <label>Mục tiêu trải nghiệm chính:</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip active" onclick="selectFormChip('objective', 'Khám phá', this)">Khám phá & Di sản</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Chụp ảnh sống ảo', this)">Check-in & Sống ảo</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Ẩm thực', this)">Foodtour Ẩm thực</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Nghỉ dưỡng', this)">Nghỉ dưỡng & Thư giãn</button>
-                        </div>
-                        <input type="hidden" id="wizObjective" value="Khám phá">
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 10px;">
-                        <input type="text" id="wizCustomObjective" class="builder-input" placeholder="Hoặc nhập mục tiêu riêng (VD: Đi tour tâm linh, chụp ảnh kỷ yếu...)" oninput="updateLiveTripPreview()">
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 14px;">
-                        <label>Gu ẩm thực yêu thích:</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip active" onclick="selectFormChip('diningStyle', 'Bình thường', this)">Hài hòa / Đặc sản địa phương</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Vỉa hè', this)">Ẩm thực đường phố / Vỉa hè</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Sang trọng', this)">Nhà hàng sang trọng / View đẹp</button>
-                        </div>
-                        <input type="hidden" id="wizDiningStyle" value="Bình thường">
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 14px;">
-                        <label>Mức độ vận động / Thể lực:</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip active" onclick="selectFormChip('activityLevel', 'Bình thường', this)">Vừa phải / Linh hoạt</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Nhẹ nhàng', this)">Nhẹ nhàng / Dạo mát</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Vận động nhiều', this)">Nhiều / Leo dốc & Đi bộ</button>
-                        </div>
-                        <input type="hidden" id="wizActivityLevel" value="Bình thường">
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 14px;">
-                        <label>Nhịp độ di chuyển:</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip active" onclick="selectFormChip('pacing', 'Cân bằng', this)">Cân bằng (4-5 điểm/ngày)</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Thư giãn', this)">Thư giãn (2-3 điểm/ngày)</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Khám phá tối đa', this)">Khám phá tối đa (6+ điểm)</button>
-                        </div>
-                        <input type="hidden" id="wizPacing" value="Cân bằng">
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 14px;">
-                        <label>Hoạt động buổi tối (Nightlife):</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip active" onclick="selectFormChip('nightlife', 'Bình thường', this)">Tự do / Thư giãn</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Cà phê, Chợ đêm', this)">Cà phê & Chợ đêm</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Bar, Pub, Vũ trường', this)">Bar & Pub sôi động</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Nghỉ ngơi sớm', this)">Nghỉ ngơi sớm</button>
-                        </div>
-                        <input type="hidden" id="wizNightlife" value="Bình thường">
-                    </div>
-
-                    <div class="form-group-item" style="margin-top: 14px;">
-                        <label>Nhu cầu mua sắm:</label>
-                        <div class="chip-group">
-                            <button type="button" class="form-chip active" onclick="selectFormChip('shopping', 'Bình thường', this)">Không bắt buộc</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua quà đặc sản', this)">Đặc sản & Quà lưu niệm</button>
-                            <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua sắm TTTM', this)">Trung tâm thương mại</button>
-                        </div>
-                        <input type="hidden" id="wizShopping" value="Bình thường">
-                    </div>
-                </div>
+            <!-- NÚT MỞ RỘNG TÙY CHỌN CHI TIẾT KHÁC (GIẢI PHÁP TẠO NHANH 5 GIÂY) -->
+            <div style="margin: 16px 0;">
+                <button type="button" id="btnToggleWizAdvanced" onclick="toggleWizAdvancedOptions()" style="width: 100%; padding: 12px 18px; background: #F8FAFC; color: #334155; border: 1.5px dashed #CBD5E1; border-radius: 12px; font-weight: 700; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <span>⚙️ Tùy Chọn Chi Tiết Khác (Gu Ăn Uống, Nhịp Độ, Điểm Ghim...)</span>
+                    <span id="wizAdvIcon" style="font-size: 11px; transition: transform 0.2s;">▼</span>
+                </button>
             </div>
 
-            <!-- KHỐI 4: RÀNG BUỘC & ĐIỂM GHIM -->
-            <div class="builder-section-card">
-                <div class="builder-card-header">
-                    <h4>4. Ràng Buộc & Yêu Cầu Riêng</h4>
+            <!-- VÙNG CẤU HÌNH NÂNG CAO (ẨN MẶC ĐỊNH CHO FORM GỌN GÀNG TẠO NHANH 5 GIÂY) -->
+            <div id="wizAdvancedOptionsPane" style="display: none; transition: all 0.3s ease;">
+                <!-- KHỐI 3: PHONG CÁCH & NHỊP ĐỘ -->
+                <div class="builder-section-card">
+                    <div class="builder-card-header">
+                        <h4>3. Phong Cách, Ẩm Thực & Nhịp Độ</h4>
+                    </div>
+                    <div class="builder-card-body">
+                        <div class="form-group-item">
+                            <label>Mục tiêu trải nghiệm chính:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('objective', 'Khám phá', this)">Khám phá & Di sản</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Chụp ảnh sống ảo', this)">Check-in & Sống ảo</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Ẩm thực', this)">Foodtour Ẩm thực</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('objective', 'Nghỉ dưỡng', this)">Nghỉ dưỡng & Thư giãn</button>
+                            </div>
+                            <input type="hidden" id="wizObjective" value="Khám phá">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 10px;">
+                            <input type="text" id="wizCustomObjective" class="builder-input" placeholder="Hoặc nhập mục tiêu riêng (VD: Đi tour tâm linh, chụp ảnh kỷ yếu...)" oninput="updateLiveTripPreview()">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Gu ẩm thực yêu thích:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('diningStyle', 'Bình thường', this)">Hài hòa / Đặc sản địa phương</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Vỉa hè', this)">Ẩm thực đường phố / Vỉa hè</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('diningStyle', 'Sang trọng', this)">Nhà hàng sang trọng / View đẹp</button>
+                            </div>
+                            <input type="hidden" id="wizDiningStyle" value="Bình thường">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Mức độ vận động / Thể lực:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('activityLevel', 'Bình thường', this)">Vừa phải / Linh hoạt</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Nhẹ nhàng', this)">Nhẹ nhàng / Dạo mát</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('activityLevel', 'Vận động nhiều', this)">Nhiều / Leo dốc & Đi bộ</button>
+                            </div>
+                            <input type="hidden" id="wizActivityLevel" value="Bình thường">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Nhịp độ di chuyển:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('pacing', 'Cân bằng', this)">Cân bằng (4-5 điểm/ngày)</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Thư giãn', this)">Thư giãn (2-3 điểm/ngày)</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('pacing', 'Khám phá tối đa', this)">Khám phá tối đa (6+ điểm)</button>
+                            </div>
+                            <input type="hidden" id="wizPacing" value="Cân bằng">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Hoạt động buổi tối (Nightlife):</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('nightlife', 'Bình thường', this)">Tự do / Thư giãn</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Cà phê, Chợ đêm', this)">Cà phê & Chợ đêm</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Bar, Pub, Vũ trường', this)">Bar & Pub sôi động</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('nightlife', 'Nghỉ ngơi sớm', this)">Nghỉ ngơi sớm</button>
+                            </div>
+                            <input type="hidden" id="wizNightlife" value="Bình thường">
+                        </div>
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Nhu cầu mua sắm:</label>
+                            <div class="chip-group">
+                                <button type="button" class="form-chip active" onclick="selectFormChip('shopping', 'Bình thường', this)">Không bắt buộc</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua quà đặc sản', this)">Đặc sản & Quà lưu niệm</button>
+                                <button type="button" class="form-chip" onclick="selectFormChip('shopping', 'Mua sắm TTTM', this)">Trung tâm thương mại</button>
+                            </div>
+                            <input type="hidden" id="wizShopping" value="Bình thường">
+                        </div>
+                    </div>
                 </div>
-                <div class="builder-card-body">
-                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
-                        <div class="form-group-item">
-                            <label>Điểm BẮT BUỘC ĐI (Ghim ưu tiên):</label>
-                            <input type="text" id="wizMustVisit" class="builder-input" placeholder="VD: Lăng Bác, Hồ Gươm, Bà Nà Hills..." oninput="updateLiveTripPreview()">
-                        </div>
-                        <div class="form-group-item">
-                            <label>Điểm CẤM ĐI (Bỏ qua khỏi lịch trình):</label>
-                            <input type="text" id="wizMustAvoid" class="builder-input" placeholder="VD: Bát Tràng, điểm đã đi rồi..." oninput="updateLiveTripPreview()">
-                        </div>
-                    </div>
 
-                    <div class="form-group-item" style="margin-top: 14px;">
-                        <label>Đoàn có thành viên đặc biệt (Tự động né dốc cao, leo núi):</label>
-                        <div class="checkbox-member-row">
-                            <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Người già" onchange="updateLiveTripPreview()"> Người cao tuổi</label>
-                            <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Trẻ nhỏ" onchange="updateLiveTripPreview()"> Trẻ nhỏ</label>
-                            <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Phụ nữ mang thai" onchange="updateLiveTripPreview()"> Phụ nữ mang thai</label>
-                        </div>
+                <!-- KHỐI 4: RÀNG BUỘC & ĐIỂM GHIM -->
+                <div class="builder-section-card">
+                    <div class="builder-card-header">
+                        <h4>4. Ràng Buộc & Yêu Cầu Riêng</h4>
                     </div>
-
-                    <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
-                        <div class="form-group-item">
-                            <label>Món ăn dị ứng / Cần tránh:</label>
-                            <input type="text" id="wizDiningConstraints" class="builder-input" placeholder="VD: Hải sản, Đậu phộng..." oninput="updateLiveTripPreview()">
+                    <div class="builder-card-body">
+                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+                            <div class="form-group-item">
+                                <label>Điểm BẮT BUỘC ĐI (Ghim ưu tiên):</label>
+                                <input type="text" id="wizMustVisit" class="builder-input" placeholder="VD: Lăng Bác, Hồ Gươm, Bà Nà Hills..." oninput="updateLiveTripPreview()">
+                            </div>
+                            <div class="form-group-item">
+                                <label>Điểm CẤM ĐI (Bỏ qua khỏi lịch trình):</label>
+                                <input type="text" id="wizMustAvoid" class="builder-input" placeholder="VD: Bát Tràng, điểm đã đi rồi..." oninput="updateLiveTripPreview()">
+                            </div>
                         </div>
-                        <div class="form-group-item">
-                            <label>Ghi chú riêng thêm cho AI:</label>
-                            <input type="text" id="wizExtra" class="builder-input" placeholder="VD: Sắp xếp cho tôi đi cafe ngắm hoàng hôn...">
+
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Đoàn có thành viên đặc biệt (Tự động né dốc cao, leo núi):</label>
+                            <div class="checkbox-member-row">
+                                <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Người già" onchange="updateLiveTripPreview()"> Người cao tuổi</label>
+                                <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Trẻ nhỏ" onchange="updateLiveTripPreview()"> Trẻ nhỏ</label>
+                                <label class="custom-chk-label"><input type="checkbox" class="wiz-member-chk" value="Phụ nữ mang thai" onchange="updateLiveTripPreview()"> Phụ nữ mang thai</label>
+                            </div>
+                        </div>
+
+                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                            <div class="form-group-item">
+                                <label>Món ăn dị ứng / Cần tránh:</label>
+                                <input type="text" id="wizDiningConstraints" class="builder-input" placeholder="VD: Hải sản, Đậu phộng..." oninput="updateLiveTripPreview()">
+                            </div>
+                            <div class="form-group-item">
+                                <label>Ghi chú riêng thêm cho AI:</label>
+                                <input type="text" id="wizExtra" class="builder-input" placeholder="VD: Sắp xếp cho tôi đi cafe ngắm hoàng hôn...">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4735,7 +4746,7 @@ function switchWizardMode(mode) {
 
 
 
-    <script src="/static/app.js?v=50_smart_intercity_fare"></script>
+    <script src="/static/app.js?v=51_quick_5s_builder"></script>
 
 
 

@@ -5194,6 +5194,19 @@ window.selectFormChip = function(groupName, value, btnEl) {
     updateLiveTripPreview();
 };
 
+window.toggleWizAdvancedOptions = function() {
+    const pane = document.getElementById('wizAdvancedOptionsPane');
+    const icon = document.getElementById('wizAdvIcon');
+    if (!pane) return;
+    if (pane.style.display === 'none' || !pane.style.display) {
+        pane.style.display = 'block';
+        if (icon) icon.style.transform = 'rotate(180deg)';
+    } else {
+        pane.style.display = 'none';
+        if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+};
+
 window.updateLiveTripPreview = function() {
     const dest = document.getElementById('wizDest')?.value || 'Hà Nội';
     const origin = document.getElementById('wizOrigin')?.value || 'Hồ Chí Minh';
