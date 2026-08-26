@@ -427,6 +427,17 @@ async def api_alternative_poi(destination: str = "Hà Nội", category: str = ""
         valid_candidates = [p for p in all_pois if p.get("name", "").strip().lower() not in exclude_list]
         
     if valid_candidates:
+        result_list = []
+        for chosen in valid_candidates[:3]:
+            result_list.append({
+                "name": chosen.get("name"),
+                "category": chosen.get("category", "Tham quan"),
+                "description": chosen.get("description", ""),
+                "address": chosen.get("address", chosen.get("description", "")[:70]),
+                "lat": chosen.get("lat"),
+                "lon": chosen.get("lon"),
+                "img": get_theme_img(chosen)
+            })
         chosen = valid_candidates[0]
         return {
             "name": chosen.get("name"),
@@ -434,7 +445,8 @@ async def api_alternative_poi(destination: str = "Hà Nội", category: str = ""
             "description": chosen.get("description", ""),
             "lat": chosen.get("lat"),
             "lon": chosen.get("lon"),
-            "img": get_theme_img(chosen)
+            "img": get_theme_img(chosen),
+            "candidates": result_list
         }
     return {"error": "No alternative found"}
 
