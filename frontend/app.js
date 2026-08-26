@@ -4608,15 +4608,29 @@ window.deleteHistoryItinerary = function(id) {
 
 // ===== RESET TO WIZARD =====
 function resetToWizard() {
-    const emptyState = document.getElementById('emptyItineraryState');
-    const contentState = document.getElementById('itineraryContent');
-    const chkSection = document.getElementById('checklistSection');
-    if (emptyState) emptyState.style.display = 'block';
-    if (contentState) contentState.style.display = 'none';
-    if (chkSection) chkSection.style.display = 'none';
-    
-    // Cuộn lên đầu trang
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const viewHome = document.getElementById("viewHome");
+    const viewItinerary = document.getElementById("viewItinerary");
+    const viewJournal = document.getElementById("viewJournal");
+    const viewHotels = document.getElementById("viewHotels");
+
+    if (viewHome) viewHome.style.display = "block";
+    if (viewItinerary) viewItinerary.style.display = "none";
+    if (viewJournal) viewJournal.style.display = "none";
+    if (viewHotels) viewHotels.style.display = "none";
+
+    // Cập nhật tab active trên Header
+    document.querySelectorAll(".trv-nav-links a").forEach(link => link.classList.remove("active"));
+    const homeTab = document.querySelector(".trv-nav-links a[onclick*='home']");
+    if (homeTab) homeTab.classList.add("active");
+
+    // Cuộn mượt đến Form tạo lộ trình
+    const wizardSection = document.getElementById('wizBuilderSection') || document.querySelector('.wiz-form-card') || document.getElementById('builderSection');
+    if (wizardSection) {
+        wizardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    showToast("📝 Đã mở Form Tạo Lộ Trình AI!");
 }
 window.resetToWizard = resetToWizard;
 
