@@ -2173,17 +2173,10 @@
                     </div>
 
                     <div id="wizHotelChipsWrapper" style="transition: all 0.3s ease;">
-                        <div class="form-group-item" style="margin-top: 14px;">
-                            <label>Gợi ý chọn nhanh khách sạn nổi tiếng (AI tối ưu vị trí xuất phát & trở về):</label>
-                            <div id="wizHotelChipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 6px;">
-                                <!-- Rendered dynamically by app.js -->
-                            </div>
-                        </div>
-
-                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px;">
+                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
                             <div class="form-group-item">
-                                <label>Tên khách sạn bạn đã đặt (hoặc chọn ở trên):</label>
-                                <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Chọn ở trên hoặc gõ tên khách sạn..." oninput="updateLiveTripPreview()">
+                                <label>Tên khách sạn bạn đã đặt (tùy chọn):</label>
+                                <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Gõ tên khách sạn bạn đã đặt (nếu có)..." oninput="updateLiveTripPreview()">
                                 <datalist id="wizHotelsDatalist">
                                     <!-- Dynamic datalist -->
                                 </datalist>
@@ -4752,7 +4745,7 @@ function switchWizardMode(mode) {
 
 
 
-    <script src="/static/app.js?v=42_separate_daytrip_hotel"></script>
+    <script src="/static/app.js?v=43_remove_hotel_chips"></script>
 
 
 
