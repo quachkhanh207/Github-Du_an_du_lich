@@ -3629,6 +3629,11 @@ async function generateItineraryFromWizard(event, mode = 'A') {
 async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
     window.currentAiData = aiData;
     if (destName) window.currentTripDestination = destName;
+    
+    // Tự động lưu lộ trình vừa tạo vào Lịch Sử Đã Tạo (localStorage)
+    if (typeof saveItineraryToHistory === 'function') {
+        saveItineraryToHistory(aiData);
+    }
     // Cập nhật tiêu đề, phụ đề, chi phí
     const titleEl = document.getElementById("itinerarySectionTitle");
     const subTitleEl = document.getElementById("itinerarySectionSubtitle");
@@ -4469,12 +4474,10 @@ window.restoreHistoryItinerary = function(id) {
             if (itContent) itContent.style.display = 'block';
             
             renderAIItinerary(item.data);
-            
-            // Switch to AI tab if not already there
-            document.querySelectorAll('.trv-link').forEach(l => l.classList.remove('active'));
-            document.querySelector('.trv-link[onclick*="ai"]').classList.add('active');
-            document.querySelectorAll('.trv-tab-content').forEach(c => c.style.display = 'none');
-            document.getElementById('aiContent').style.display = 'block';
+            if (item.data.raw_result && typeof drawItineraryMap === 'function') {
+                drawItineraryMap(item.data.raw_result);
+            }
+            showToast("📖 Đã khôi phục thành công lộ trình từ Lịch Sử!");
         }
     } catch (e) {
         console.error(e);
