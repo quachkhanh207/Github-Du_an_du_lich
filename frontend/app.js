@@ -3640,13 +3640,16 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
     // Cập nhật tiêu đề, phụ đề, chi phí
     const titleEl = document.getElementById("itinerarySectionTitle");
     const subTitleEl = document.getElementById("itinerarySectionSubtitle");
-    const costAmount = document.getElementById("costAmountText");
-    const costDetails = document.getElementById("costDetailsText");
-    
-    if (titleEl && aiData.tieu_de) titleEl.textContent = aiData.tieu_de;
-    if (subTitleEl && aiData.phu_de) subTitleEl.textContent = aiData.phu_de;
-    if (costAmount && aiData.tong_chi_phi) costAmount.textContent = aiData.tong_chi_phi;
-    if (costDetails && aiData.chi_tiet_chi_phi_str) costDetails.textContent = aiData.chi_tiet_chi_phi_str;
+    const liveCost = document.getElementById('previewCostAmount')?.textContent?.replace(/^~/, '')?.trim();
+    const liveBreakdown = document.getElementById('previewCostBreakdown')?.textContent?.trim();
+
+    if (!aiData.tong_chi_phi || aiData.tong_chi_phi.includes("5.000.000")) {
+        if (liveCost) aiData.tong_chi_phi = liveCost;
+        if (liveBreakdown) aiData.chi_tiet_chi_phi_str = liveBreakdown;
+    }
+
+    if (costAmount) costAmount.textContent = aiData.tong_chi_phi || liveCost || "1.250.000 VNĐ / người";
+    if (costDetails) costDetails.textContent = aiData.chi_tiet_chi_phi_str || liveBreakdown || "";
 
     // Cập nhật thời tiết ứng với địa điểm đến
     if (weatherObj) {
@@ -4374,6 +4377,14 @@ const HISTORY_KEY = 'beeNavi_ItineraryHistory';
 
 function saveItineraryToHistory(aiData) {
     if (!aiData || !aiData.lich_trinh || aiData.lich_trinh.length === 0) return;
+    
+    // Loại bỏ hoàn toàn chuỗi 5.000.000 cũ
+    const liveCost = document.getElementById('previewCostAmount')?.textContent?.replace(/^~/, '')?.trim();
+    const liveBreakdown = document.getElementById('previewCostBreakdown')?.textContent?.trim();
+    if (!aiData.tong_chi_phi || aiData.tong_chi_phi.includes("5.000.000")) {
+        if (liveCost) aiData.tong_chi_phi = liveCost;
+        if (liveBreakdown) aiData.chi_tiet_chi_phi_str = liveBreakdown;
+    }
     
     try {
         let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
