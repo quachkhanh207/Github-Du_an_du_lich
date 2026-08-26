@@ -2173,20 +2173,13 @@
                     </div>
 
                     <div id="wizHotelChipsWrapper" style="transition: all 0.3s ease;">
-                        <div class="builder-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
-                            <div class="form-group-item">
-                                <label>Tên khách sạn bạn đã đặt (tùy chọn):</label>
-                                <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Gõ tên khách sạn bạn đã đặt (nếu có)..." oninput="updateLiveTripPreview()">
-                                <datalist id="wizHotelsDatalist">
-                                    <!-- Dynamic datalist -->
-                                </datalist>
-                                <small id="wizHotelNote" style="color: #059669; font-size: 11.5px; font-weight: 600; margin-top: 4px; display: block;">AI sẽ xếp đường đi xuất phát và về lại khách sạn này mỗi ngày</small>
-                            </div>
-                            <div class="form-group-item">
-                                <label>Ngân sách dự kiến (VNĐ):</label>
-                                <input type="number" id="wizBudget" class="builder-input" value="5000000" step="500000" oninput="updateLiveTripPreview()">
-                                <small style="color: #64748b; font-size: 11px;">Để trống hoặc chỉnh theo khả năng chi trả của bạn</small>
-                            </div>
+                        <div class="form-group-item" style="margin-top: 14px;">
+                            <label>Tên khách sạn bạn đã đặt (tùy chọn):</label>
+                            <input type="text" id="wizSpecificHotel" class="builder-input" list="wizHotelsDatalist" placeholder="Gõ tên khách sạn bạn đã đặt (nếu có)..." oninput="updateLiveTripPreview()">
+                            <datalist id="wizHotelsDatalist">
+                                <!-- Dynamic datalist -->
+                            </datalist>
+                            <small id="wizHotelNote" style="color: #059669; font-size: 11.5px; font-weight: 600; margin-top: 4px; display: block;">AI sẽ xếp đường đi xuất phát và về lại khách sạn này mỗi ngày</small>
                         </div>
                     </div>
                 </div>
@@ -4742,7 +4735,7 @@ function switchWizardMode(mode) {
 
 
 
-    <script src="/static/app.js?v=48_remove_supabase_btn"></script>
+    <script src="/static/app.js?v=49_remove_wiz_budget"></script>
 
 
 
