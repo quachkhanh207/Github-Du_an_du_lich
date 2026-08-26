@@ -716,6 +716,19 @@ window.resolveHotelObject = function(data) {
         { keys: ["davue"], name: "Davue Hotel Đà Nẵng", lat: 16.0592, lon: 108.2435, address: "57 Đỗ Bát, Mỹ Khê, Đà Nẵng", rating: 8.9, price: 360000, stars: "3⭐" }
     ];
 
+    const destName = (data && data.destination) || (data && data.tieu_de) || window.currentTripDestination || "";
+    const lowerDest = destName.toLowerCase();
+
+    if (lowerDest.includes("đà nẵng") || lowerSub.includes("đà nẵng") || lowerDest.includes("hội an")) {
+        return { keys: ["davue"], name: "Davue Hotel Đà Nẵng", lat: 16.0592, lon: 108.2435, address: "57 Đỗ Bát, Mỹ Khê, Đà Nẵng", rating: 8.9, price: 650000, stars: "4⭐" };
+    } else if (lowerDest.includes("sa pa") || lowerDest.includes("sapa") || lowerSub.includes("sa pa")) {
+        return { keys: ["bb hotel"], name: "BB Hotel Sapa", lat: 22.3325, lon: 103.8415, address: "08 Cầu Mây, Thị xã Sa Pa", rating: 9.0, price: 1200000, stars: "4⭐" };
+    } else if (lowerDest.includes("đà lạt") || lowerSub.includes("đà lạt")) {
+        return { keys: ["du parc"], name: "Du Parc Hotel Đà Lạt", lat: 11.9360, lon: 108.4380, address: "15 Trần Phú, Phường 3, Đà Lạt", rating: 8.8, price: 950000, stars: "4⭐" };
+    } else if (lowerDest.includes("phú quốc") || lowerSub.includes("phú quốc")) {
+        return { keys: ["seashells"], name: "Seashells Phu Quoc Hotel", lat: 10.2170, lon: 103.9560, address: "01 Võ Thị Sáu, Dương Đông, Phú Quốc", rating: 9.1, price: 1800000, stars: "5⭐" };
+    }
+
     for (const h of catalog) {
         if (h.keys.some(k => lowerSub.includes(k))) {
             return h;
@@ -3640,16 +3653,22 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
     // Cập nhật tiêu đề, phụ đề, chi phí
     const titleEl = document.getElementById("itinerarySectionTitle");
     const subTitleEl = document.getElementById("itinerarySectionSubtitle");
+    const costAmount = document.getElementById("costAmountText");
+    const costDetails = document.getElementById("costDetailsText");
+    
+    if (titleEl && aiData.tieu_de) titleEl.textContent = aiData.tieu_de;
+    if (subTitleEl && aiData.phu_de) subTitleEl.textContent = aiData.phu_de;
+
     const liveCost = document.getElementById('previewCostAmount')?.textContent?.replace(/^~/, '')?.trim();
     const liveBreakdown = document.getElementById('previewCostBreakdown')?.textContent?.trim();
 
-    if (!aiData.tong_chi_phi || aiData.tong_chi_phi.includes("5.000.000")) {
-        if (liveCost) aiData.tong_chi_phi = liveCost;
-        if (liveBreakdown) aiData.chi_tiet_chi_phi_str = liveBreakdown;
+    if (aiData && aiData.tong_chi_phi && !aiData.tong_chi_phi.includes("5.000.000")) {
+        if (costAmount) costAmount.textContent = aiData.tong_chi_phi;
+        if (costDetails && aiData.chi_tiet_chi_phi_str) costDetails.textContent = aiData.chi_tiet_chi_phi_str;
+    } else if (liveCost) {
+        if (costAmount) costAmount.textContent = liveCost;
+        if (costDetails && liveBreakdown) costDetails.textContent = liveBreakdown;
     }
-
-    if (costAmount) costAmount.textContent = aiData.tong_chi_phi || liveCost || "1.250.000 VNĐ / người";
-    if (costDetails) costDetails.textContent = aiData.chi_tiet_chi_phi_str || liveBreakdown || "";
 
     // Cập nhật thời tiết ứng với địa điểm đến
     if (weatherObj) {
