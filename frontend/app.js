@@ -5273,7 +5273,7 @@ window.updateLiveTripPreview = function() {
     const badgeObj = document.getElementById('previewBadgeObjective');
     if (badgeObj) badgeObj.textContent = `${finalObjective} • ${pacing}`;
 
-    // Dự toán chi phí động
+    // Dự toán chi phí động chuẩn xác thực tế
     let hotelRate = 750000;
     if (accommodation.includes('Đi trong ngày')) {
         hotelRate = 0;
@@ -5286,19 +5286,32 @@ window.updateLiveTripPreview = function() {
     }
 
     let foodPerDay = diningStyle.includes('Sang trọng') ? 750000 : (diningStyle.includes('Vỉa hè') ? 280000 : 450000);
-    let transPerDay = vehicle.includes('Taxi') ? 350000 : (vehicle.includes('Ô tô') ? 450000 : 150000);
+    
+    // Kiểm tra đi liên tỉnh vs đi nội thành
+    const cleanOrigin = (origin || '').toLowerCase().replace(/tỉnh|thành phố|tp\.|tp/g, '').trim();
+    const cleanDest = (dest || '').toLowerCase().replace(/tỉnh|thành phố|tp\.|tp/g, '').trim();
+    const isInterCity = cleanOrigin !== cleanDest && cleanOrigin.length > 0 && cleanDest.length > 0;
 
-    let totalEst = (hotelRate * nights) + ((foodPerDay + transPerDay) * days);
-    if (budgetRaw > 0 && Math.abs(budgetRaw - totalEst) < totalEst * 0.4) {
-        totalEst = budgetRaw;
+    let transPerDay = vehicle.includes('Taxi') ? 280000 : (vehicle.includes('Ô tô') ? 380000 : 100000);
+    let interCityFare = 0;
+    if (isInterCity) {
+        if (vehicle.includes('Xe máy')) interCityFare = 350000; // Xăng phượt đường dài khứ hồi
+        else if (vehicle.includes('Ô tô')) interCityFare = 1200000; // Xăng & Phí cao tốc đường dài khứ hồi
+        else interCityFare = 1800000; // Vé máy bay / Vé tàu / Xe khách khứ hồi liên tỉnh
     }
+
+    let totalEst = (hotelRate * nights) + (foodPerDay * days) + (transPerDay * days) + interCityFare;
 
     const costAmountEl = document.getElementById('previewCostAmount');
     if (costAmountEl) costAmountEl.textContent = `~${totalEst.toLocaleString('vi-VN')} VNĐ / người`;
 
     const costBreakdownEl = document.getElementById('previewCostBreakdown');
     if (costBreakdownEl) {
-        costBreakdownEl.textContent = `${specificHotel || accommodation} (${nights} đêm): ${Math.round((hotelRate * nights)/1000)}k • Ẩm thực (${days}N): ${Math.round((foodPerDay * days)/1000)}k • Vé & Xe: ${Math.round((transPerDay * days)/1000)}k`;
+        let transText = `Di chuyển nội thành (${days}N): ${Math.round((transPerDay * days)/1000)}k`;
+        if (isInterCity) {
+            transText += ` • Vé liên tỉnh khứ hồi: ${Math.round(interCityFare/1000)}k`;
+        }
+        costBreakdownEl.textContent = `${specificHotel || accommodation} (${nights} đêm): ${Math.round((hotelRate * nights)/1000)}k • Ẩm thực (${days}N): ${Math.round((foodPerDay * days)/1000)}k • ${transText}`;
     }
 
     // Cập nhật các ghi chú đặc biệt
