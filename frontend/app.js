@@ -2727,7 +2727,7 @@ window.toggleReminder = function (inputEl) {
 
    ========================================================================== */
 
-window.saveCurrentTripToJournal = async function () {
+window.saveCurrentTripToJournal = async function (openProfile = false) {
     if (!window.currentUser) {
         showToast("🔐 Vui lòng đăng nhập để lưu chuyến đi vào Nhật Ký Cá Nhân!");
         window.location.href = "/login.html";
@@ -2871,7 +2871,9 @@ window.saveCurrentTripToJournal = async function () {
             }
 
             showToast("🎒 Đã lưu lịch trình & checklist vào Balo và Nhật Ký Cá Nhân!");
-            openZaloProfileModal('trips');
+            if (openProfile === true) {
+                openZaloProfileModal('trips');
+            }
         } else {
             showToast("❌ Không thể lưu chuyến đi, vui lòng thử lại!");
         }
