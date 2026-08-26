@@ -3543,12 +3543,15 @@ async function generateItineraryFromWizard(event, mode = 'A') {
         window.currentTripDestination = tripData.destination;
         window.currentStructuredItinerary = structured;
         
+        const liveCostText = document.getElementById('previewCostAmount')?.textContent?.replace(/^~/, '')?.trim() || "";
+        const liveCostBreakdown = document.getElementById('previewCostBreakdown')?.textContent || "";
+
         // Convert to aiData format expected by renderAIItinerary
         const aiData = {
             tieu_de: structured.title || `Lịch Trình Khám Phá`,
             phu_de: structured.subtitle || "AI đã tối ưu hóa quãng đường di chuyển và thời điểm tham quan đẹp nhất.",
-            tong_chi_phi: structured.cost || "",
-            chi_tiet_chi_phi_str: structured.costDetails || "",
+            tong_chi_phi: structured.cost || liveCostText,
+            chi_tiet_chi_phi_str: structured.costDetails || liveCostBreakdown,
             thoi_tiet: structured.weather ? structured.weather.desc : "Nắng đẹp",
             hotel: structured.hotel || null,
             lich_trinh: []
@@ -4339,36 +4342,20 @@ function parseMarkdownToItineraryJSON(mdText) {
             });
         }
 
-        // 5. Tự động chuẩn hóa và tính toán Chi Phí chuẩn xác nếu AI không sinh đủ
+        // 5. Tự động chuẩn hóa và tính toán Chi Phí chuẩn xác từ Live Preview
         const totalDays = aiData.lich_trinh.length || 3;
-        if (!aiData.tong_chi_phi || aiData.tong_chi_phi.includes("tính toán") || aiData.tong_chi_phi.length < 3) {
-            const inputBudget = document.getElementById('itineraryFormBudget')?.value ||
-                                document.getElementById('prefBudgetSelect')?.value;
-            let calculatedCost = 0;
-            if (inputBudget && !isNaN(parseInt(inputBudget)) && parseInt(inputBudget) > 100000) {
-                calculatedCost = parseInt(inputBudget);
-            } else if (inputBudget && inputBudget.toLowerCase().includes("tiết kiệm")) {
-                calculatedCost = totalDays * 850000;
-            } else if (inputBudget && inputBudget.toLowerCase().includes("sang")) {
-                calculatedCost = totalDays * 2200000;
+        if (!aiData.tong_chi_phi || aiData.tong_chi_phi.includes("tính toán") || aiData.tong_chi_phi.length < 3 || aiData.tong_chi_phi.includes("5.000.000")) {
+            const previewCost = document.getElementById('previewCostAmount')?.textContent;
+            const previewBreakdown = document.getElementById('previewCostBreakdown')?.textContent;
+            if (previewCost) {
+                aiData.tong_chi_phi = previewCost.replace(/^~/, '').trim();
+                aiData.chi_tiet_chi_phi_str = previewBreakdown || '';
             } else {
-                calculatedCost = totalDays * 1150000;
-            }
-            aiData.tong_chi_phi = `${calculatedCost.toLocaleString('vi-VN')} VNĐ / người`;
-            
-            const hotelCost = Math.round(calculatedCost * 0.40 / 1000) * 1000;
-            const foodCost = Math.round(calculatedCost * 0.35 / 1000) * 1000;
-            const ticketCost = calculatedCost - hotelCost - foodCost;
-            aiData.chi_tiet_chi_phi_str = `Khách sạn: ${(hotelCost/1000).toLocaleString('vi-VN')}k • Ăn uống: ${(foodCost/1000).toLocaleString('vi-VN')}k • Vé & Xe: ${(ticketCost/1000).toLocaleString('vi-VN')}k`;
-        } else {
-            if (!aiData.tong_chi_phi.toLowerCase().includes("vnđ") && !aiData.tong_chi_phi.toLowerCase().includes("đ")) {
-                aiData.tong_chi_phi += " VNĐ / người";
-            }
-            if (!aiData.chi_tiet_chi_phi_str) {
-                const numOnly = parseInt(aiData.tong_chi_phi.replace(/\D/g, '')) || (totalDays * 1150000);
-                const hotelCost = Math.round(numOnly * 0.40 / 1000) * 1000;
-                const foodCost = Math.round(numOnly * 0.35 / 1000) * 1000;
-                const ticketCost = numOnly - hotelCost - foodCost;
+                const calculatedCost = totalDays * 850000;
+                aiData.tong_chi_phi = `${calculatedCost.toLocaleString('vi-VN')} VNĐ / người`;
+                const hotelCost = Math.round(calculatedCost * 0.40 / 1000) * 1000;
+                const foodCost = Math.round(calculatedCost * 0.35 / 1000) * 1000;
+                const ticketCost = calculatedCost - hotelCost - foodCost;
                 aiData.chi_tiet_chi_phi_str = `Khách sạn: ${(hotelCost/1000).toLocaleString('vi-VN')}k • Ăn uống: ${(foodCost/1000).toLocaleString('vi-VN')}k • Vé & Xe: ${(ticketCost/1000).toLocaleString('vi-VN')}k`;
             }
         }
