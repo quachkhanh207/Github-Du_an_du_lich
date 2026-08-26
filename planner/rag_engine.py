@@ -669,46 +669,54 @@ class RagEngine:
             })
 
         # Tra cứu thông tin khách sạn thực tế có tọa độ GPS để vẽ lên bản đồ (Nếu có chọn khách sạn)
-        is_no_hotel = any(k in accommodation.lower() for k in ["chưa chọn", "đi trong ngày", "khong"]) or any(k in specific_hotel.lower() for k in ["chưa chọn", "đi trong ngày"])
+        acc_lower = accommodation.lower()
+        spec_lower = specific_hotel.lower()
+        is_no_hotel = "đi trong ngày" in acc_lower or "0 đêm" in acc_lower or "đi trong ngày" in spec_lower
         
         hotel_info = None
-        if not is_no_hotel and (specific_hotel or accommodation):
+        if not is_no_hotel:
             import sqlite3
             try:
                 conn = sqlite3.connect(str(self.db_path))
                 conn.row_factory = sqlite3.Row
                 c = conn.cursor()
-                target_hotel_query = specific_hotel or accommodation
-                # 1. Tìm chính xác theo tên khách sạn hoặc thành phố
-                row = c.execute(
-                    "SELECT * FROM hotels WHERE (city LIKE ? OR ? LIKE '%' || city || '%') AND (name LIKE ? OR ? LIKE '%' || name || '%')", 
-                    (f"%{dest_raw}%", dest_raw, f"%{target_hotel_query}%", target_hotel_query)
-                ).fetchone()
-                # 2. Tìm theo từ khóa đầu tiên của specific_hotel
-                if not row and specific_hotel:
-                    keyword = specific_hotel.split()[0] if specific_hotel.split() else ""
-                    if keyword:
-                        row = c.execute(
-                            "SELECT * FROM hotels WHERE (city LIKE ? OR ? LIKE '%' || city || '%') AND name LIKE ?", 
-                            (f"%{dest_raw}%", dest_raw, f"%{keyword}%")
-                        ).fetchone()
-                # 3. Mặc định lấy khách sạn nổi tiếng đầu tiên của thành phố đó NẾU CÓ CHỌN LOẠI HÌNH KHÁCH SẠN CỤ THỂ
-                if not row and specific_hotel:
+                row = None
+                
+                # 1. Tìm chính xác theo tên khách sạn người dùng gõ
+                if specific_hotel and specific_hotel.strip():
                     row = c.execute(
-                        "SELECT * FROM hotels WHERE (city LIKE ? OR ? LIKE '%' || city || '%') LIMIT 1", 
+                        "SELECT * FROM hotels WHERE (city LIKE ? OR ? LIKE '%' || city || '%') AND (name LIKE ? OR ? LIKE '%' || name || '%')", 
+                        (f"%{dest_raw}%", dest_raw, f"%{specific_hotel}%", specific_hotel)
+                    ).fetchone()
+                    if not row:
+                        kw = specific_hotel.split()[0] if specific_hotel.split() else ""
+                        if kw:
+                            row = c.execute(
+                                "SELECT * FROM hotels WHERE (city LIKE ? OR ? LIKE '%' || city || '%') AND name LIKE ?", 
+                                (f"%{dest_raw}%", dest_raw, f"%{kw}%")
+                            ).fetchone()
+                
+                # 2. Nếu chọn 'AI tự đề xuất' hoặc không nhập khách sạn cụ thể -> Tự động chọn 1 khách sạn uy tín từ CSDL
+                if not row:
+                    row = c.execute(
+                        "SELECT * FROM hotels WHERE (city LIKE ? OR ? LIKE '%' || city || '%') ORDER BY id ASC LIMIT 1", 
                         (f"%{dest_raw}%", dest_raw)
                     ).fetchone()
+                
+                if not row:
+                    row = c.execute("SELECT * FROM hotels LIMIT 1").fetchone()
+
                 if row:
                     hotel_info = dict(row)
                 conn.close()
             except Exception as e:
-                pass
+                print("Hotel query error:", e)
 
         # Phụ đề cá nhân hóa
         if is_no_hotel:
-            hotel_str = "Tự do / Đi trong ngày"
+            hotel_str = "Đi trong ngày (0 đêm)"
         elif hotel_info:
-            hotel_str = f"Nghỉ tại {hotel_info['name']}"
+            hotel_str = f"Nghỉ tại {hotel_info['name']} (AI đề xuất)"
         else:
             hotel_str = f"Nghỉ tại {specific_hotel or accommodation}"
 

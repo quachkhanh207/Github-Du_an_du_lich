@@ -3675,6 +3675,29 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
     
     let html = '';
     
+    // Hiển thị Thẻ Khách Sạn AI Đề Xuất nổi bật nếu chuyến đi có ở đêm
+    const targetHotel = aiData.hotel || (typeof resolveHotelObject === 'function' ? resolveHotelObject(aiData) : null);
+    if (targetHotel && targetHotel.name && !targetHotel.name.includes("Đi trong ngày") && !targetHotel.name.includes("0 đêm")) {
+        const hotelStars = targetHotel.stars ? `<span style="color:#F59E0B; font-size:13px; margin-left:4px;">${targetHotel.stars.replace('⭐','★')}</span>` : '';
+        const hotelAddr = targetHotel.address || 'Khu vực trung tâm du lịch thuận tiện di chuyển';
+        html += `
+        <div class="ai-hotel-recommend-card" style="background: linear-gradient(135deg, #EFF6FF, #F0FDF4); border: 1.5px solid #BFDBFE; border-radius: 16px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08); font-family: 'Be Vietnam Pro', sans-serif;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="font-size: 26px; background: #DBEAFE; padding: 10px; border-radius: 12px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;">🏨</div>
+                <div>
+                    <div style="font-size: 11px; font-weight: 800; color: #2563EB; text-transform: uppercase; letter-spacing: 0.5px;">Khách Sạn AI Tự Động Đề Xuất Cho Chuyến Đi</div>
+                    <h4 style="font-size: 16px; font-weight: 800; color: #0F172A; margin: 3px 0 2px 0;">${targetHotel.name} ${hotelStars}</h4>
+                    <p style="font-size: 12.5px; color: #475569; margin: 0;">📍 ${hotelAddr}</p>
+                </div>
+            </div>
+            <div style="text-align: right; flex-shrink: 0;">
+                <span style="font-size: 11.5px; font-weight: 700; color: #059669; background: #D1FAE5; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 4px;">✔ GPS Đã Tối Ưu Điểm Đội Tàu</span>
+                <div style="font-size: 11px; color: #64748B;">Mốc xuất phát & về lại mỗi ngày</div>
+            </div>
+        </div>
+        `;
+    }
+    
     if (aiData.lich_trinh && Array.isArray(aiData.lich_trinh)) {
         aiData.lich_trinh.forEach((day, index) => {
             const isActive = index === 0 ? "active" : "";
