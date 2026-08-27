@@ -3783,29 +3783,19 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
                     }
 
                     html += distHtml + `
-                        <div class="activity-card" style="cursor: pointer; position: relative; margin-bottom: 14px;" onclick="focusMapLocation(${lat}, ${lng}, '${safeTitle}')">
+                        <div class="activity-card" style="cursor: pointer;" onclick="focusMapLocation(${lat}, ${lng}, '${safeTitle}')">
                             <div class="activity-time"><span class="time-badge" style="background: ${timeBg}; color: ${timeColor};">${time}</span></div>
                             <div class="activity-icon-box" style="color: ${timeColor};">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             </div>
-                            <div class="activity-content" style="flex: 1; min-width: 0;">
-                                <div class="activity-title" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 4px;">
-                                    <span style="font-weight: 700; font-size: 14.5px; color: #0F172A; line-height: 1.4; flex: 1; min-width: 0;">${safeTitle}</span>
-                                    <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
-                                        <button type="button" class="location-tag" onclick="event.stopPropagation(); focusMapLocation(${lat}, ${lng}, '${safeTitle}')" style="background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
-                                            📍 Xem vị trí
-                                        </button>
-                                        <button type="button" class="btn-swap-poi" title="Đổi địa điểm khác phù hợp" onclick="event.stopPropagation(); swapItineraryActivity(${index}, ${actIndex})" style="background: rgba(245, 158, 11, 0.12); color: #B45309; border: 1px solid rgba(245, 158, 11, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
-                                            🔄 Đổi
-                                        </button>
-                                        ${actIndex > 0 ? `<button type="button" onclick="event.stopPropagation(); moveItineraryActivity(${index}, ${actIndex}, -1)" title="Đẩy mốc này lên trước" style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; padding: 3px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">⬆️</button>` : ''}
-                                        ${actIndex < activitiesList.length - 1 ? `<button type="button" onclick="event.stopPropagation(); moveItineraryActivity(${index}, ${actIndex}, 1)" title="Đẩy mốc này xuống sau" style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; padding: 3px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">⬇️</button>` : ''}
-                                        <button type="button" onclick="event.stopPropagation(); deleteItineraryActivity(${index}, ${actIndex})" title="Xóa mốc này khỏi lịch trình" style="background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
-                                            🗑️ Xóa
-                                        </button>
-                                    </div>
+                            <div class="activity-content">
+                                <div class="activity-title" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 6px;">
+                                    <span>${safeTitle} <span class="location-tag">📍 Xem vị trí</span></span>
+                                    <button class="btn-swap-poi" title="Đổi địa điểm khác phù hợp" onclick="event.stopPropagation(); swapItineraryActivity(${index}, ${actIndex})" style="background: rgba(245, 158, 11, 0.12); color: #B45309; border: 1px solid rgba(245, 158, 11, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;">
+                                        🔄 Đổi điểm
+                                    </button>
                                 </div>
-                                <p class="activity-desc" style="margin: 0; font-size: 12.5px; color: #475569; line-height: 1.5;">${desc}</p>
+                                <p class="activity-desc">${desc}</p>
                             </div>
                         </div>
                     `;
@@ -4018,102 +4008,6 @@ window.swapItineraryActivity = async function (dayIndex, actIndex) {
 
 window.exportItineraryPDF = function() {
     window.print();
-};
-
-/* ==========================================================================
-   TÍNH NĂNG XÓA ĐIỂM & ĐẢO THỨ TỰ TRỰC TIẾP TRÊN LỊCH TRÌNH
-   ========================================================================== */
-window.deleteItineraryActivity = function(dayIndex, actIndex) {
-    if (!window.currentAiData || !window.currentAiData.lich_trinh) return;
-    const dayObj = window.currentAiData.lich_trinh[dayIndex];
-    if (!dayObj || !dayObj.diem_den || !dayObj.diem_den[actIndex]) return;
-
-    const removedItem = dayObj.diem_den[actIndex];
-    const removedName = removedItem.ten ? removedItem.ten.replace(/^[^\w\s\u00C0-\u1EF9]+.*?:/u, '').replace(/^.*?:/, '').trim() : 'địa điểm';
-
-    if (!confirm(`Bạn có chắc muốn xóa "${removedName}" khỏi lịch trình Ngày ${dayIndex + 1}?`)) return;
-
-    // Xóa địa điểm khỏi mảng
-    dayObj.diem_den.splice(actIndex, 1);
-
-    // Tính toán lại khoảng cách di chuyển giữa các điểm còn lại
-    dayObj.diem_den.forEach((act, idx) => {
-        if (idx === 0) {
-            delete act.distance_from_prev;
-        } else if (act.toa_do && dayObj.diem_den[idx - 1] && dayObj.diem_den[idx - 1].toa_do) {
-            const p1 = dayObj.diem_den[idx - 1].toa_do;
-            const p2 = act.toa_do;
-            const dLat = (p2[0] - p1[0]) * Math.PI / 180;
-            const dLon = (p2[1] - p1[1]) * Math.PI / 180;
-            const aDist = Math.sin(dLat/2)**2 + Math.cos(p1[0]*Math.PI/180) * Math.cos(p2[0]*Math.PI/180) * Math.sin(dLon/2)**2;
-            act.distance_from_prev = Math.round(6371 * 2 * Math.asin(Math.sqrt(aDist)) * 10) / 10;
-        }
-    });
-
-    // Đồng bộ sang structured itinerary nếu có
-    if (window.currentStructuredItinerary && window.currentStructuredItinerary.days && window.currentStructuredItinerary.days[dayIndex]) {
-        if (window.currentStructuredItinerary.days[dayIndex].activities) {
-            window.currentStructuredItinerary.days[dayIndex].activities.splice(actIndex, 1);
-        }
-    }
-
-    renderAIItinerary(window.currentAiData, window.currentTripDestination);
-    if (typeof drawItineraryMap === 'function') {
-        drawItineraryMap(window.currentStructuredItinerary, dayIndex + 1);
-    }
-    showToast(`🗑️ Đã xóa "${removedName}" khỏi lịch trình!`);
-};
-
-window.moveItineraryActivity = function(dayIndex, actIndex, direction) {
-    if (!window.currentAiData || !window.currentAiData.lich_trinh) return;
-    const dayObj = window.currentAiData.lich_trinh[dayIndex];
-    if (!dayObj || !dayObj.diem_den) return;
-
-    const targetIndex = actIndex + direction;
-    if (targetIndex < 0 || targetIndex >= dayObj.diem_den.length) return;
-
-    // Tráo đổi vị trí địa điểm
-    const temp = dayObj.diem_den[actIndex];
-    dayObj.diem_den[actIndex] = dayObj.diem_den[targetIndex];
-    dayObj.diem_den[targetIndex] = temp;
-
-    // Tráo đổi khung giờ để thời gian luôn giữ đúng thứ tự tăng dần
-    const timeA = dayObj.diem_den[actIndex].thoi_gian || dayObj.diem_den[actIndex].gio;
-    const timeB = dayObj.diem_den[targetIndex].thoi_gian || dayObj.diem_den[targetIndex].gio;
-    if (timeA && timeB) {
-        dayObj.diem_den[actIndex].thoi_gian = timeA;
-        dayObj.diem_den[targetIndex].thoi_gian = timeB;
-    }
-
-    // Tính toán lại khoảng cách
-    dayObj.diem_den.forEach((act, idx) => {
-        if (idx === 0) {
-            delete act.distance_from_prev;
-        } else if (act.toa_do && dayObj.diem_den[idx - 1] && dayObj.diem_den[idx - 1].toa_do) {
-            const p1 = dayObj.diem_den[idx - 1].toa_do;
-            const p2 = act.toa_do;
-            const dLat = (p2[0] - p1[0]) * Math.PI / 180;
-            const dLon = (p2[1] - p1[1]) * Math.PI / 180;
-            const aDist = Math.sin(dLat/2)**2 + Math.cos(p1[0]*Math.PI/180) * Math.cos(p2[0]*Math.PI/180) * Math.sin(dLon/2)**2;
-            act.distance_from_prev = Math.round(6371 * 2 * Math.asin(Math.sqrt(aDist)) * 10) / 10;
-        }
-    });
-
-    // Đồng bộ sang structured itinerary nếu có
-    if (window.currentStructuredItinerary && window.currentStructuredItinerary.days && window.currentStructuredItinerary.days[dayIndex]) {
-        const sActs = window.currentStructuredItinerary.days[dayIndex].activities;
-        if (sActs && sActs[actIndex] && sActs[targetIndex]) {
-            const sTemp = sActs[actIndex];
-            sActs[actIndex] = sActs[targetIndex];
-            sActs[targetIndex] = sTemp;
-        }
-    }
-
-    renderAIItinerary(window.currentAiData, window.currentTripDestination);
-    if (typeof drawItineraryMap === 'function') {
-        drawItineraryMap(window.currentStructuredItinerary, dayIndex + 1);
-    }
-    showToast(`↕️ Đã đảo thứ tự lịch trình thành công!`);
 };
 
 /* ==========================================================================
