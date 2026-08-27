@@ -3757,18 +3757,20 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
                     const lng = act.toa_do ? act.toa_do[1] : 105.8542;
                     
                     let distHtml = '';
-                    if (act.transport_badge) {
-                        distHtml = `<div style="margin-left: 55px; margin-bottom: 10px; font-size: 12px; color: #555; font-weight: 600; display: flex; align-items: center; gap: 5px;">
-                            <span style="display:inline-block; border-left: 2px dashed #E8B923; height: 20px;"></span> 
-                            <span style="background: rgba(232, 185, 35, 0.15); color: #B45309; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(232, 185, 35, 0.3);">${act.transport_badge}</span>
-                        </div>`;
-                    } else if (act.distance_from_prev > 0) {
-                        const dist = act.distance_from_prev;
-                        const tool = dist < 1.0 ? '🚶 Đi bộ' : '🚕 Gọi xe';
-                        distHtml = `<div style="margin-left: 55px; margin-bottom: 10px; font-size: 12px; color: #666; font-style: italic; display: flex; align-items: center; gap: 5px;">
-                            <span style="display:inline-block; border-left: 2px dashed #ccc; height: 20px;"></span> 
-                            <span>${tool} ~${dist}km</span>
-                        </div>`;
+                    if (actIndex > 0) {
+                        if (act.transport_badge) {
+                            distHtml = `<div style="margin-left: 55px; margin-bottom: 10px; font-size: 12px; color: #555; font-weight: 600; display: flex; align-items: center; gap: 5px;">
+                                <span style="display:inline-block; border-left: 2px dashed #E8B923; height: 20px;"></span> 
+                                <span style="background: rgba(232, 185, 35, 0.15); color: #B45309; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(232, 185, 35, 0.3);">${act.transport_badge}</span>
+                            </div>`;
+                        } else if (act.distance_from_prev > 0) {
+                            const dist = act.distance_from_prev;
+                            const tool = dist < 1.0 ? '🚶 Đi bộ' : '🚕 Gọi xe';
+                            distHtml = `<div style="margin-left: 55px; margin-bottom: 10px; font-size: 12px; color: #666; font-style: italic; display: flex; align-items: center; gap: 5px;">
+                                <span style="display:inline-block; border-left: 2px dashed #ccc; height: 20px;"></span> 
+                                <span>${tool} ~${dist}km</span>
+                            </div>`;
+                        }
                     }
 
                     // Tô màu theo khung giờ
@@ -4031,6 +4033,43 @@ window.exportItineraryPDF = function() {
 /* ==========================================================================
    TÍNH NĂNG XÓA ĐIỂM & ĐẢO THỨ TỰ TRỰC TIẾP TRÊN LỊCH TRÌNH
    ========================================================================== */
+/* ==========================================================================
+   TÍNH NĂNG XÓA ĐIỂM & ĐẢO THỨ TỰ TRỰC TIẾP TRÊN LỊCH TRÌNH
+   ========================================================================== */
+function recalculateDaySchedule(dayObj) {
+    if (!dayObj || !dayObj.diem_den) return;
+    const STANDARD_TIMES = ["08:00", "09:30", "12:00", "14:30", "17:30", "19:00", "21:00"];
+
+    dayObj.diem_den.forEach((act, idx) => {
+        // 1. Tự động gán lại khung giờ tăng dần cho vị trí mới
+        const assignedTime = STANDARD_TIMES[idx] || `${8 + idx * 2}:00`;
+        act.thoi_gian = assignedTime;
+        act.gio = assignedTime;
+
+        // 2. Tính toán lại khoảng cách di chuyển giữa các mốc
+        if (idx === 0) {
+            delete act.distance_from_prev;
+            delete act.transport_badge;
+        } else if (act.toa_do && dayObj.diem_den[idx - 1] && dayObj.diem_den[idx - 1].toa_do) {
+            const p1 = dayObj.diem_den[idx - 1].toa_do;
+            const p2 = act.toa_do;
+            const dLat = (p2[0] - p1[0]) * Math.PI / 180;
+            const dLon = (p2[1] - p1[1]) * Math.PI / 180;
+            const aDist = Math.sin(dLat/2)**2 + Math.cos(p1[0]*Math.PI/180) * Math.cos(p2[0]*Math.PI/180) * Math.sin(dLon/2)**2;
+            const dist = Math.round(6371 * 2 * Math.asin(Math.sqrt(aDist)) * 10) / 10;
+            act.distance_from_prev = dist;
+
+            if (dist <= 0.6) {
+                act.transport_badge = `🚶 Đi bộ thong thả ~${Math.round(dist*1000)}m`;
+            } else if (dist <= 1.5) {
+                act.transport_badge = `🚶/🛵 Đi bộ ~${dist}km hoặc 2p Xe máy`;
+            } else {
+                act.transport_badge = `🛵 Xe máy / Grab ~${dist}km`;
+            }
+        }
+    });
+}
+
 window.deleteItineraryActivity = function(dayIndex, actIndex) {
     if (!window.currentAiData || !window.currentAiData.lich_trinh) return;
     const dayObj = window.currentAiData.lich_trinh[dayIndex];
@@ -4044,24 +4083,17 @@ window.deleteItineraryActivity = function(dayIndex, actIndex) {
     // Xóa địa điểm khỏi mảng
     dayObj.diem_den.splice(actIndex, 1);
 
-    // Tính toán lại khoảng cách di chuyển giữa các điểm còn lại
-    dayObj.diem_den.forEach((act, idx) => {
-        if (idx === 0) {
-            delete act.distance_from_prev;
-        } else if (act.toa_do && dayObj.diem_den[idx - 1] && dayObj.diem_den[idx - 1].toa_do) {
-            const p1 = dayObj.diem_den[idx - 1].toa_do;
-            const p2 = act.toa_do;
-            const dLat = (p2[0] - p1[0]) * Math.PI / 180;
-            const dLon = (p2[1] - p1[1]) * Math.PI / 180;
-            const aDist = Math.sin(dLat/2)**2 + Math.cos(p1[0]*Math.PI/180) * Math.cos(p2[0]*Math.PI/180) * Math.sin(dLon/2)**2;
-            act.distance_from_prev = Math.round(6371 * 2 * Math.asin(Math.sqrt(aDist)) * 10) / 10;
-        }
-    });
+    // Tính toán và gán lại khung giờ & khoảng cách
+    recalculateDaySchedule(dayObj);
 
     // Đồng bộ sang structured itinerary nếu có
     if (window.currentStructuredItinerary && window.currentStructuredItinerary.days && window.currentStructuredItinerary.days[dayIndex]) {
         if (window.currentStructuredItinerary.days[dayIndex].activities) {
             window.currentStructuredItinerary.days[dayIndex].activities.splice(actIndex, 1);
+            window.currentStructuredItinerary.days[dayIndex].activities.forEach((act, idx) => {
+                const STANDARD_TIMES = ["08:00", "09:30", "12:00", "14:30", "17:30", "19:00", "21:00"];
+                act.time = STANDARD_TIMES[idx] || `${8 + idx * 2}:00`;
+            });
         }
     }
 
@@ -4069,7 +4101,7 @@ window.deleteItineraryActivity = function(dayIndex, actIndex) {
     if (typeof drawItineraryMap === 'function') {
         drawItineraryMap(window.currentStructuredItinerary, dayIndex + 1);
     }
-    showToast(`🗑️ Đã xóa "${removedName}" khỏi lịch trình!`);
+    showToast(`🗑️ Đã xóa "${removedName}" và tự động cập nhật khung giờ mới!`);
 };
 
 /* ==========================================================================
@@ -4145,19 +4177,8 @@ window.handlePoiDrop = function(e, targetDayIndex, targetActIndex) {
     const [movedItem] = dayObj.diem_den.splice(actIndex, 1);
     dayObj.diem_den.splice(targetActIndex, 0, movedItem);
 
-    // Tính toán lại khoảng cách di chuyển giữa các mốc
-    dayObj.diem_den.forEach((act, idx) => {
-        if (idx === 0) {
-            delete act.distance_from_prev;
-        } else if (act.toa_do && dayObj.diem_den[idx - 1] && dayObj.diem_den[idx - 1].toa_do) {
-            const p1 = dayObj.diem_den[idx - 1].toa_do;
-            const p2 = act.toa_do;
-            const dLat = (p2[0] - p1[0]) * Math.PI / 180;
-            const dLon = (p2[1] - p1[1]) * Math.PI / 180;
-            const aDist = Math.sin(dLat/2)**2 + Math.cos(p1[0]*Math.PI/180) * Math.cos(p2[0]*Math.PI/180) * Math.sin(dLon/2)**2;
-            act.distance_from_prev = Math.round(6371 * 2 * Math.asin(Math.sqrt(aDist)) * 10) / 10;
-        }
-    });
+    // Tính toán và gán lại khung giờ & khoảng cách
+    recalculateDaySchedule(dayObj);
 
     // Đồng bộ sang structured itinerary nếu có
     if (window.currentStructuredItinerary && window.currentStructuredItinerary.days && window.currentStructuredItinerary.days[dayIndex]) {
@@ -4165,6 +4186,10 @@ window.handlePoiDrop = function(e, targetDayIndex, targetActIndex) {
         if (sActs && sActs[actIndex]) {
             const [sMoved] = sActs.splice(actIndex, 1);
             sActs.splice(targetActIndex, 0, sMoved);
+            sActs.forEach((act, idx) => {
+                const STANDARD_TIMES = ["08:00", "09:30", "12:00", "14:30", "17:30", "19:00", "21:00"];
+                act.time = STANDARD_TIMES[idx] || `${8 + idx * 2}:00`;
+            });
         }
     }
 
@@ -4172,7 +4197,7 @@ window.handlePoiDrop = function(e, targetDayIndex, targetActIndex) {
     if (typeof drawItineraryMap === 'function') {
         drawItineraryMap(window.currentStructuredItinerary, dayIndex + 1);
     }
-    showToast("✨ Đã kéo thả và sắp xếp lại vị trí địa điểm thành công!");
+    showToast("✨ Đã sắp xếp lại vị trí và cập nhật khung giờ mới thành công!");
 };
 
 /* ==========================================================================
