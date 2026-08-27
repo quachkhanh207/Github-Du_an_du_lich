@@ -414,6 +414,7 @@ class RagEngine:
         return []
 
     def get_structured_itinerary(self, trip_data: dict) -> dict:
+        origin = trip_data.get("origin", "") or trip_data.get("departure", "") or "Hồ Chí Minh"
         dest_raw = trip_data.get("destination", "Hà Nội")
         budget = trip_data.get("budget", "5000000")
         companion = trip_data.get("companion", "Cặp đôi")
