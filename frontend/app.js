@@ -3783,7 +3783,17 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
                     }
 
                     html += distHtml + `
-                        <div class="activity-card" style="cursor: pointer; position: relative; margin-bottom: 14px;" onclick="focusMapLocation(${lat}, ${lng}, '${safeTitle}')">
+                        <div class="activity-card" draggable="true" 
+                             ondragstart="handlePoiDragStart(event, ${index}, ${actIndex})" 
+                             ondragover="handlePoiDragOver(event)" 
+                             ondragleave="handlePoiDragLeave(event)" 
+                             ondrop="handlePoiDrop(event, ${index}, ${actIndex})" 
+                             ondragend="handlePoiDragEnd(event)"
+                             style="cursor: grab; position: relative; margin-bottom: 14px; transition: all 0.2s ease;" 
+                             onclick="focusMapLocation(${lat}, ${lng}, '${safeTitle}')">
+                            <div class="drag-handle-grip" title="Giữ và kéo để sắp xếp lại vị trí mốc di chuyển" style="display: flex; align-items: center; justify-content: center; padding: 2px 6px; color: #94A3B8; font-size: 16px; font-weight: 800; cursor: grab; user-select: none; transition: color 0.2s;" onmouseover="this.style.color='#2563EB';" onmouseout="this.style.color='#94A3B8';">
+                                ⋮⋮
+                            </div>
                             <div class="activity-time"><span class="time-badge" style="background: ${timeBg}; color: ${timeColor};">${time}</span></div>
                             <div class="activity-icon-box" style="color: ${timeColor};">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -3798,8 +3808,6 @@ async function renderAIItinerary(aiData, destName = "", weatherObj = null) {
                                         <button type="button" class="btn-swap-poi" title="Đổi địa điểm khác phù hợp" onclick="event.stopPropagation(); swapItineraryActivity(${index}, ${actIndex})" style="background: rgba(245, 158, 11, 0.12); color: #B45309; border: 1px solid rgba(245, 158, 11, 0.35); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
                                             🔄 Đổi
                                         </button>
-                                        ${actIndex > 0 ? `<button type="button" onclick="event.stopPropagation(); moveItineraryActivity(${index}, ${actIndex}, -1)" title="Đẩy mốc này lên trước" style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; padding: 3px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">⬆️</button>` : ''}
-                                        ${actIndex < activitiesList.length - 1 ? `<button type="button" onclick="event.stopPropagation(); moveItineraryActivity(${index}, ${actIndex}, 1)" title="Đẩy mốc này xuống sau" style="background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; padding: 3px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">⬇️</button>` : ''}
                                         <button type="button" onclick="event.stopPropagation(); deleteItineraryActivity(${index}, ${actIndex})" title="Xóa mốc này khỏi lịch trình" style="background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
                                             🗑️ Xóa
                                         </button>
@@ -4064,28 +4072,80 @@ window.deleteItineraryActivity = function(dayIndex, actIndex) {
     showToast(`🗑️ Đã xóa "${removedName}" khỏi lịch trình!`);
 };
 
-window.moveItineraryActivity = function(dayIndex, actIndex, direction) {
+/* ==========================================================================
+   TÍNH NĂNG KÉO THẢ (DRAG & DROP) ĐẢO VỊ TRÍ ĐỊA ĐIỂM LINH HOẠT
+   ========================================================================== */
+let draggedPoiInfo = null;
+
+window.handlePoiDragStart = function(e, dayIndex, actIndex) {
+    draggedPoiInfo = { dayIndex, actIndex };
+    if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", JSON.stringify({ dayIndex, actIndex }));
+    }
+    const card = e.currentTarget;
+    if (card) {
+        setTimeout(() => card.classList.add("poi-dragging"), 0);
+    }
+};
+
+window.handlePoiDragOver = function(e) {
+    e.preventDefault();
+    if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = "move";
+    }
+    const card = e.currentTarget;
+    if (card && !card.classList.contains("poi-drag-over")) {
+        card.classList.add("poi-drag-over");
+    }
+};
+
+window.handlePoiDragLeave = function(e) {
+    const card = e.currentTarget;
+    if (card) {
+        card.classList.remove("poi-drag-over");
+    }
+};
+
+window.handlePoiDragEnd = function(e) {
+    document.querySelectorAll(".activity-card").forEach(el => {
+        el.classList.remove("poi-dragging", "poi-drag-over");
+    });
+    draggedPoiInfo = null;
+};
+
+window.handlePoiDrop = function(e, targetDayIndex, targetActIndex) {
+    e.preventDefault();
+    document.querySelectorAll(".activity-card").forEach(el => {
+        el.classList.remove("poi-dragging", "poi-drag-over");
+    });
+
+    let source = draggedPoiInfo;
+    if (!source && e.dataTransfer) {
+        try {
+            source = JSON.parse(e.dataTransfer.getData("text/plain"));
+        } catch(err){}
+    }
+
+    if (!source) return;
+    const { dayIndex, actIndex } = source;
+
+    if (dayIndex !== targetDayIndex) {
+        showToast("ℹ️ Bạn chỉ có thể kéo thả để sắp xếp lại các điểm trong cùng 1 ngày.");
+        return;
+    }
+
+    if (actIndex === targetActIndex) return;
+
     if (!window.currentAiData || !window.currentAiData.lich_trinh) return;
     const dayObj = window.currentAiData.lich_trinh[dayIndex];
     if (!dayObj || !dayObj.diem_den) return;
 
-    const targetIndex = actIndex + direction;
-    if (targetIndex < 0 || targetIndex >= dayObj.diem_den.length) return;
+    // Rút phần tử kéo và chèn vào vị trí thả
+    const [movedItem] = dayObj.diem_den.splice(actIndex, 1);
+    dayObj.diem_den.splice(targetActIndex, 0, movedItem);
 
-    // Tráo đổi vị trí địa điểm
-    const temp = dayObj.diem_den[actIndex];
-    dayObj.diem_den[actIndex] = dayObj.diem_den[targetIndex];
-    dayObj.diem_den[targetIndex] = temp;
-
-    // Tráo đổi khung giờ để thời gian luôn giữ đúng thứ tự tăng dần
-    const timeA = dayObj.diem_den[actIndex].thoi_gian || dayObj.diem_den[actIndex].gio;
-    const timeB = dayObj.diem_den[targetIndex].thoi_gian || dayObj.diem_den[targetIndex].gio;
-    if (timeA && timeB) {
-        dayObj.diem_den[actIndex].thoi_gian = timeA;
-        dayObj.diem_den[targetIndex].thoi_gian = timeB;
-    }
-
-    // Tính toán lại khoảng cách
+    // Tính toán lại khoảng cách di chuyển giữa các mốc
     dayObj.diem_den.forEach((act, idx) => {
         if (idx === 0) {
             delete act.distance_from_prev;
@@ -4102,10 +4162,9 @@ window.moveItineraryActivity = function(dayIndex, actIndex, direction) {
     // Đồng bộ sang structured itinerary nếu có
     if (window.currentStructuredItinerary && window.currentStructuredItinerary.days && window.currentStructuredItinerary.days[dayIndex]) {
         const sActs = window.currentStructuredItinerary.days[dayIndex].activities;
-        if (sActs && sActs[actIndex] && sActs[targetIndex]) {
-            const sTemp = sActs[actIndex];
-            sActs[actIndex] = sActs[targetIndex];
-            sActs[targetIndex] = sTemp;
+        if (sActs && sActs[actIndex]) {
+            const [sMoved] = sActs.splice(actIndex, 1);
+            sActs.splice(targetActIndex, 0, sMoved);
         }
     }
 
@@ -4113,7 +4172,7 @@ window.moveItineraryActivity = function(dayIndex, actIndex, direction) {
     if (typeof drawItineraryMap === 'function') {
         drawItineraryMap(window.currentStructuredItinerary, dayIndex + 1);
     }
-    showToast(`↕️ Đã đảo thứ tự lịch trình thành công!`);
+    showToast("✨ Đã kéo thả và sắp xếp lại vị trí địa điểm thành công!");
 };
 
 /* ==========================================================================
